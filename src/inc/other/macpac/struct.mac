@@ -1,0 +1,611 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; Copyright (c) 2008, Tyler Hastings
+; All rights reserved.
+;
+; Redistribution and use in source and binary forms, with or without
+; modification, are permitted provided that the following conditions are met:
+;
+; * Redistributions of source code must retain the above copyright notice,
+;   this list of conditions and the following disclaimer.
+;
+; * Redistributions in binary form must reproduce the above copyright notice,
+;   this list of conditions and the following disclaimer in the documentation
+;   and/or other materials provided with the distribution.
+;
+; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+; IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+; ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+; LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+; CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+; SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+; INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+; CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+; POSSIBILITY OF SUCH DAMAGE.
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; macpac/struct.mac
+;
+; Data structure macro set for NASM. 
+;
+
+
+%ifndef MACPAC_STRUCT
+%define MACPAC_STRUCT 1
+
+
+%include "variables.mac"
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+;
+; STRUCT - Begins a structure definition.
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+;
+; Paramters:
+; 1 - structure name 
+;
+%imacro STRUCT 1.nolist
+ %ifnctx struct_context
+  %ifnctx union_context
+ 
+   ;Create a new context
+   %push struct_context
+
+   ;Save structure name 
+   %xdefine %$struct_name %1
+
+   ;Keep track of the number of members
+   %assign %$member_count 0
+
+   ;Change to the 'nowhere' segment 
+[absolute 0]
+
+%$struct_name:
+  %else
+   %error "STRUCT not given label, or used in a bad context."
+  %endif
+ %else
+  %error "STRUCT not given label, or used in bad context."
+ %endif
+%endmacro
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+;
+; STRUCT - Declare a nested structure.
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+;
+; This version of struct takes two parameters and is to be used when
+; declaring a struct as a member of another struct or union.
+;
+; Paramters:
+; 1 - structure name 
+; 2 - member label 
+;
+%imacro STRUCT 2.nolist
+ %ifctx struct_context
+
+  ;SizeOf and TypeOf
+  %xdefine typeof_%{$struct_name}.%{2} struct
+  sizeof_%{$struct_name}.%{2} equ sizeof_%{1}
+
+  ;Numrical position of this struct in the member list
+  %assign %$member_count (%$member_count + 1)
+  %xdefine %{$struct_name}_%{2}_position %$member_count
+
+  ;For mapping position to member's label
+  %define %{$struct_name}_member%{$member_count} %2
+
+  %{$struct_name}.%{2}:
+  ;Loop through this struct's members creating a label for each.
+  %assign %$i 0
+  %rep %{1}_member_count
+   %assign %$i (%$i + 1) 
+   %xdefine %$label %{1}_member%{$i}
+   %ifidn typeof_%{1}.%{$label},struct 
+    %xdefine typeof_%{$struct_name}.%{2}.%{$label} struct
+    sizeof_%{$struct_name}.%{2}.%{$label} equ sizeof_%{1}.%{$label}
+    %{$struct_name}.%{2}.%{$label}:
+    %assign %$member_count (%$member_count + 1)
+    %xdefine %{$struct_name}_%{2}.%{$label}_position %$member_count
+    %xdefine %{$struct_name}_member%{$member_count} %{2}.%{$label}
+   %elifidn typeof_%{1}.%{$label},union 
+    %xdefine typeof_%{$struct_name}.%{2}.%{$label} union 
+    sizeof_%{$struct_name}.%{2}.%{$label} equ sizeof_%{1}.%{$label}
+    %{$struct_name}.%{2}.%{$label}:
+    %assign %$member_count (%$member_count + 1)
+    %xdefine %{$struct_name}_%{2}.%{$label}_position %$member_count
+    %xdefine %{$struct_name}_member%{$member_count} %{2}.%{$label}
+   %else
+    STRUCT_UNION_COMMON %{2}.%$label, %{$struct_name}, sizeof_%{1}.%{$label}
+    %{$struct_name}.%{2}.%{$label} equ (%{$struct_name}.%{2} + %{1}.%{$label} )
+   %endif
+  %endrep
+
+  resb sizeof_%{1}
+
+ %elifctx union_context
+
+  ;SizeOf and TypeOf
+  %xdefine typeof_%{$union_name}.%{2} struct 
+  sizeof_%{$union_name}.%{2} equ sizeof_%{1}
+
+  ;Numrical position of this struct in the member list
+  %assign %$member_count (%$member_count + 1)
+  %xdefine %{$union_name}_%{2}_position %$member_count
+
+  ;For mapping position to member's label
+  %define %{$union_name}_member%{$member_count} %2
+
+  %{$union_name}.%{2}:
+  %if sizeof_%{1} > %$union_largest
+   %assign %$union_largest sizeof_%{1}
+  %endif
+
+  ;Loop through this struct's members creating a label for each.
+  %assign %$i 0
+  %rep %{1}_member_count
+   %assign %$i (%$i + 1)
+   %xdefine %$label %{1}_member%{$i}
+   %ifidn typeof_%{1}.%{$label},struct
+    %xdefine typeof_%{$union_name}.%{2}.%{$label} struct
+    sizeof_%{$union_name}.%{2}.%{$label} equ sizeof_%{1}.%{$label}
+    %{$union_name}.%{2}.%{$label} equ (%$union_base + %{1}.%{$label} ) 
+    %assign %$member_count (%$member_count + 1)
+    %xdefine %{$union_name}_%{2}.%{$label}_position %$member_count
+    %xdefine %{$union_name}_member%{$member_count} %{2}.%{$label}
+   %elifidn typeof_%{1}.%{$label},union
+    %xdefine typeof_%{$union_name}.%{2}.%{$label} union 
+    sizeof_%{$union_name}.%{2}.%{$label} equ sizeof_%{1}.%{$label}
+    %{$union_name}.%{2}.%{$label} equ (%$union_base + %{1}.%{$label} ) 
+    %assign %$member_count (%$member_count + 1)
+    %xdefine %{$union_name}_%{2}.%{$label}_position %$member_count
+    %xdefine %{$union_name}_member%{$member_count} %{2}.%{$label}
+   %else
+    STRUCT_UNION_COMMON %{2}.%$label, %{$union_name}, sizeof_%{1}.%{$label}
+    %{$union_name}.%{2}.%{$label} equ (%$union_base + %{1}.%{$label} ) 
+   %endif
+  %endrep
+
+ %else
+  %error "STRUCT used in bad context, or given a label in wrong context."
+ %endif
+%endmacro
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+;
+; ENDS - Ends a structure definition.
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+;
+; The paramters for this macro are generated automaticaly, do not
+; supply any yourself.
+;
+%imacro ENDS 0.nolist
+ %ifctx struct_context
+  
+  ;Create a macro containing the total number of members for this
+  ;struct. This will be used when instantiating structures of this
+  ;type, and for nesting structures.
+  %xdefine %{$struct_name}_member_count %$member_count
+
+  %xdefine typeof_%{$struct_name} struct
+
+  ;Create a labe for this structure's size.
+sizeof_%{$struct_name}:
+
+  ;Destroy this context
+  %pop
+
+  ;Return to the previous section
+__SECT__
+ %else
+  %error "ENDS not used in STRUCT context."
+ %endif
+%endmacro
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+;
+; ISTRUCT - Begins instantiation of a structure.
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+;
+; Parameters:
+; 1 - name of structure to instantiate 
+; 2 - label to give this structure instance
+;
+%imacro ISTRUCT 2.nolist 
+ ;Create new context
+ %push istruct_context
+
+ ;Save the name of the structure
+ %xdefine %$struct_name %1
+
+ ;Base for labels
+ %xdefine %$struct_base %2
+
+ sizeof_%{2} equ sizeof_%{1}
+ %xdefine typeof_%{2} struct 
+
+ ;Keeps track of initialized members 
+ %assign %$current_member 1
+
+ ;Label for this instance
+%2:
+
+ ;Used internaly for offset calculations 
+%$istruct_start:
+
+ ;loop through struct members, creating a label for each.
+ %assign %$i 0
+ %rep %{1}_member_count
+  %assign %$i (%$i + 1)
+  %xdefine %$label %{1}_member%{$i}
+  %{2}.%{$label} equ %2 + %{1}.%{$label}
+  sizeof_%{2}.%{$label} equ sizeof_%{1}.%{$label}
+  %xdefine typeof_%{2}.%{$label} typeof_%{1}.%{$label}
+ %endrep
+%endmacro
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+;
+; IENDS - Ends instantiation of a structure.
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+%imacro IENDS 0.nolist
+ %ifnctx istruct_context
+  %error "IENDS not used in ISTRUCT context."
+ %else
+
+  ;Fill uninitialized space with 0s
+  times (sizeof_%{$struct_name} - ($ - %$istruct_start)) db 0
+
+  %pop  ; destroy istruct_context
+ %endif
+
+%endmacro
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; SET - Initialize a member during structure or union instantiation.
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; Parameters:
+; 1-* label(s) of members
+; * - value assigned to all listed members
+%imacro SET 2-*.nolist
+ %ifctx istruct_context
+
+  ;Grab the last paramter and save it as the value.
+  %rep (%0 - 1)
+   %rotate 1
+  %endrep
+  %assign %$value %1
+
+  ;Restore the paramter list to it's original state
+  %rep (%0 + 1)
+   %rotate 1
+  %endrep
+
+  ;Now loop through the paramters, assigning %$value to each.
+  %rep (%0 - 1)
+
+   ;Fill in any gaps with zeros.
+   times (%{$struct_name}.%{1} - ($ - %$istruct_start )) db 0
+
+   ;Initialize the member's value.
+   %{$struct_name}.%{1}_dop %$value
+
+   ;advance the current member count
+   %assign %$current_member (%$current_member + 1)
+
+   %rotate 1
+  %endrep
+
+ %elif iunion_context
+
+  ;Grab the last paramter and save it as the value.
+  %rep (%0 - 1)
+   %rotate 1
+  %endrep
+  %assign %$value %1
+
+  ;Restore the paramter list to it's original state
+  %rep (%0 + 1)
+   %rotate 1
+  %endrep
+
+  ;Now loop through the paramters, creating a label for each.
+  %rep (%0 - 1)
+
+   ;Fill in any gaps with zeros.
+   times (%{$union_name}.%{1} - ($ - %$iunion_start )) db 0
+
+   %{$union_name}.%{1}_dop %$value
+
+   ;advance the current member count
+   %assign %$current_member (%$current_member + 1)
+
+   %rotate 1
+  %endrep
+ %else
+  %error "SET used in unknown context."
+ %endif
+%endmacro
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+;
+; RSTRUCT - Begins instantiation of an uninitialized structure.
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+;
+; Parameters:
+; 1 - name of structure to instantiate 
+; 2 - label to give this structure instance
+;
+%imacro RSTRUCT 2.nolist 
+ ;Create new context
+ %push rstruct_context
+
+ sizeof_%{2} equ sizeof_%{1}
+
+ ;Label for this instance
+%2:
+
+ ;loop through struct members, creating a label for each.
+ %assign %$i 0
+ %rep %{1}_member_count
+  %assign %$i (%$i + 1)
+  %xdefine %$label %{1}_member%{$i}
+  %{2}.%{$label} equ %2 + %{1}.%{$label}
+  sizeof_%{2}.%{$label} equ sizeof_%{1}.%{$label}
+  %xdefine typeof_%{2}.%{$label} typeof_%{1}.%{$label}
+ %endrep
+
+ resb sizeof_%{1}
+
+ %pop
+%endmacro
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; UNION - Begins a union definition.
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; Paramters:
+; 1 - union name
+;
+%imacro UNION 1.nolist
+ %ifnctx union_context
+  %ifnctx struct_context
+
+   ;Create a new context
+   %push union_context
+
+   ;Save union name
+   %xdefine %$union_name %1
+
+   ;Base for labels
+   %xdefine %$union_base %1
+
+   ;Track largest member size
+   %assign %$union_largest 0
+
+   ;Track members
+   %assign %$member_count 0
+
+   ;Change to the 'nowhere' segment
+[absolute 0]
+
+%$union_base:
+  %else
+   %error "UNION not given label, or used in bad context."
+  %endif
+ %else
+  %error "UNION not given label, or used in bad context."
+ %endif
+%endmacro
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; UNION - Declare a nested union.
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; This version of union takes two parameters and is to be used when
+; declaring a union as a member of another union or struct.
+;
+; Paramters:
+; 1 - structure name
+; 2 - member label
+;
+%imacro UNION 2.nolist
+ %ifctx union_context
+
+  %xdefine typeof_%{$union_name}.%{2} union
+  sizeof_%{$union_name}.%{2} equ sizeof_%{1}
+
+  %assign %$member_count (%$member_count + 1)
+  %xdefine %{$union_name}_%{2}_position %$member_count
+
+  %define %{$union_name}_member%{$member_count} %2
+
+  %if sizeof_%{1} > %$union_largest
+   %assign %$union_largest sizeof_%{1}
+  %endif
+
+  %{$union_name}.%{2}:
+  %assign %$i 0
+  %rep %{1}_member_count
+   %assign %$i (%$i + 1)
+   %xdefine %$label %{1}_member%{$i}
+   %ifidn typeof_%{1}.%{$label},union
+    %xdefine typeof_%{$union_name}.%{2}.%{$label} union
+    sizeof_%{$union_name}.%{2}.%{$label} equ sizeof_%{1}.%{$label}
+    %{$union_name}.%{2}.%{$label}:
+    %assign %$member_count (%$member_count + 1)
+    %xdefine %{$union_name}_%{2}.%{$label}_position %$member_count
+    %xdefine %{$union_name}_member%{$member_count} %{2}.%{$label}
+   %elifidn typeof_%{1}.%{$label},struct
+    %xdefine typeof_%{$union_name}.%{2}.%{$label} struct
+    sizeof_%{$union_name}.%{2}.%{$label} equ sizeof_%{1}.%{$label}
+    %{$union_name}.%{2}.%{$label}:
+    %assign %$member_count (%$member_count + 1)
+    %xdefine %{$union_name}_%{2}.%{$label}_position %$member_count
+    %xdefine %{$union_name}_member%{$member_count} %{2}.%{$label}
+   %else
+    STRUCT_UNION_COMMON %{2}.%$label, %{$union_name}, sizeof_%{1}.%{$label}
+    %{$union_name}.%{2}.%{$label} equ (%$union_base + %{1}.%{$label} )
+   %endif
+  %endrep
+
+ %elifctx struct_context
+
+
+  %xdefine typeof_%{$struct_name}.%{2} union
+  sizeof_%{$struct_name}.%{2} equ sizeof_%{1}
+
+  %assign %$member_count (%$member_count + 1)
+  %xdefine %{$struct_name}_%{2}_position %$member_count
+
+  %define %{$struct_name}_member%{$member_count} %2
+
+  %{$struct_name}.%{2}:
+  %assign %$i 0
+  %rep %{1}_member_count
+   %assign %$i (%$i + 1)
+   %xdefine %$label %{1}_member%{$i}
+   %ifidn typeof_%{1}.%{$label},union
+    %xdefine typeof_%{$struct_name}.%{2}.%{$label} union
+    sizeof_%{$struct_name}.%{2}.%{$label} equ sizeof_%{1}.%{$label}
+    %{$struct_name}.%{2}.%{$label}:
+    %assign %$member_count (%$member_count + 1)
+    %xdefine %{$struct_name}_%{2}.%{$label}_position %$member_count
+    %xdefine %{$struct_name}_member%{$member_count} %{2}.%{$label}
+   %elifidn typeof_%{1}.%{$label},struct
+    %xdefine typeof_%{$struct_name}.%{2}.%{$label} struct
+    sizeof_%{$struct_name}.%{2}.%{$label} equ sizeof_%{1}.%{$label}
+    %{$struct_name}.%{2}.%{$label}:
+    %assign %$member_count (%$member_count + 1)
+    %xdefine %{$struct_name}_%{2}.%{$label}_position %$member_count
+    %xdefine %{$struct_name}_member%{$member_count} %{2}.%{$label}
+   %else
+    STRUCT_UNION_COMMON %{2}.%$label, %{$struct_name}, sizeof_%{1}.%{$label}
+    %{$struct_name}.%{2}.%{$label} equ (%{$struct_name}.%{2} + %{1}.%{$label} )
+   %endif
+  %endrep
+
+  resb sizeof_%{1}
+
+ %else
+  %error "UNION given to many paramters or used in bad context."
+ %endif
+%endmacro
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; ENDU - Ends a union definition.
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+%imacro ENDU 0
+ %ifctx union_context
+
+  ;Create a macro containing the total number of members for this union.
+  %xdefine %{$union_name}_member_count %$member_count
+
+  ;reserve space enough for largest member
+  resb %$union_largest
+
+  ;label for union size
+sizeof_%{$union_name}:
+
+  ;destroy union_context
+  %pop
+
+  ;restore previous section
+__SECT__
+
+ %else
+  %error "ENDU not used in UNION context."
+ %endif
+%endmacro
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; IUNION - Create an instance of a union.
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; Paramters:
+; 1 - name of union to instantiate
+; 2 - label to give this union instance
+;
+%imacro IUNION 2.nolist
+  ;Create a new context
+  %push iunion_context
+
+  ;Save the union name
+  %xdefine %$union_name %1
+
+  ;Base for labels
+  %xdefine %$union_base %2
+
+  sizeof_%{2} equ sizeof_%{1}
+  %xdefine typeof_%{2} union
+
+  ;Track number of members
+  %assign %$current_member 1
+
+  ;Label for this instance
+%2:
+
+  ;Used internaly for offset calculations
+%$iunion_start:
+
+  ;Loop through this union's members, creating a label for each.
+  %assign %$i 0
+  %rep %{$union_name}_member_count
+   %assign %$i (%$i + 1)
+   %xdefine %$label %{$union_name}_member%{$i}
+   %{2}.%{$label} equ %2 + %{1}.%{$label}
+   sizeof_%{2}.%{$label} equ sizeof_%{1}.%{$label}
+   %xdefine typeof_%{2}.%{$label} typeof_%{1}.%{$label}
+  %endrep
+%endmacro
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; IENDU - Ends instantiation of a union.
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+%imacro IENDU 0
+ %ifnctx iunion_context
+  %error "IENDU not used in IUNION context."
+ %else
+
+  times (sizeof_%{$union_name} - ($ - %$iunion_start)) db 0
+
+  %pop  ; destroy iunion_context
+ %endif
+%endmacro
+
+
+%endif ; MACPAC_STRUCT

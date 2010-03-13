@@ -1,0 +1,628 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;       
+;
+; Copyright (c) 2008, Tyler Hastings 
+; All rights reserved.
+;
+; Redistribution and use in source and binary forms, with or without
+; modification, are permitted provided that the following conditions are met:
+;
+; * Redistributions of source code must retain the above copyright notice, 
+;   this list of conditions and the following disclaimer.
+; 
+; * Redistributions in binary form must reproduce the above copyright notice,
+;   this list of conditions and the following disclaimer in the documentation
+;   and/or other materials provided with the distribution.
+;
+; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+; IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+; ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+; LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+; CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+; SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+; INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+; CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+; POSSIBILITY OF SUCH DAMAGE.
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;       
+;
+; macpac/loops.mac
+;
+; Loop macro set for NASM.
+;
+
+
+%ifndef MACPAC_LOOPS
+%define MACPAC_LOOPS 1
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;       
+;
+; DO - Begins a DO-WHILE/UNTIL loop. 
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;       
+%imacro DO 0.nolist
+ %push do_context
+ %ifnum %$macpac_proc_depth 
+  %assign %$macpac_proc_depth (%$macpac_proc_depth + 1)
+ %endif
+
+ %assign %$macpac_loop_depth 1
+
+%$macpac_loop_begin:
+%endmacro
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;       
+;
+; DOWHILE - Completes a DO-WHILE loop. 
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;       
+;
+; This verison of takes one parameter. It may be a condition code
+; (e,ne,a,ae,b,be,g,ge,l,le,z,nz) but can also be a true value 
+; (`true` or a number != 0) to create an endless loop which is exited 
+; by some other means.
+;
+%imacro DOWHILE 1.nolist
+ %ifnctx do_context 
+  %error "DOWHILE not used in DO context."
+ %else
+  %ifnum %1
+   %if %1 <> 0
+    jmp %$macpac_loop_begin
+   %endif
+  %elifidni %1,true
+   jmp %$macpac_loop_begin
+  %else
+   j%+1 %$macpac_loop_begin
+  %endif
+  %$macpac_loop_exit:
+  %pop
+ %endif
+%endmacro
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;       
+;
+; DOWHILE - Completes a DO-WHILE loop. 
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;       
+;
+; Parameters:
+; 1&3 - operands to be tested
+; 2   - condition code (e,ne,a,ae,b,be,g,ge,l,le,z,nz)
+; 4   - the testing instruction; it defaults to 'cmp' but
+; can be replaced with 'test' or some other instruction which affects
+; the flags register.
+;
+%imacro DOWHILE 3-4.nolist cmp
+ %ifnctx do_context 
+  %error "DOWHILE not used in DO context."
+ %else 
+  %4 %1, %3 
+  j%+2 %$macpac_loop_begin 
+  %$macpac_loop_exit:
+  %pop
+ %endif
+%endmacro
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;       
+;
+; DOWHILE - Completes a DO-WHILE loop, takes multiple conditionals. 
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;       
+%imacro DOWHILE 7-*.nolist
+ %ifnctx do_context
+  %error "DOWHILE not used in DO context."
+ %else
+
+  %assign %$macpac_do_i 1
+  %rep %0
+
+   %ifidni %1,AND
+    %assign %$macpac_argcheck (%$macpac_do_i % 10)
+    %if %$macpac_argcheck = 5
+     %assign %$macpac_a1 (%$macpac_do_i - 4)
+     %assign %$macpac_cc (%$macpac_do_i - 3)
+     %assign %$macpac_a2 (%$macpac_do_i - 2)
+     %assign %$macpac_in (%$macpac_do_i - 1)
+
+     %$macpac_doarg%{$macpac_in} %$macpac_doarg%{$macpac_a1}, %$macpac_doarg%{$macpac_a2}
+     %$macpac_donarg%{$macpac_cc} %$macpac_loop_exit
+
+     %assign %$macpac_do_i (%$macpac_do_i + 6)
+    %elif %$macpac_argcheck = 4
+     %assign %$macpac_a1 (%$macpac_do_i - 3)
+     %assign %$macpac_cc (%$macpac_do_i - 2)
+     %assign %$macpac_a2 (%$macpac_do_i - 1)
+
+     cmp %$macpac_doarg%{$macpac_a1}, %$macpac_doarg%{$macpac_a2}
+     %$macpac_donarg%{$macpac_cc} %$macpac_loop_exit
+
+     %assign %$macpac_do_i (%$macpac_do_i + 7)
+    %else
+     %error "Invalid number or order of paramters given to DOWHILE."
+    %endif
+   %elifidni %1,OR
+    %assign %$macpac_argcheck (%$macpac_do_i % 10)
+    %if %$macpac_argcheck = 5
+     %assign %$macpac_a1 (%$macpac_do_i - 4)
+     %assign %$macpac_cc (%$macpac_do_i - 3)
+     %assign %$macpac_a2 (%$macpac_do_i - 2)
+     %assign %$macpac_in (%$macpac_do_i - 1)
+
+     %$macpac_doarg%{$macpac_in} %$macpac_doarg%{$macpac_a1}, %$macpac_doarg%{$macpac_a2}
+     %$macpac_doarg%{$macpac_cc} %$macpac_loop_begin
+
+     %assign %$macpac_do_i (%$macpac_do_i + 6)
+    %elif %$macpac_argcheck = 4
+     %assign %$macpac_a1 (%$macpac_do_i - 3)
+     %assign %$macpac_cc (%$macpac_do_i - 2)
+     %assign %$macpac_a2 (%$macpac_do_i - 1)
+
+     cmp %$macpac_doarg%{$macpac_a1}, %$macpac_doarg%{$macpac_a2}
+     %$macpac_doarg%{$macpac_cc} %$macpac_loop_begin
+
+     %assign %$macpac_do_i (%$macpac_do_i + 7)
+    %else
+     %error "Invalid number or order of paramters given to DOWHILE."
+    %endif
+   %else
+    %assign %$macpac_argcheck (%$macpac_do_i % 10)
+    %if %$macpac_argcheck = 2
+     %xdefine %$macpac_doarg%{$macpac_do_i} j%+1
+     %xdefine %$macpac_donarg%{$macpac_do_i} j%-1
+    %else
+     %xdefine %$macpac_doarg%{$macpac_do_i} %1
+    %endif
+    %assign %$macpac_do_i (%$macpac_do_i + 1)
+   %endif
+
+   %rotate 1
+  %endrep
+
+  %assign %$macpac_argcheck (%$macpac_do_i % 10)
+  %if %$macpac_argcheck = 5
+   %assign %$macpac_a1 (%$macpac_do_i - 4)
+   %assign %$macpac_cc (%$macpac_do_i - 3)
+   %assign %$macpac_a2 (%$macpac_do_i - 2)
+   %assign %$macpac_in (%$macpac_do_i - 1)
+
+   %$macpac_doarg%{$macpac_in} %$macpac_doarg%{$macpac_a1}, %$macpac_doarg%{$macpac_a2}
+   %$macpac_doarg%{$macpac_cc} %$macpac_loop_begin
+
+   %assign %$macpac_do_i (%$macpac_do_i + 6)
+  %elif %$macpac_argcheck = 4
+   %assign %$macpac_a1 (%$macpac_do_i - 3)
+   %assign %$macpac_cc (%$macpac_do_i - 2)
+   %assign %$macpac_a2 (%$macpac_do_i - 1)
+
+   cmp %$macpac_doarg%{$macpac_a1}, %$macpac_doarg%{$macpac_a2}
+   %$macpac_doarg%{$macpac_cc} %$macpac_loop_begin
+
+   %assign %$macpac_do_i (%$macpac_do_i + 7)
+  %else
+   %error "Invalid number or order of paramters given to DOWHILE."
+  %endif
+
+  %$macpac_loop_exit:
+
+ %endif
+%endmacro
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;       
+;
+; UNTIL - Completes a DO-UNTIL loop. 
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;       
+;
+; Parameters:
+; 1&3 - operands to be tested
+; 2   - condition code (e,ne,a,ae,b,be,g,ge,l,le,z,nz)
+; 4   - the testing instruction; it defaults to 'cmp' but
+; can be replaced with 'test' or some other instruction which affects
+; the flags register.
+;
+%imacro UNTIL 3-4.nolist cmp
+ %ifnctx do_context 
+  %error "UNTIL not used in DO context."
+ %else 
+  %4 %1, %3 
+  j%-2 %$macpac_loop_begin 
+  %pop
+ %endif
+%endmacro
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;       
+;
+; UNTIL - Completes a DO-UNTIL loop, takes multiple conditionals.
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;       
+%imacro UNTIL 7-*.nolist
+ %ifnctx do_context
+  %error "UNTIL not used in DO context."
+ %else
+
+  %assign %$macpac_do_i 1
+  %rep %0
+
+   %ifidni %1,AND
+    %assign %$macpac_argcheck (%$macpac_do_i % 10)
+    %if %$macpac_argcheck = 5
+     %assign %$macpac_a1 (%$macpac_do_i - 4)
+     %assign %$macpac_cc (%$macpac_do_i - 3)
+     %assign %$macpac_a2 (%$macpac_do_i - 2)
+     %assign %$macpac_in (%$macpac_do_i - 1)
+
+     %$macpac_doarg%{$macpac_in} %$macpac_doarg%{$macpac_a1}, %$macpac_doarg%{$macpac_a2}
+     %$macpac_donarg%{$macpac_cc} %$macpac_loop_begin
+
+     %assign %$macpac_do_i (%$macpac_do_i + 6)
+    %elif %$macpac_argcheck = 4
+     %assign %$macpac_a1 (%$macpac_do_i - 3)
+     %assign %$macpac_cc (%$macpac_do_i - 2)
+     %assign %$macpac_a2 (%$macpac_do_i - 1)
+
+     cmp %$macpac_doarg%{$macpac_a1}, %$macpac_doarg%{$macpac_a2}
+     %$macpac_donarg%{$macpac_cc} %$macpac_loop_begin
+
+     %assign %$macpac_do_i (%$macpac_do_i + 7)
+    %else
+     %error "Invalid number or order of paramters given to UNTIL."
+    %endif
+   %elifidni %1,OR
+    %assign %$macpac_argcheck (%$macpac_do_i % 10)
+    %if %$macpac_argcheck = 5
+     %assign %$macpac_a1 (%$macpac_do_i - 4)
+     %assign %$macpac_cc (%$macpac_do_i - 3)
+     %assign %$macpac_a2 (%$macpac_do_i - 2)
+     %assign %$macpac_in (%$macpac_do_i - 1)
+
+     %$macpac_doarg%{$macpac_in} %$macpac_doarg%{$macpac_a1}, %$macpac_doarg%{$macpac_a2}
+     %$macpac_doarg%{$macpac_cc} %$macpac_loop_exit
+
+     %assign %$macpac_do_i (%$macpac_do_i + 6)
+    %elif %$macpac_argcheck = 4
+     %assign %$macpac_a1 (%$macpac_do_i - 3)
+     %assign %$macpac_cc (%$macpac_do_i - 2)
+     %assign %$macpac_a2 (%$macpac_do_i - 1)
+
+     cmp %$macpac_doarg%{$macpac_a1}, %$macpac_doarg%{$macpac_a2}
+     %$macpac_doarg%{$macpac_cc} %$macpac_loop_exit
+
+     %assign %$macpac_do_i (%$macpac_do_i + 7)
+    %else
+     %error "Invalid number or order of paramters given to UNTIL."
+    %endif
+   %else
+    %assign %$macpac_argcheck (%$macpac_do_i % 10)
+    %if %$macpac_argcheck = 2
+     %xdefine %$macpac_doarg%{$macpac_do_i} j%+1
+     %xdefine %$macpac_donarg%{$macpac_do_i} j%-1
+    %else
+     %xdefine %$macpac_doarg%{$macpac_do_i} %1
+    %endif
+    %assign %$macpac_do_i (%$macpac_do_i + 1)
+   %endif
+
+   %rotate 1
+  %endrep
+
+  %assign %$macpac_argcheck (%$macpac_do_i % 10)
+  %if %$macpac_argcheck = 5
+   %assign %$macpac_a1 (%$macpac_do_i - 4)
+   %assign %$macpac_cc (%$macpac_do_i - 3)
+   %assign %$macpac_a2 (%$macpac_do_i - 2)
+   %assign %$macpac_in (%$macpac_do_i - 1)
+
+   %$macpac_doarg%{$macpac_in} %$macpac_doarg%{$macpac_a1}, %$macpac_doarg%{$macpac_a2}
+   %$macpac_donarg%{$macpac_cc} %$macpac_loop_begin
+
+   %assign %$macpac_do_i (%$macpac_do_i + 6)
+  %elif %$macpac_argcheck = 4
+   %assign %$macpac_a1 (%$macpac_do_i - 3)
+   %assign %$macpac_cc (%$macpac_do_i - 2)
+   %assign %$macpac_a2 (%$macpac_do_i - 1)
+
+   cmp %$macpac_doarg%{$macpac_a1}, %$macpac_doarg%{$macpac_a2}
+   %$macpac_donarg%{$macpac_cc} %$macpac_loop_begin
+
+   %assign %$macpac_do_i (%$macpac_do_i + 7)
+  %else
+   %error "Invalid number or order of paramters given to UNTIL."
+  %endif
+
+  %$macpac_loop_exit:
+
+ %endif
+%endmacro
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;       
+;
+; UNTIL - Completes a DO-UNTIL loop. 
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;       
+;
+; This verison of takes one parameter: a condition code
+;
+%imacro UNTIL 1.nolist
+ %ifnctx do_context 
+  %error "UNTIL not used in DO context."
+ %else
+  j%-1 %$macpac_loop_begin
+  %$macpac_loop_exit:
+  %pop
+ %endif
+%endmacro
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;       
+;
+; WHILE - Begins a WHILE loop. 
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;       
+;
+; This verison of takes one parameter. It may be a condition code
+; (e,ne,a,ae,b,be,g,ge,l,le,z,nz) but can also be a true value 
+; (`true` or a number != 0) to create an endless loop which is exited 
+; by some other means.
+;
+%imacro WHILE 1.nolist
+ %push while_context
+
+ %ifnum %$macpac_proc_depth
+  %assign %$macpac_proc_depth (%$macpac_proc_depth + 1)
+ %endif
+
+ %assign %$macpac_loop_depth 1
+
+%$macpac_loop_begin:
+ %ifnum %1
+  %if %1 = 0
+   jmp %$macpac_loop_exit
+  %endif
+ %elifidni %1,true
+  ;do nothing
+ %else
+  j%-1 %$macpac_loop_exit
+ %endif
+%endmacro
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;       
+;
+; WHILE - Begins a WHILE loop. 
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;       
+;
+; Parameters:
+; 1&3 - operands to be tested
+; 2   - condition code (e,ne,a,ae,b,be,g,ge,l,le,z,nz)
+; 4   - the testing instruction; it defaults to 'cmp' but
+; can be replaced with 'test' or some other instruction which affects
+; the flags register.
+;
+%imacro WHILE 3-4.nolist cmp
+ %push while_context
+
+ %ifnum %$macpac_proc_depth 
+  %assign %$macpac_proc_depth (%$macpac_proc_depth + 1)
+ %endif
+
+ %assign %$macpac_loop_depth 1
+
+%$macpac_loop_begin:
+ %4 %1, %3
+ j%-2 %$macpac_loop_exit   
+%endmacro
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;       
+;
+; WHILE - Begins a WHILE loop, takes multiple conditionals. 
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;       
+%imacro WHILE 7-*.nolist
+ %push while_context
+
+%$macpac_loop_begin:
+
+  %assign %$macpac_do_i 1
+  %rep %0
+
+   %ifidni %1,AND
+    %assign %$macpac_argcheck (%$macpac_do_i % 10)
+    %if %$macpac_argcheck = 5
+     %assign %$macpac_a1 (%$macpac_do_i - 4)
+     %assign %$macpac_cc (%$macpac_do_i - 3)
+     %assign %$macpac_a2 (%$macpac_do_i - 2)
+     %assign %$macpac_in (%$macpac_do_i - 1)
+
+     %$macpac_doarg%{$macpac_in} %$macpac_doarg%{$macpac_a1}, %$macpac_doarg%{$macpac_a2}
+     %$macpac_donarg%{$macpac_cc} %$macpac_loop_exit
+
+     %assign %$macpac_do_i (%$macpac_do_i + 6)
+    %elif %$macpac_argcheck = 4
+     %assign %$macpac_a1 (%$macpac_do_i - 3)
+     %assign %$macpac_cc (%$macpac_do_i - 2)
+     %assign %$macpac_a2 (%$macpac_do_i - 1)
+
+     cmp %$macpac_doarg%{$macpac_a1}, %$macpac_doarg%{$macpac_a2}
+     %$macpac_donarg%{$macpac_cc} %$macpac_loop_exit
+
+     %assign %$macpac_do_i (%$macpac_do_i + 7)
+    %else
+     %error "Invalid number or order of paramters given to WHILE."
+    %endif
+   %elifidni %1,OR
+    %assign %$macpac_argcheck (%$macpac_do_i % 10)
+    %if %$macpac_argcheck = 5
+     %assign %$macpac_a1 (%$macpac_do_i - 4)
+     %assign %$macpac_cc (%$macpac_do_i - 3)
+     %assign %$macpac_a2 (%$macpac_do_i - 2)
+     %assign %$macpac_in (%$macpac_do_i - 1)
+
+     %$macpac_doarg%{$macpac_in} %$macpac_doarg%{$macpac_a1}, %$macpac_doarg%{$macpac_a2}
+     %$macpac_doarg%{$macpac_cc} %$macpac_loop_pass
+
+     %assign %$macpac_do_i (%$macpac_do_i + 6)
+    %elif %$macpac_argcheck = 4
+     %assign %$macpac_a1 (%$macpac_do_i - 3)
+     %assign %$macpac_cc (%$macpac_do_i - 2)
+     %assign %$macpac_a2 (%$macpac_do_i - 1)
+
+     cmp %$macpac_doarg%{$macpac_a1}, %$macpac_doarg%{$macpac_a2}
+     %$macpac_doarg%{$macpac_cc} %$macpac_loop_pass
+
+     %assign %$macpac_do_i (%$macpac_do_i + 7)
+    %else
+     %error "Invalid number or order of paramters given to WHILE."
+    %endif
+   %else
+    %assign %$macpac_argcheck (%$macpac_do_i % 10)
+    %if %$macpac_argcheck = 2
+     %xdefine %$macpac_doarg%{$macpac_do_i} j%+1
+     %xdefine %$macpac_donarg%{$macpac_do_i} j%-1
+    %else
+     %xdefine %$macpac_doarg%{$macpac_do_i} %1
+    %endif
+    %assign %$macpac_do_i (%$macpac_do_i + 1)
+   %endif
+
+   %rotate 1
+  %endrep
+
+  %assign %$macpac_argcheck (%$macpac_do_i % 10)
+  %if %$macpac_argcheck = 5
+   %assign %$macpac_a1 (%$macpac_do_i - 4)
+   %assign %$macpac_cc (%$macpac_do_i - 3)
+   %assign %$macpac_a2 (%$macpac_do_i - 2)
+   %assign %$macpac_in (%$macpac_do_i - 1)
+
+   %$macpac_doarg%{$macpac_in} %$macpac_doarg%{$macpac_a1}, %$macpac_doarg%{$macpac_a2}
+   %$macpac_donarg%{$macpac_cc} %$macpac_loop_exit
+
+   %assign %$macpac_do_i (%$macpac_do_i + 6)
+  %elif %$macpac_argcheck = 4
+   %assign %$macpac_a1 (%$macpac_do_i - 3)
+   %assign %$macpac_cc (%$macpac_do_i - 2)
+   %assign %$macpac_a2 (%$macpac_do_i - 1)
+
+   cmp %$macpac_doarg%{$macpac_a1}, %$macpac_doarg%{$macpac_a2}
+   %$macpac_donarg%{$macpac_cc} %$macpac_loop_exit
+
+   %assign %$macpac_do_i (%$macpac_do_i + 7)
+  %else
+   %error "Invalid number or order of paramters given to WHILE."
+  %endif
+
+  %$macpac_loop_pass:
+
+%endmacro
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;       
+;
+; ENDW - Completes a WHILE loop.
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;       
+%imacro ENDW 0.nolist
+ %ifnctx while_context
+  %error "ENDW not used in WHILE context."
+ %else
+  jmp %$macpac_loop_begin
+  %$macpac_loop_exit:
+  %pop
+ %endif
+%endmacro
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;       
+;
+; BREAK - Breaks out of current loop (or switch).
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;       
+%ifnmacro BREAK
+%imacro BREAK 0.nolist
+ %ifctx do_context
+  jmp %$macpac_loop_exit
+ %elifctx while_context
+  jmp %$macpac_loop_exit
+ %elifctx switch_context
+  jmp %$macpac_switch_exit
+ %else
+
+  %if %$macpac_loop_depth = 1
+   jmp %$macpac_loop_exit
+  %elif %$macpac_loop_depth = 2
+   jmp %$$macpac_loop_exit
+  %elif %$macpac_loop_depth = 3
+   jmp %$$$macpac_loop_exit
+  %elif %$macpac_loop_depth = 4
+   jmp %$$$$macpac_loop_exit
+  %elif %$macpac_loop_depth = 5
+   jmp %$$$$$macpac_loop_exit
+  %elif %$macpac_loop_depth = 6
+   jmp %$$$$$$macpac_loop_exit
+  %elif %$macpac_loop_depth = 7
+   jmp %$$$$$$$macpac_loop_exit
+  %elif %$macpac_loop_depth = 8
+   jmp %$$$$$$$$macpac_loop_exit
+  %elif %$macpac_loop_depth = 9
+   jmp %$$$$$$$$$macpac_loop_exit
+  %else
+   %error "BREAK nested too deep or used in invalid context."
+  %endif
+
+ %endif
+%endmacro
+%endif
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;       
+;
+; CONTINUE - Jumps to top of current loop.
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;       
+%imacro CONTINUE 0.nolist
+ %ifctx do_context
+  jmp %$macpac_loop_begin
+ %elifctx while_context
+  jmp %$macpac_loop_begin
+ %else
+
+  %if %$macpac_loop_depth = 1
+   jmp %$macpac_loop_begin
+  %elif %$macpac_loop_depth = 2
+   jmp %$$macpac_loop_begin
+  %elif %$macpac_loop_depth = 3
+   jmp %$$$macpac_loop_begin
+  %elif %$macpac_loop_depth = 4
+   jmp %$$$$macpac_loop_begin
+  %elif %$macpac_loop_depth = 5
+   jmp %$$$$$macpac_loop_begin
+  %elif %$macpac_loop_depth = 6
+   jmp %$$$$$$macpac_loop_begin
+  %elif %$macpac_loop_depth = 7
+   jmp %$$$$$$$macpac_loop_begin
+  %elif %$macpac_loop_depth = 8
+   jmp %$$$$$$$$macpac_loop_begin
+  %elif %$macpac_loop_depth = 9
+   jmp %$$$$$$$$$macpac_loop_begin
+  %else
+   %error "CONTINUE nested too deep or used in invalid context."
+  %endif
+
+ %endif
+%endmacro
+
+
+%endif ; MACPAC_LOOPS 
+
+

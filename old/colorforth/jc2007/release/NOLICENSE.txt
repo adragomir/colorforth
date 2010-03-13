@@ -1,0 +1,4 @@
+colorForth is in the public domain. Bochs is not; see below for the licensing
+agreement regarding the use of Bochs.
+
+

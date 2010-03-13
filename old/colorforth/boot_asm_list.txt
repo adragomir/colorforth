@@ -1,0 +1,11 @@
+find /usr/src/howerd -iname boot.asm
+# best of below seems to be Kris Johnson's
+/usr/src/howerd/640/boot.asm # same as masm/boot.asm
+/usr/src/howerd/640f/BOOT.ASM # diff in 640fboot.asm.diff, changed to 800x600 and added DMA support
+/usr/src/howerd/chuck/BOOT.ASM # same as masm/boot.asm
+/usr/src/howerd/Josh/chuck05-jg2/boot.asm # diff in Joshboot.asm.diff, more comments
+/usr/src/howerd/KrisJohnson/BOOT.ASM # diff in KrisJohnsonboot.asm.diff, restored to 1024x768 but kept DMA support
+/usr/src/howerd/PeterAppelman/boot.asm # nasm format, started adding VESA support (finished?)
+/usr/src/howerd/Qemu/c4-800x600/boot.asm # same as masm/boot.asm
+/usr/src/howerd/Quartus/BOOT.ASM # same as Kris Johnson's
+/usr/src/howerd/VESA/boot.asm # has VESA code instead of AGP, maybe DMA too(?)

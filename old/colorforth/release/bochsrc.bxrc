@@ -1,0 +1,10 @@
+megs: 32
+vga: extension=vbe
+romimage: file=$BXSHARE\BIOS-bochs-latest, address=0xf0000
+vgaromimage: file=$BXSHARE\VGABIOS-lgpl-latest
+cpu: count=1, ips=5000000, reset_on_triple_fault=1
+floppya: 1_44=a.img, status=inserted
+boot: floppy
+log: cfBochs.log
+mouse: enabled=0
+vga_update_interval: 150000

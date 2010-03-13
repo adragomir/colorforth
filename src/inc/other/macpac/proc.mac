@@ -1,0 +1,486 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; Copyright (c) 2008, Tyler Hastings
+; All rights reserved.
+;
+; Redistribution and use in source and binary forms, with or without
+; modification, are permitted provided that the following conditions are met:
+;
+; * Redistributions of source code must retain the above copyright notice,
+;   this list of conditions and the following disclaimer.
+;
+; * Redistributions in binary form must reproduce the above copyright notice,
+;   this list of conditions and the following disclaimer in the documentation
+;   and/or other materials provided with the distribution.
+;
+; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+; IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+; ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+; LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+; CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+; SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+; INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+; CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+; POSSIBILITY OF SUCH DAMAGE.
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; macpac/proc.mac
+;
+; Procedure macro set for NASM. 
+;
+
+
+%ifndef MACPAC_PROC
+%define MACPAC_PROC 1
+
+
+%include "misc.mac"
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;       
+; 
+; PROC - Begins a procedure definition. 
+; 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;       
+;
+; Parameters:
+;  1 - procedure name
+;  Paramters 2&3 can come in either order
+;  2 - cleanup style (C|Pascal); default: Pascal 
+;  3 - type (near|far|int); default: near 
+;
+%imacro PROC 1-3.nolist 
+
+ %ifctx proc_setup_context
+  %error "PROC cannot be used inside another PROC."
+ %elifctx proc_context
+  %error "PROC cannot be used inside another PROC."
+ %else
+
+  ;Create new context
+  %push proc_setup_context
+
+  ;Save procedure name
+  %xdefine %$macpac_proc_name %1
+
+  ;This nasty chunk of code determines which paramter is
+  ; which, and if they are valid.
+  %assign %$macpac_proc_is_type 0
+  %assign %$macpac_proc_cleanup 1
+  %if %0 = 1
+   %xdefine %$macpac_proc_type near
+  %elif %0 = 2
+   MACPAC_PROC_IS_TYPE %2
+   %if %$macpac_proc_is_type = 1
+    %xdefine %$macpac_proc_type %2
+   %else
+    %xdefine %$macpac_proc_type near
+    %ifidni %2,C
+     %assign %$macpac_proc_cleanup 0
+    %endif
+   %endif 
+  %elif %0 = 3
+   MACPAC_PROC_IS_TYPE %2
+   %if %$macpac_proc_is_type = 1
+    %xdefine %$macpac_proc_type %2
+    %ifidni %3,C
+     %assign %$macpac_proc_cleanup 0
+    %endif
+   %else
+    MACPAC_PROC_IS_TYPE %3
+    %if %$macpac_proc_is_type = 1
+     %xdefine %$macpac_proc_type %3
+     %ifidni %2,C
+      %assign %$macpac_proc_cleanup 0
+     %endif
+    %else
+     %error "Invalid paramters for PROC."
+    %endif
+   %endif
+  %endif
+
+  ;%$macpac_proc_stack_align is the default stack alignment 
+  ;It should be 4 (dword) in 32-bit code, and word (2) for 16-bit code. 
+  %assign %$macpac_proc_stack_align 4 
+
+  ;%$macpac_proc_ret_size is the size of the return information pushed
+  ; on the stack by a call instruction or an interrupt.
+  %ifidni %$macpac_proc_type, near
+   %assign %$macpac_proc_ret_size 4  ; EIP 
+  %elifidni %$macpac_proc_type, far
+   %assign %$macpac_proc_ret_size 8 ; CS:EIP
+  %else
+   %assign %$macpac_proc_ret_size 12 ; EFLAGS and CS:EIP
+  %endif
+
+  ; __BITS__ does not seem to get set when the -E command line option
+  ; is used, and thus this check will fail and assume __BITS__ = 32.
+  %if __BITS__ = 16 
+   %assign %$macpac_proc_stack_align (%$macpac_proc_stack_align / 2) 
+   %assign %$macpac_proc_ret_size  (%$macpac_proc_ret_size / 2) 
+   %xdefine %$macpac_proc_base_pointer bp
+   %xdefine %$macpac_proc_stack_pointer sp
+  %else 
+   %xdefine %$macpac_proc_base_pointer ebp
+   %xdefine %$macpac_proc_stack_pointer esp
+  %endif
+
+  ; Add an extra 2 or 4 bytes to account for the base pointer
+  ; being pushed when creating the stack frame.
+  %assign %$macpac_proc_ret_size (%$macpac_proc_ret_size + %$macpac_proc_stack_align)
+
+  ; Keeps track of stack arugments
+  %assign %$macpac_proc_arg_offset 0
+
+  ; Keeps track of local arguments
+  %assign %$macpac_proc_local_size 0
+
+  ; This variable is proveded so the RETURN macro can be used inside other
+  ; macro contexts. Any other macro that uses the context stack inside
+  ; a PROC, should inrease this value by 1. 
+  %assign %$macpac_proc_depth 1
+
+  %assign %$macpac_proc_preserve_count 0
+ %endif
+%endmacro
+
+
+;
+; Used internally by PROC, not to be called explicitly
+;
+%macro MACPAC_PROC_IS_TYPE 1
+ %ifidni %1,near
+  %assign %$macpac_proc_is_type 1
+ %elifidni %1,far
+  %assign %$macpac_proc_is_type 1
+ %elifidni %1,int
+  %assign %$macpac_proc_is_type 1
+ %endif
+%endmacro
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;       
+; 
+; ARG - Create a label for an procedure argument. 
+; 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;       
+; 
+; Paramters:
+;  1-* - argument name(s) 
+;  * - size of the argument (byte|word|dword|qword|tword)
+; 
+%imacro ARG 2-*.nolist
+
+ %ifnctx proc_setup_context
+  %error "ARG used outside of PROC."
+ %else
+  
+  ;Grab last paramater in the list
+  %rep (%0 - 1)
+   %rotate 1
+  %endrep
+  %xdefine %$macpac_size_spec %1
+
+  ;Restore the paramter list to its original state
+  %rep (%0 + 1)
+   %rotate 1
+  %endrep
+
+  %ifidni %$macpac_size_spec,tword
+   %assign %$macpac_tmp_sz 16 
+   %assign %$macpac_tmp (%$macpac_proc_arg_offset % 16)
+   %if %$macpac_tmp != 0
+    %assign %$macpac_tmp (16 - %$macpac_tmp) 
+    %assign %$macpac_proc_arg_offset (%$macpac_proc_arg_offset + %$macpac_tmp) 
+   %endif
+   %assign %$macpac_tmp_szof 10
+  %elifidni %$macpac_size_spec,qword
+   %assign %$macpac_tmp_sz 8 
+   %assign %$macpac_tmp (%$macpac_proc_arg_offset % 8)
+   %if %$macpac_tmp != 0
+    %assign %$macpac_tmp (8 - %$macpac_tmp) 
+    %assign %$macpac_proc_arg_offset (%$macpac_proc_arg_offset + %$macpac_tmp) 
+   %endif
+   %assign %$macpac_tmp_szof 8 
+  %elifidni %$macpac_size_spec,dword
+   %assign %$macpac_tmp_sz 4
+   %assign %$macpac_tmp_szof 4 
+  %elifidni %$macpac_size_spec,word
+   %assign %$macpac_tmp_sz %$macpac_proc_stack_align 
+   %assign %$macpac_tmp_szof 2 
+  %elifidni %$macpac_size_spec,byte
+   %assign %$macpac_tmp_sz %$macpac_proc_stack_align 
+   %assign %$macpac_tmp_szof 1 
+  %else
+   %if %0 > 2
+    %error "ARG given too many identifiers for it's type."
+   %else
+    XISREG %2
+    %if xisreg_result= 0
+     %error Invalid type ( %2 ) for ARG %1 .
+    %else
+     %xdefine %$%{1} %2
+     %assign %$macpac_tmp_sz 0
+    %endif
+   %endif
+  %endif 
+
+  ;%$macpac_tmp_sz == 0 only if the argument type is a register.
+  %if %$macpac_tmp_sz > 0
+   ;Now loop through the paramters, creating an identifier for each. 
+   %rep (%0 - 1)
+    %xdefine %$%{1} %$macpac_proc_base_pointer + (%$macpac_proc_ret_size + %$macpac_proc_arg_offset)
+    %xdefine %$typeof_%{1} %$macpac_size_spec 
+    %assign %$sizeof_%{1} %$macpac_tmp_szof 
+    %assign %$macpac_proc_arg_offset %$macpac_tmp_sz + %$macpac_proc_arg_offset
+    %rotate 1
+   %endrep
+  %endif
+ %endif ;proc_setup_context check
+%endmacro
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;       
+; 
+; LOCAL - Reserves stack space, and makes a label, for a local variable.
+; 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;       
+; 
+; Paramters:
+;  1-* local variable name(s)
+;  * - size of the variable (byte|word|dword|qword|tword)
+;
+%imacro LOCAL 2-*.nolist
+
+ %ifctx proc_context
+  %error "Attempting to use LOCAL after BEGIN."
+ %elifnctx proc_setup_context
+  %error "Attempt use LOCAL outside a PROC."
+ %else
+
+  ;Grab last paramater in the list
+  %rep (%0 - 1)
+   %rotate 1
+  %endrep
+  %xdefine %$macpac_size_spec %1
+
+  ;Restore the paramter list to its original state
+  %rep (%0 + 1)
+   %rotate 1
+  %endrep
+
+  %ifidni %$macpac_size_spec,tword
+   %assign %$macpac_tmp_sz 16
+   %assign %$macpac_tmp (%$macpac_proc_local_size % 16)
+   %if %$macpac_tmp != 0
+    %assign %$macpac_tmp (16 - %$macpac_tmp) 
+    %assign %$macpac_proc_local_size (%$macpac_proc_local_size + %$macpac_tmp) 
+   %endif
+   %assign %$macpac_tmp_szof 10
+  %elifidni %$macpac_size_spec,qword
+   %assign %$macpac_tmp_sz 8
+   %assign %$macpac_tmp (%$macpac_proc_local_size % 8)
+   %if %$macpac_tmp != 0
+    %assign %$macpac_tmp (8 - %$macpac_tmp) 
+    %assign %$macpac_proc_local_size (%$macpac_proc_local_size + %$macpac_tmp) 
+   %endif
+   %assign %$macpac_tmp_szof 8 
+  %elifidni %$macpac_size_spec,dword
+   %assign %$macpac_tmp_sz 4
+   %assign %$macpac_tmp (%$macpac_proc_local_size % 4)
+   %if %$macpac_tmp != 0
+    %assign %$macpac_tmp (4 - %$macpac_tmp) 
+    %assign %$macpac_proc_local_size (%$macpac_proc_local_size + %$macpac_tmp) 
+   %endif
+   %assign %$macpac_tmp_szof 4 
+  %elifidni %$macpac_size_spec,word
+   %assign %$macpac_tmp_sz 2
+   %assign %$macpac_tmp (%$macpac_proc_local_size % %$macpac_tmp_sz)
+   %assign %$macpac_proc_local_size (%$macpac_proc_local_size + %$macpac_tmp) 
+   %assign %$macpac_tmp_szof 2 
+  %elifidni %$macpac_size_spec,byte
+   %assign %$macpac_tmp_sz 1
+   %assign %$macpac_tmp_szof 1 
+  %else
+
+   %ifidn typeof_%{2},struct
+
+    %xdefine %$%{1} %$macpac_proc_base_pointer - (%$macpac_proc_stack_align + %$macpac_proc_local_size)
+    %xdefine %$sizeof_%{1} sizeof_%{2}
+
+    %assign %$i 0
+    %rep %{2}_member_count
+     %assign %$i (%$i + 1)
+     %xdefine %$label %{2}_member%{$i}
+     ;%{2}.%{$label} equ %2 + %{2}.%{$label}
+     %xdefine %$%{1}.%{$label} %$macpac_proc_base_pointer - (%$macpac_proc_stack_align + %$macpac_proc_local_size + (%{2}.%{$label} - %2) )
+     %xdefine %$sizeof_%{1}.%{$label} sizeof_%{2}.%{$label}
+     %xdefine %$typeof_%{1}.%{$label} typeof_%{2}.%{$label}
+    %endrep
+  
+    %assign %$macpac_tmp_sz 0
+    %assign %$macpac_proc_local_size (%$macpac_proc_local_size + (sizeof_%{2} - %2) )
+
+   %else
+    %assign %$macpac_tmp_sz 0
+    %error Invalid type ( %2 ) for LOCAL %1 .
+   %endif
+  %endif 
+
+  %if %$macpac_tmp_sz > 0
+   %rep (%0 - 1)
+    %xdefine %$%{1} %$macpac_proc_base_pointer - (%$macpac_proc_stack_align + %$macpac_proc_local_size)
+    %xdefine %$typeof_%{1} %$macpac_size_spec
+    %assign %$sizeof_%{1} %$macpac_tmp_szof 
+    %assign %$macpac_proc_local_size (%$macpac_proc_local_size + %$macpac_tmp_sz)
+    %rotate 1
+   %endrep
+  %endif
+ %endif
+%endmacro
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;       
+; 
+; PRESERVE - Preserves the values of registers. 
+; 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;       
+%imacro PRESERVE 1+.nolist
+ %assign %$macpac_proc_preserve_count %0
+ %xdefine %$macpac_proc_preserve_regs %1
+%endmacro
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;       
+; 
+; BEGIN - Begins a PROC. 
+; 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;       
+%imacro BEGIN 0.nolist
+
+ %ifnctx proc_setup_context
+  %error "BEGIN used outside of PROC."
+ %else
+
+  %repl proc_context
+
+  ;Label to call procedure with
+%{$macpac_proc_name}:
+
+  ; Align the local size to the stack if it is not already.
+  %assign %$macpac_tmp (%$macpac_proc_local_size % %$macpac_proc_stack_align)
+  %if %$macpac_tmp != 0
+   %assign %$macpac_tmp (%$macpac_proc_stack_align - %$macpac_tmp) 
+   %assign %$macpac_proc_local_size (%$macpac_proc_local_size + %$macpac_tmp) 
+  %endif
+
+  %if %$macpac_proc_local_size > 0 || %$macpac_proc_arg_offset > 0
+   push %$macpac_proc_base_pointer
+   mov %$macpac_proc_base_pointer, %$macpac_proc_stack_pointer
+  %endif
+
+  ; Only aquire space for local variables if necessary 
+  %if %$macpac_proc_local_size > 0
+   %if %$macpac_proc_local_size < 256
+    sub %$macpac_proc_stack_pointer, byte %$macpac_proc_local_size
+   %elif %$macpac_proc_local_size < 65536
+    sub %$macpac_proc_stack_pointer, word %$macpac_proc_local_size
+   %else
+    sub %$macpac_proc_stack_pointer, %$macpac_proc_local_size
+   %endif
+  %endif
+
+  %if %$macpac_proc_preserve_count > 0
+   MPUSH %$macpac_proc_preserve_regs
+  %endif
+ %endif
+%endmacro
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;       
+; 
+; RETURN - Leave a PROC. 
+; 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;       
+%imacro RETURN 0.nolist
+ %if %$macpac_proc_depth = 1
+  jmp %$macpac_proc_exit
+ %elif %$macpac_proc_depth = 2
+  jmp %$$macpac_proc_exit
+ %elif %$macpac_proc_depth = 3
+  jmp %$$$macpac_proc_exit
+ %elif %$macpac_proc_depth = 4
+  jmp %$$$$macpac_proc_exit
+ %elif %$macpac_proc_depth = 5
+  jmp %$$$$$macpac_proc_exit
+ %elif %$macpac_proc_depth = 6
+  jmp %$$$$$$macpac_proc_exit
+ %elif %$macpac_proc_depth = 7
+  jmp %$$$$$$$macpac_proc_exit
+ %elif %$macpac_proc_depth = 8
+  jmp %$$$$$$$$macpac_proc_exit
+ %elif %$macpac_proc_depth = 9
+  jmp %$$$$$$$$$macpac_proc_exit
+ %else
+  %error "RETURN not used in PROC context or nested too deep."
+ %endif
+%endmacro
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;       
+; 
+; END - Ends a PROC.
+; 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;       
+%imacro END 0.nolist 
+
+ %ifctx proc_setup_context 
+  %error "No BEGIN used before END."
+ %elifnctx proc_context
+  %error "END not used in PROC context. "
+ %else
+
+  ;Label for RETURN
+%$macpac_proc_exit:
+
+  ;Restore any preserved registers
+  %if %$macpac_proc_preserve_count > 0
+   MPOP %$macpac_proc_preserve_regs
+  %endif
+
+  ;Only generate stack frame code if necessary
+  %if %$macpac_proc_local_size > 0 || %$macpac_proc_arg_offset > 0
+   mov %$macpac_proc_stack_pointer, %$macpac_proc_base_pointer
+   pop %$macpac_proc_base_pointer
+  %endif
+
+; Use a appropriate return instruction (RET|RETF|IRET), also clean up
+; any arguments passed on the stack. 
+  %ifidni %$macpac_proc_type,near
+   %if %$macpac_proc_cleanup = 1 && %$macpac_proc_arg_offset > 0
+    ret %$macpac_proc_arg_offset
+   %else 
+    ret
+   %endif
+  %elifidni %$macpac_proc_type,far
+   %if %$macpac_proc_cleanup = 1 && %$macpac_proc_arg_offset > 0
+    retf %$macpac_proc_arg_offset
+   %else 
+    retf
+   %endif 
+  %else
+   iret
+  %endif
+
+  %pop ; destroy proc_context
+
+ %endif
+%endmacro
+
+
+%endif ; MACPAC_PROC
+
+

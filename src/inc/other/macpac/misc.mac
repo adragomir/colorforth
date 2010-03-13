@@ -1,0 +1,135 @@
+;
+; macpac/misc.mac
+;
+; Miscellaneous macros.
+;
+
+
+%ifndef MACPAC_MISC
+%define MACPAC_MISC 1
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; MPUSH - Pushes multiple items onto the stack.
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; Parameters:
+;  2-* - list of itesm to push
+;
+%imacro MPUSH 2-*.nolist
+;
+ %rep %0
+  push %1
+  %rotate 1
+ %endrep
+%endmacro
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; MPOP - Pops multiple items off the stack.
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; Parameters:
+;  2-* - list of itesm to pop
+;
+%imacro MPOP 2-*.nolist
+;
+ %rep %0
+  %rotate -1
+  pop %1
+ %endrep
+%endmacro
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; XISREG - Tests if an identifier is a register. 
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; Parameters:
+;  1 - identifier to test 
+;
+; Sets the single line macro `xisreg_result` to 1 if the paramter is
+; a general purpose or floating point register, and 0 if not.
+;
+%imacro XISREG 1.nolist
+ %undef xisreg_result
+ %ifidni %1,eax
+  %assign xisreg_result 1 
+ %elifidni %1,ebx
+  %assign xisreg_result 1
+ %elifidni %1,ecx
+  %assign xisreg_result 1
+ %elifidni %1,edx
+  %assign xisreg_result 1
+ %elifidni %1,esi
+  %assign xisreg_result 1
+ %elifidni %1,edi
+  %assign xisreg_result 1
+ %elifidni %1,ebp
+  %assign xisreg_result 1
+ %elifidni %1,esp
+  %assign xisreg_result 1
+ %elifidni %1,ax
+  %assign xisreg_result 1
+ %elifidni %1,bx
+  %assign xisreg_result 1
+ %elifidni %1,cx
+  %assign xisreg_result 1
+ %elifidni %1,dx
+  %assign xisreg_result 1
+ %elifidni %1,si
+  %assign xisreg_result 1
+ %elifidni %1,di
+  %assign xisreg_result 1
+ %elifidni %1,bp
+  %assign xisreg_result 1
+ %elifidni %1,sp
+  %assign xisreg_result 1
+ %elifidni %1,al
+  %assign xisreg_result 1
+ %elifidni %1,ah
+  %assign xisreg_result 1
+ %elifidni %1,bl
+  %assign xisreg_result 1
+ %elifidni %1,bh
+  %assign xisreg_result 1
+ %elifidni %1,cl
+  %assign xisreg_result 1
+ %elifidni %1,ch
+  %assign xisreg_result 1
+ %elifidni %1,dl
+  %assign xisreg_result 1
+ %elifidni %1,dh
+  %assign xisreg_result 1
+ %elifidni %1,st0
+  %assign xisreg_result 1
+ %elifidni %1,st1
+  %assign xisreg_result 1
+ %elifidni %1,st2
+  %assign xisreg_result 1
+ %elifidni %1,st3
+  %assign xisreg_result 1
+ %elifidni %1,st4
+  %assign xisreg_result 1
+ %elifidni %1,st5
+  %assign xisreg_result 1
+ %elifidni %1,st6
+  %assign xisreg_result 1
+ %elifidni %1,st7
+  %assign xisreg_result 1
+ %else
+  %assign xisreg_result 0 
+ %endif
+%endmacro
+
+
+%endif ; MACPAC_MISC 
+
+
+

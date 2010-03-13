@@ -1,0 +1,27 @@
+NOTE:  If you find your source blocks are shifted down (i.e. block "18"
+begins with "Edit character application"), then go to boot.asm, and
+follow the instructions after the label 'cold' (line 110) to fix it.
+
+
+This version reverts to Chuck's original floppy load code (at label cold
+in boot.asm).  All reports I have so far indicate that this is the one
+that works, although I don't understand why -- it seems to SKIP the
+second sector.
+
+Also it fixes some corruption in block 34 and in the icons (capital 'F'
+and 'W').  I think that's about it.
+
+
+color16 is the whole 72K for 16-bit color (mode 4117h)
+color32 runs in the original 32-bit color (mode 4118h)
+
+I haven't modified the color words in block 30 for the 16-bit color one,
+so the logo will have the wrong colors.
+
+
+I *think* we have fixed all the corruption and whatnot in this version,
+so I'm now going to return to pretending colorforth doesn't exist. :P
+
+Happy colorforthing!
+
+--Josh Grams <josh@qualdan.com>

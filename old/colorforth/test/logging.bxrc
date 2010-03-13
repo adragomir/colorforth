@@ -1,0 +1,14 @@
+megs: 32
+vga: extension=vbe
+romimage: file=$BXSHARE/BIOS-bochs-latest, address=0xf0000
+vgaromimage: file=$BXSHARE/VGABIOS-lgpl-latest
+cpu: count=1, ips=6600000, reset_on_triple_fault=1
+floppya: 1_44=$BOOTFLOPPY, status=inserted
+floppyb: 1_44=$OTHERFLOPPY, status=inserted
+boot: floppy
+info: action=report
+debug: action=report
+log: $TEMP/$BXRC.txt
+mouse: enabled=0
+vga_update_interval: 150000
+debugger_log: $TEMP/$BXRC.debug.txt

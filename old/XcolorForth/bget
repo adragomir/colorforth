@@ -1,0 +1,9 @@
+#! /bin/bash
+# bget: copy blocks from colorForth image to file
+#
+if [ $# != 3 ]; then
+  echo "Usage: ${0##*/} block count filename"
+  exit 1
+fi
+
+dd if=color.com bs=1024 skip=$1 count=$2 of=$3 

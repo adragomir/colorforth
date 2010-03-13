@@ -1,0 +1,21 @@
+/* colorForth style sheets */
+body { margin-right:10%;}
+div.code {
+  width:100%;
+  padding:0.5em;
+  background-color:black;
+  font-size:xx-large;
+  font-weight:bold;
+  text-transform:lowercase;
+}
+code.define { color:red; }
+code.compile { color:#00ff00; }
+code.compilehex { color:green; }
+code.execute { color:yellow; }
+code.executehex { color:#c0c000; }
+code.compilemacro { color:#00ffff; }
+code.variable {color:#ff00ff; }
+code.text { color:white; }
+code.textcapitalized { color:white; text-transform:capitalize; }
+code.textallcaps { color:white; text-transform:uppercase; }
+

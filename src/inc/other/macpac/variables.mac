@@ -1,0 +1,644 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; Copyright (c) 2008, Tyler Hastings
+; All rights reserved.
+;
+; Redistribution and use in source and binary forms, with or without
+; modification, are permitted provided that the following conditions are met:
+;
+; * Redistributions of source code must retain the above copyright notice,
+;   this list of conditions and the following disclaimer.
+;
+; * Redistributions in binary form must reproduce the above copyright notice,
+;   this list of conditions and the following disclaimer in the documentation
+;   and/or other materials provided with the distribution.
+;
+; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+; IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+; ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+; LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+; CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+; SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+; INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+; CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+; POSSIBILITY OF SUCH DAMAGE.
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; macpac/variables.mac
+;
+; Psuedo variable macro set for NASM. 
+;
+
+
+%ifndef MACPAC_VARIABLES
+%define MACPAC_VARIABLES 1
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; MBYTE - Declares one or more byte sized variables.
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; Paramters: 
+; 1-* - variable names 
+;
+%imacro MBYTE 1-*.nolist
+ %ifctx struct_context
+ 
+  %rep %0 
+   STRUCT_UNION_COMMON %1, %$struct_name, 1
+   %{$struct_name}.%{1}: resb 1
+   %rotate 1
+  %endrep
+
+ %elifctx union_context
+  
+  %if 1 > %$union_largest
+   %assign %$union_largest 1
+  %endif
+
+  %rep %0
+   STRUCT_UNION_COMMON %1, %$union_name, 1
+   %{$union_name}.%{1}:
+   %rotate 1
+  %endrep
+
+ %elifctx rvar_context
+
+  %rep %0
+   %1:  
+   resb 1
+   sizeof_%{1} equ 1 
+   %xdefine typeof_%{1} byte 
+   %rotate 1
+  %endrep
+
+ %else
+  %push mbyte_context
+ 
+  %assign %$loop_count %0
+  %assign %$value 0
+  %if %0 > 1
+   ;Get last paramter in the list
+   %rep (%0 - 1)
+    %rotate 1
+   %endrep
+
+   ;If the last paramter is a number, use it as a value.
+   %ifnum %1
+    %if %1 > 255
+     %error "Value for MBYTE is too large."
+    %endif
+    %assign %$loop_count (%0 - 1)
+    %assign %$value %1
+   %endif
+
+   ;Restore paramter list to original state
+   %rep (%0 + 1)
+    %rotate 1
+   %endrep
+  %endif
+
+  ;Loop through the paramters, creating a variable for each
+  %rep %$loop_count
+%1:
+db %$value
+sizeof_%{1} equ 1 
+%xdefine typeof_%{1} byte
+   %rotate 1
+  %endrep
+
+  %pop ;mbyte_context
+ %endif
+%endmacro
+
+%imacro RBYTE 1+.nolist
+ %push rvar_context
+  MBYTE %1
+ %pop
+%endmacro
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; MWORD - Declares one or more word sized variables.
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; Paramters: 
+; 1-* - variable names 
+;
+%imacro MWORD 1-*.nolist
+ %ifctx struct_context
+ 
+  %rep %0 
+   STRUCT_UNION_COMMON %1, %$struct_name, 2
+   %{$struct_name}.%{1}: resw 1
+   %rotate 1
+  %endrep
+
+ %elifctx union_context
+  
+  %if 2 > %$union_largest
+   %assign %$union_largest 2
+  %endif
+
+  %rep %0
+   STRUCT_UNION_COMMON %1, %$union_name, 2
+   %{$union_name}.%{1}:
+   %rotate 1
+  %endrep
+
+ %elifctx rvar_context
+
+  %rep %0
+   %1:  
+   resw 1
+   sizeof_%{1} equ 2 
+   %xdefine typeof_%{1} word 
+   %rotate 1
+  %endrep
+
+ %else
+  %push mword_context
+
+  %assign %$loop_count %0
+  %assign %$value 0
+  %if %0 > 1
+   ;Get last paramter in the list
+   %rep (%0 - 1)
+    %rotate 1
+   %endrep
+
+   ;If the last paramter is a number, use it as a value.
+   %ifnum %1
+    %if %1 > 65535 
+     %error "Value for MWORD is too large."
+    %endif
+    %assign %$loop_count (%0 - 1)
+    %assign %$value %1
+   %endif
+
+   ;Restore paramter list to original state
+   %rep (%0 + 1)
+    %rotate 1
+   %endrep
+  %endif
+
+  ;Loop through the paramters, creating a variable for each
+  %rep %$loop_count
+   %1:
+   dw %$value
+   sizeof_%{1} equ 2 
+   %xdefine typeof_%{1} word 
+   %rotate 1
+  %endrep
+ 
+  %pop ;mword_context
+ %endif
+%endmacro
+
+%imacro RWORD 1+.nolist
+ %push rvar_context
+  MWORD %1
+ %pop
+%endmacro
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; MDWORD - Declares one or more dword sized variables.
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; Paramters: 
+; 1-* - variable names 
+;
+%imacro MDWORD 1-*.nolist
+ %ifctx struct_context
+ 
+  %rep %0 
+   STRUCT_UNION_COMMON %1, %$struct_name, 4
+   %{$struct_name}.%{1}: resd 1
+   %rotate 1
+  %endrep
+
+ %elifctx union_context
+  
+  %if 4 > %$union_largest
+   %assign %$union_largest 4
+  %endif
+
+  %rep %0
+   STRUCT_UNION_COMMON %1, %$union_name, 4
+   %{$union_name}.%{1}:
+   %rotate 1
+  %endrep
+
+ %elifctx rvar_context
+
+  %rep %0
+   %1:  
+   resd 1
+   sizeof_%{1} equ 4 
+   %xdefine typeof_%{1} dword 
+   %rotate 1
+  %endrep
+
+ %else
+  %push mdword_context
+
+  %assign %$loop_count %0
+  %assign %$value 0
+  %if %0 > 1
+   ;Get last paramter in the list
+   %rep (%0 - 1)
+    %rotate 1
+   %endrep
+
+   ;If the last paramter is a number, use it as a value.
+   %ifnum %1
+    %assign %$loop_count (%0 - 1)
+    %assign %$value %1
+   %else
+    ;%ifnum does not catch floating point numbers...
+    XIFNUM %1
+    %if xifnum_result = 1
+     %assign %$loop_count (%0 - 1)
+     %undef %$value
+     %xdefine %$value %1
+    %endif 
+   %endif
+
+   ;Restore paramter list to original state
+   %rep (%0 + 1)
+    %rotate 1
+   %endrep
+  %endif
+
+  ;Loop through the paramters, creating a variable for each
+  %rep %$loop_count
+   %1:
+   dd %$value
+   sizeof_%{1} equ 4 
+   %xdefine typeof_%{1} dword 
+   %rotate 1
+  %endrep
+
+  %pop ;mdword_context
+ %endif
+%endmacro
+
+%imacro RDWORD 1+.nolist
+ %push rvar_context
+  MDWORD %1
+ %pop
+%endmacro
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; MFLOAT - Declares one or more dword sized variables.
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; Paramters: 
+; 1-* - variable names 
+;
+%imacro MFLOAT 1+.nolist
+ MDWORD %1
+%endmacro
+
+%imacro RFLOAT 1+.nolist
+ %push rvar_context
+  MDWORD %1
+ %pop
+%endmacro
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; MQWORD - Declares one or more qword sized variables.
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; Paramters: 
+; 1-* - variable names 
+;
+%imacro MQWORD 1-*.nolist
+ %ifctx struct_context
+ 
+  %rep %0 
+   STRUCT_UNION_COMMON %1, %$struct_name, 8
+   %{$struct_name}.%{1}: resq 1
+   %rotate 1
+  %endrep
+
+ %elifctx union_context
+  
+  %if 8 > %$union_largest
+   %assign %$union_largest 8
+  %endif
+
+  %rep %0
+   STRUCT_UNION_COMMON %1, %$union_name, 8
+   %{$union_name}.%{1}:
+   %rotate 1
+  %endrep
+
+ %elifctx rvar_context
+
+  %rep %0
+   %1:  
+   resq 1
+   sizeof_%{1} equ 8 
+   %xdefine typeof_%{1} qword 
+   %rotate 1
+  %endrep
+
+ %else
+  %push mqword_context
+
+  %assign %$loop_count %0
+  %assign %$value 0
+  %if %0 > 1
+   ;Get last paramter in the list
+   %rep (%0 - 1)
+    %rotate 1
+   %endrep
+
+   ;If the last paramter is a number, use it as a value.
+   %ifnum %1
+    %assign %$loop_count (%0 - 1)
+    %assign %$value %1
+   %else
+    ;%ifnum does not catch floating point numbers...
+    XIFNUM %1
+    %if xifnum_result = 1
+     %assign %$loop_count (%0 - 1)
+     %undef %$value
+     %xdefine %$value %1
+    %endif 
+   %endif
+
+   ;Restore paramter list to original state
+   %rep (%0 + 1)
+    %rotate 1
+   %endrep
+  %endif
+
+  ;Loop through the paramters, creating a variable for each
+  %rep %$loop_count
+   %1:
+   dq %$value
+   sizeof_%{1} equ 8 
+   %xdefine typeof_%{1} qword 
+   %rotate 1
+  %endrep
+
+  %pop ;mqword_context
+ %endif
+%endmacro
+
+%imacro RQWORD 1+.nolist
+ %push rvar_context
+  MQWORD %1
+ %pop
+%endmacro
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; MDOUBLE - Declares one or more qword sized variables.
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; Paramters: 
+; 1-* - variable names 
+;
+%imacro MDOUBLE 1+.nolist
+ MQWORD %1
+%endmacro
+
+%imacro RDOUBLE 1+.nolist
+ %push rvar_context
+  MQWORD %1
+ %pop
+%endmacro
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; MTWORD - Declares one or more tword sized variables.
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; Paramters: 
+; 1-* - variable names 
+;
+%imacro MTWORD 0-*.nolist
+ %ifctx struct_context
+ 
+  %rep %0 
+   STRUCT_UNION_COMMON %1, %$struct_name, 10
+   %{$struct_name}.%{1}: rest 1
+   %rotate 1
+  %endrep
+
+ %elifctx union_context
+  
+  %if 10 > %$union_largest
+   %assign %$union_largest 10
+  %endif
+
+  %rep %0
+   STRUCT_UNION_COMMON %1, %$union_name, 10
+   %{$union_name}.%{1}:
+   %rotate 1
+  %endrep
+
+ %elifctx rvar_context
+
+  %rep %0
+   %1:  
+   rest 1
+   sizeof_%{1} equ 10
+   %xdefine typeof_%{1} tword 
+   %rotate 1
+  %endrep
+
+ %else
+  %push mtword_context
+
+  %assign %$loop_count %0
+  %assign %$value 0
+  %if %0 > 1
+   ;Get last paramter in the list
+   %rep (%0 - 1)
+    %rotate 1
+   %endrep
+
+   ;If the last paramter is a number, use it as a value.
+   %ifnum %1
+    %assign %$loop_count (%0 - 1)
+    %assign %$value %1
+   %else
+    ;%ifnum does not catch floating point numbers so we
+    ; assume that if the first character is a number then the
+    ; user specified a floating point number.
+    XIFNUM %1
+    %if xifnum_result = 1
+     %assign %$loop_count (%0 - 1)
+     %undef %$value
+     %xdefine %$value %1
+    %endif 
+   %endif
+
+   ;Restore paramter list to original state
+   %rep (%0 + 1)
+    %rotate 1
+   %endrep
+  %endif
+
+  ;Loop through the paramters, creating a variable for each
+  %rep %$loop_count
+   %1:
+   dt %$value
+   sizeof_%{1} equ 10 
+   %xdefine typeof_%{1} tword 
+   %rotate 1
+  %endrep
+
+  %pop ;mtword_context
+ %endif
+%endmacro
+
+%imacro RTWORD 1+.nolist
+ %push rvar_context
+  MTWORD %1
+ %pop
+%endmacro
+
+;
+; Used internally by above macros, not to be used explicitly. 
+;
+%macro STRUCT_UNION_COMMON 3.nolist
+ ;to define value of this member
+ %if %3 = 1
+  %define %{2}.%{1}_rop resb
+  %define %{2}.%{1}_dop db
+  %xdefine typeof_%{2}.%{1} byte 
+ %elif %3 = 2
+  %define %{2}.%{1}_rop resw
+  %define %{2}.%{1}_dop dw
+  %xdefine typeof_%{2}.%{1} word 
+ %elif %3 = 4
+  %define %{2}.%{1}_rop resd
+  %define %{2}.%{1}_dop dd
+  %xdefine typeof_%{2}.%{1} dword 
+ %elif %3 = 8
+  %define %{2}.%{1}_rop resq
+  %define %{2}.%{1}_dop dq
+  %xdefine typeof_%{2}.%{1} qword 
+ %elif %3 = 10
+  %define %{2}.%{1}_rop rest
+  %define %{2}.%{1}_dop dt
+  %xdefine typeof_%{2}.%{1} tword 
+ %endif
+
+ ;numrical size of this member
+ sizeof_%{2}.%{1} equ %3
+
+ ;numrical position of this member
+ %assign %$member_count (%$member_count + 1)
+ %xdefine %{2}_%{1}_position %$member_count
+
+ ;for mapping position to member's label
+ %define %{2}_member%{$member_count} %{1}
+%endmacro
+
+
+;
+; Used internally by above macros, not to be used explicitly.
+; (Created this because %ifnum does not work on floating point constants.
+;
+%imacro XIFNUM 1.nolist
+ %push num_check_context
+ %undef xifnum_result
+ %defstr %$str %1 
+ %substr %$chr %$str 1 
+ %ifidn %$chr,'0'
+  %xdefine xifnum_result 1
+ %elifidn %$chr,'1'
+  %xdefine xifnum_result 1
+ %elifidn %$chr,'2'
+  %xdefine xifnum_result 1
+ %elifidn %$chr,'3'
+  %xdefine xifnum_result 1
+ %elifidn %$chr,'4'
+  %xdefine xifnum_result 1
+ %elifidn %$chr,'5'
+  %xdefine xifnum_result 1
+ %elifidn %$chr,'6'
+  %xdefine xifnum_result 1
+ %elifidn %$chr,'7'
+  %xdefine xifnum_result 1
+ %elifidn %$chr,'8'
+  %xdefine xifnum_result 1
+ %elifidn %$chr,'9'
+  %xdefine xifnum_result 1
+ %elifidn %$chr,'-'
+  %xdefine xifnum_result 1
+ %else
+  %xdefine xifnum_result 0
+ %endif
+ %pop 
+%endmacro
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; ENUM - Enumerate identifiers. 
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; Paramters: 
+; 1-* - identifiers 
+;
+%imacro ENUM 1-*.nolist
+ %push enum_context
+ %xdefine %$first %1
+ %assign %$value 0
+ %assign %$pos 1
+ %xdefine %$tmp
+ %rep %0 
+  %xdefine %$tmp %1
+  %if %$pos < %0
+   %rotate 1
+   %ifnum %1
+    %assign %$value %1
+;    %$tmp equ %$value
+     %xdefine %$tmp %$value
+    %assign %$pos (%$pos + 1)
+   %else
+    %rotate -1
+;    %1 equ %$value
+     %xdefine %1 %$value
+   %endif 
+  %else
+   %ifnidn %$first, %1
+;    %1 equ %$value
+    %xdefine %1 %$value
+   %else
+    %exitrep
+   %endif
+  %endif
+  %assign %$pos (%$pos + 1)
+  %assign %$value (%$value + 1)
+  %rotate 1 
+ %endrep
+ %pop   
+%endmacro
+
+
+%endif ; MACPAC_VARIABLES
+
+

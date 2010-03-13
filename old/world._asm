@@ -1,0 +1,58 @@
+%include "nasmlibs.inc"
+%include "syscalls.inc"
+%include "stdio.inc"
+
+%include "SDL.inc"
+
+section .data
+align 16
+
+szHelloWorld        db      "Hello World!",0
+width               dd      640
+height              dd      480
+
+section .bss
+
+pointer             screen  
+SDL_Event           event
+
+section .text
+align 16
+
+global _start
+_start:
+    __SDL_Init SDL_INIT_VIDEO
+
+    __SDL_SetVideoMode [width], [height], 32, SDL_DOUBLEBUF|SDL_OPENGL|SDL_HWSURFACE
+    mov [screen], eax
+
+    __SDL_WM_SetCaption szHelloWorld, 0
+
+    call mainloop
+
+    __sys_exit 0
+
+mainloop:
+    __SDL_PollEvent event
+
+mainloop_events:
+    mov al, [event.type]
+    cmp al, SDL_QUIT
+    jne .10
+    ret
+.10:
+    cmp al, SDL_KEYDOWN
+    je .1010
+    jmp .20
+.1010:
+    cmp word [event.key.keysym.sym], SDLK_ESCAPE
+    je .1020
+        jmp .999
+.1020:
+        ret
+.20:
+
+.999:
+    jmp mainloop
+
+

@@ -1,0 +1,403 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; Copyright (c) 2008, Tyler Hastings
+; All rights reserved.
+;
+; Redistribution and use in source and binary forms, with or without
+; modification, are permitted provided that the following conditions are met:
+;
+; * Redistributions of source code must retain the above copyright notice,
+;   this list of conditions and the following disclaimer.
+;
+; * Redistributions in binary form must reproduce the above copyright notice,
+;   this list of conditions and the following disclaimer in the documentation
+;   and/or other materials provided with the distribution.
+;
+; THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+; IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+; ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+; LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+; CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+; SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+; INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+; CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+; POSSIBILITY OF SUCH DAMAGE.
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; macpac/branch.mac
+;
+; Branch macro set for NASM.
+; 
+
+
+%ifndef MACPAC_BRANCH
+%define MACPAC_BRANCH 1 
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; IF - Starts an IF block. 
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; Parameters:
+; 1&3 - operands to test
+; 2   - jump condition (e,ne,a,ae,b,be,g,ge,l,le,z,nz) 
+; 4   - comparison instruction; defaults to `cmp` but can be replaced
+; with `test` or some other instruction which manipulates eflags.
+;
+%imacro IF 3-4.nolist cmp 
+ %push if_context
+
+ %ifnum %$macpac_proc_depth
+  %assign %$macpac_proc_depth (%$macpac_proc_depth + 1)
+ %endif
+ %ifnum %$macpac_loop_depth
+  %assign %$macpac_loop_depth (%$macpac_loop_depth + 1)
+ %endif
+
+ ;The following two are used by ELSEIF
+ %assign %$macpac_if_i 1 
+ %assign %$macpac_elseif_count 1
+
+ %4 %1, %3
+ j%-2  %$macpac_if_not 
+%endmacro 
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; IF - Starts an IF block with conjunctions or disjunctions. 
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+%imacro IF 7-*.nolist
+ %push if_context
+
+ %ifnum %$macpac_proc_depth
+  %assign %$macpac_proc_depth (%$macpac_proc_depth + 1)
+ %endif
+ %ifnum %$macpac_loop_depth
+  %assign %$macpac_loop_depth (%$macpac_loop_depth + 1)
+ %endif
+
+ %assign %$macpac_if_i 1
+ %rep %0 
+
+  %ifidni %1,AND
+   %assign %$macpac_argcheck (%$macpac_if_i % 10)
+   %if %$macpac_argcheck = 5
+    %assign %$macpac_a1 (%$macpac_if_i - 4)
+    %assign %$macpac_cc (%$macpac_if_i - 3)
+    %assign %$macpac_a2 (%$macpac_if_i - 2)
+    %assign %$macpac_in (%$macpac_if_i - 1)
+
+    %$macpac_ifarg%{$macpac_in} %$macpac_ifarg%{$macpac_a1}, %$macpac_ifarg%{$macpac_a2}
+    %$macpac_ifnarg%{$macpac_cc} %$macpac_if_not 
+
+    %assign %$macpac_if_i (%$macpac_if_i + 6)
+   %elif %$macpac_argcheck = 4 
+    %assign %$macpac_a1 (%$macpac_if_i - 3)
+    %assign %$macpac_cc (%$macpac_if_i - 2)
+    %assign %$macpac_a2 (%$macpac_if_i - 1)
+
+    cmp %$macpac_ifarg%{$macpac_a1}, %$macpac_ifarg%{$macpac_a2}
+    %$macpac_ifnarg%{$macpac_cc} %$macpac_if_not 
+
+    %assign %$macpac_if_i (%$macpac_if_i + 7)
+   %else
+    %error "Invalid number or order of paramters given to IF."
+   %endif
+  %elifidni %1,OR
+   %assign %$macpac_argcheck (%$macpac_if_i % 10)
+   %if %$macpac_argcheck = 5
+    %assign %$macpac_a1 (%$macpac_if_i - 4)
+    %assign %$macpac_cc (%$macpac_if_i - 3)
+    %assign %$macpac_a2 (%$macpac_if_i - 2)
+    %assign %$macpac_in (%$macpac_if_i - 1)
+
+    %$macpac_ifarg%{$macpac_in} %$macpac_ifarg%{$macpac_a1}, %$macpac_ifarg%{$macpac_a2}
+    %$macpac_ifarg%{$macpac_cc} %$macpac_if_pass 
+
+    %assign %$macpac_if_i (%$macpac_if_i + 6)
+   %elif %$macpac_argcheck = 4 
+    %assign %$macpac_a1 (%$macpac_if_i - 3)
+    %assign %$macpac_cc (%$macpac_if_i - 2)
+    %assign %$macpac_a2 (%$macpac_if_i - 1)
+
+    cmp %$macpac_ifarg%{$macpac_a1}, %$macpac_ifarg%{$macpac_a2}
+    %$macpac_ifarg%{$macpac_cc} %$macpac_if_pass 
+
+    %assign %$macpac_if_i (%$macpac_if_i + 7)
+   %else
+    %error "Invalid number or order of paramters given to IF."
+   %endif
+  %else
+   %assign %$macpac_argcheck (%$macpac_if_i % 10)
+   %if %$macpac_argcheck = 2
+    %xdefine %$macpac_ifarg%{$macpac_if_i} j%+1
+    %xdefine %$macpac_ifnarg%{$macpac_if_i} j%-1 
+   %else
+    %xdefine %$macpac_ifarg%{$macpac_if_i} %1
+   %endif
+   %assign %$macpac_if_i (%$macpac_if_i + 1)
+  %endif
+
+  %rotate 1
+ %endrep
+ 
+ %assign %$macpac_argcheck (%$macpac_if_i % 10)
+ %if %$macpac_argcheck = 5
+  %assign %$macpac_a1 (%$macpac_if_i - 4)
+  %assign %$macpac_cc (%$macpac_if_i - 3)
+  %assign %$macpac_a2 (%$macpac_if_i - 2)
+  %assign %$macpac_in (%$macpac_if_i - 1)
+
+  %$macpac_ifarg%{$macpac_in} %$macpac_ifarg%{$macpac_a1}, %$macpac_ifarg%{$macpac_a2}
+  %$macpac_ifnarg%{$macpac_cc} %$macpac_if_not 
+
+  %assign %$macpac_if_i (%$macpac_if_i + 6)
+ %elif %$macpac_argcheck = 4
+  %assign %$macpac_a1 (%$macpac_if_i - 3)
+  %assign %$macpac_cc (%$macpac_if_i - 2)
+  %assign %$macpac_a2 (%$macpac_if_i - 1)
+
+  cmp %$macpac_ifarg%{$macpac_a1}, %$macpac_ifarg%{$macpac_a2}
+  %$macpac_ifnarg%{$macpac_cc} %$macpac_if_not 
+
+  %assign %$macpac_if_i (%$macpac_if_i + 7)
+ %else
+  %error "Invalid number or order of paramters given to IF."
+ %endif
+ 
+ %$macpac_if_pass:
+
+ %assign %$macpac_elseif_count 1
+
+%endmacro
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; IF - Starts an IF block. 
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; This version takes one paramter, a condition 
+; code: e,ne,a,ae,b,be,g,ge,l,le,z,nz
+;
+%imacro IF 1.nolist
+ %push if_context
+
+ %ifnum %$macpac_proc_depth 
+  %assign %$macpac_proc_depth (%$macpac_proc_depth + 1)
+ %endif
+ %ifnum %$macpac_loop_depth
+  %assign %$macpac_loop_depth (%$macpac_loop_depth + 1)
+ %endif
+
+ %assign %$macpac_elseif_count 1
+
+ j%-1 %$macpac_if_not
+%endmacro
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; ELSEIF - Alternate execution path for an IF block. 
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; Parameters:
+; 1&3 - operands to test
+; 2   - jump condition (e,ne,a,ae,b,be,g,ge,l,le,z,nz) 
+; 4   - comparison instruction; defaults to `cmp` but can be replaced
+; with `test` or some other instruction which manipulates eflags.
+;
+%imacro ELSEIF 3-4.nolist cmp
+ %ifctx if_context
+  %repl elseif_context
+
+  jmp %$macpac_if_end 
+  %$macpac_if_not: 
+  %4 %1, %3
+  j%-2  %$macpac_elseif_not%{$macpac_elseif_count} 
+
+ %elifctx elseif_context
+
+  jmp %$macpac_if_end
+  %$macpac_elseif_not%{$macpac_elseif_count}:
+  %assign %$macpac_elseif_count (%$macpac_elseif_count + 1)
+  %4 %1, %3
+  j%-2  %$macpac_elseif_not%{$macpac_elseif_count} 
+
+ %else
+  %error "ELSEIF not used in IF context."
+ %endif
+%endmacro
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; ELSEIF - Alternate IF block path with conjunctions or disjunctions. 
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+%imacro ELSEIF 7-*.nolist
+ %ifctx if_context
+  %repl elseif_context
+
+  jmp %$macpac_if_end
+  %$macpac_if_not:
+
+ %elifctx elseif_context
+
+  jmp %$macpac_if_end
+  %$macpac_elseif_not%{$macpac_elseif_count}:  
+  %assign %$macpac_elseif_count (%$macpac_elseif_count + 1)
+
+ %else
+  %error "ELSEIF not used in IF context."
+ %endif
+
+ %rep %0 
+
+  %ifidni %1,AND
+   %assign %$macpac_argcheck (%$macpac_if_i % 10)
+   %if %$macpac_argcheck = 5
+    %assign %$macpac_a1 (%$macpac_if_i - 4)
+    %assign %$macpac_cc (%$macpac_if_i - 3)
+    %assign %$macpac_a2 (%$macpac_if_i - 2)
+    %assign %$macpac_in (%$macpac_if_i - 1)
+
+    %$macpac_ifarg%{$macpac_in} %$macpac_ifarg%{$macpac_a1}, %$macpac_ifarg%{$macpac_a2}
+    %$macpac_ifnarg%{$macpac_cc} %$macpac_elseif_not%{$macpac_elseif_count}
+
+    %assign %$macpac_if_i (%$macpac_if_i + 6)
+   %elif %$macpac_argcheck = 4 
+    %assign %$macpac_a1 (%$macpac_if_i - 3)
+    %assign %$macpac_cc (%$macpac_if_i - 2)
+    %assign %$macpac_a2 (%$macpac_if_i - 1)
+
+    cmp %$macpac_ifarg%{$macpac_a1}, %$macpac_ifarg%{$macpac_a2}
+    %$macpac_ifnarg%{$macpac_cc} %$macpac_elseif_not%{$macpac_elseif_count} 
+
+    %assign %$macpac_if_i (%$macpac_if_i + 7)
+   %else
+    %error "Invalid number or order of paramters given to IF."
+   %endif
+  %elifidni %1,OR
+   %assign %$macpac_argcheck (%$macpac_if_i % 10)
+   %if %$macpac_argcheck = 5
+    %assign %$macpac_a1 (%$macpac_if_i - 4)
+    %assign %$macpac_cc (%$macpac_if_i - 3)
+    %assign %$macpac_a2 (%$macpac_if_i - 2)
+    %assign %$macpac_in (%$macpac_if_i - 1)
+
+    %$macpac_ifarg%{$macpac_in} %$macpac_ifarg%{$macpac_a1}, %$macpac_ifarg%{$macpac_a2}
+    %$macpac_ifarg%{$macpac_cc} %$macpac_elseif_pass%{$macpac_elseif_count} 
+
+    %assign %$macpac_if_i (%$macpac_if_i + 6)
+   %elif %$macpac_argcheck = 4 
+    %assign %$macpac_a1 (%$macpac_if_i - 3)
+    %assign %$macpac_cc (%$macpac_if_i - 2)
+    %assign %$macpac_a2 (%$macpac_if_i - 1)
+
+    cmp %$macpac_ifarg%{$macpac_a1}, %$macpac_ifarg%{$macpac_a2}
+    %$macpac_ifarg%{$macpac_cc} %$macpac_elseif_pass%{$macpac_elseif_count} 
+
+    %assign %$macpac_if_i (%$macpac_if_i + 7)
+   %else
+    %error "Invalid number or order of paramters given to IF."
+   %endif
+  %else
+   %assign %$macpac_argcheck (%$macpac_if_i % 10)
+   %if %$macpac_argcheck = 2
+    %xdefine %$macpac_ifarg%{$macpac_if_i} j%+1
+    %xdefine %$macpac_ifnarg%{$macpac_if_i} j%-1 
+   %else
+    %xdefine %$macpac_ifarg%{$macpac_if_i} %1
+   %endif
+   %assign %$macpac_if_i (%$macpac_if_i + 1)
+  %endif
+
+  %rotate 1
+ %endrep
+ 
+ %assign %$macpac_argcheck (%$macpac_if_i % 10)
+ %if %$macpac_argcheck = 5
+  %assign %$macpac_a1 (%$macpac_if_i - 4)
+  %assign %$macpac_cc (%$macpac_if_i - 3)
+  %assign %$macpac_a2 (%$macpac_if_i - 2)
+  %assign %$macpac_in (%$macpac_if_i - 1)
+
+  %$macpac_ifarg%{$macpac_in} %$macpac_ifarg%{$macpac_a1}, %$macpac_ifarg%{$macpac_a2}
+  %$macpac_ifnarg%{$macpac_cc} %$macpac_elseif_not%{$macpac_elseif_count}
+
+  %assign %$macpac_if_i (%$macpac_if_i + 6)
+ %elif %$macpac_argcheck = 4
+  %assign %$macpac_a1 (%$macpac_if_i - 3)
+  %assign %$macpac_cc (%$macpac_if_i - 2)
+  %assign %$macpac_a2 (%$macpac_if_i - 1)
+
+  cmp %$macpac_ifarg%{$macpac_a1}, %$macpac_ifarg%{$macpac_a2}
+  %$macpac_ifnarg%{$macpac_cc} %$macpac_elseif_not%{$macpac_elseif_count}
+
+  %assign %$macpac_if_i (%$macpac_if_i + 7)
+ %else
+  %error "Invalid number or order of paramters given to IF."
+ %endif
+ 
+ %$macpac_elseif_pass%{$macpac_elseif_count}:
+
+%endmacro
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; ELSE - An alternate execution path for an IF block. 
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+%imacro ELSE 0.nolist 
+ %ifctx if_context 
+  %repl else_context 
+
+  jmp %$macpac_if_end 
+  %$macpac_if_not: 
+
+ %elifctx elseif_context
+
+  jmp %$macpac_if_end
+  %$macpac_elseif_not%{$macpac_elseif_count}:
+
+ %else 
+  %error "ELSE not used in IF or ELSEIF context." 
+ %endif 
+%endmacro 
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; ENDIF - Ends an IF block. 
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+%imacro ENDIF 0.nolist 
+ %ifctx if_context 
+  %$macpac_if_not: 
+  %pop 
+ %elifctx elseif_context
+  %$macpac_if_end: 
+  %pop
+ %elifctx else_context 
+  %$macpac_if_end: 
+  %pop 
+ %else 
+  %error "ENDIF not used in IF, ELSEIF or ELSE context." 
+ %endif 
+%endmacro
+
+
+%endif ; MACPAC_BRANCH
+
+

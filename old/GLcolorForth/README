@@ -1,0 +1,82 @@
+ GLcolorForth README
+--------------------
+
+* colorForth *
+
+colorForth is the language/operating system designed and used by
+Chuck Moore. The system is stand-alone, booting from a floppy disk and
+interfacing PC hardware directly. More information on the system can be
+found at:
+
+   www.colorforth.com
+
+* GLcolorForth *
+
+GLcolorForth is a port of colorForth to the Linux operating system,
+using both X windows and OpenGL libraries. This is an update to
+XcolorForth which ran quite slowly on some X servers. If you have
+hardware accelerated OpenGL, GLcolorForth may be preferable to
+XcolorForth. Of course to get the full experience run the original
+colorForth.
+
+* Compile *
+
+  ./compile
+
+* Run *
+
+  ./glcf
+
+* Differences between colorForth and GLcolorForth. *
+
+  Boot
+
+  colorForth boots from the boot sector on a floppy and copies the
+  first 9 sectors from the floppy disk. GLcolorForth loads the file
+  "color.com" to the bss section of the 'glcf' program and jumps to the
+  start of the bss section. 
+
+  Memory
+
+  colorForth uses a 32-bit flat mode and assumes 32 megabytes of
+  memory, the start of the colorForth is a address 0. GLcolorForth uses
+  Linux's virtual memory system and assumes 4 megabytes of memory. The
+  start address is fixed but non-zero
+
+  start
+
+  The word 'start' gives the byte address of the start of the
+  image. The work block will add start/4 to get the word address of a
+  block.
+  
+  Graphics
+
+  colorForth draws graphics into a buffer, which is copied in whole
+  directly to frame buffer of the graphics card. GLcolorForth opens a
+  GL rendering context and uses the OpenGL API to draw colorForth
+  primitives. A consequence is that the drawing buffer is no longer
+  accessible, some programs will not work in GLcolorForth.
+
+  Keyboard
+
+  colorForth reads directly from the keyboard port to poll for key
+  events. GLcolorForth fetches keyboard events from the X event queue.
+
+  save
+
+  'save' in colorForth saves the colorForth image onto the floppy
+  disk. The GLcolorForth 'save' saves the colorForth image to the file
+  "color.com".
+
+  boot
+
+  'boot' exits GLcolorForth
+
+* bput and bget *
+
+  The bash scripts bput and bget are provided so you can copy blocks
+  to and from the colorForth image.
+
+* Contact *
+
+  Please contact maslicke@oakland.edu for issues reguarding this port.
