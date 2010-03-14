@@ -14,47 +14,42 @@ extern _SDL_PollEvent
 ;======================================================================================
 
 struct SDL_ActiveEvent
-    alignb 4
-    mbyte	type
-    mbyte	gain
-    mbyte	state
+    mdword	type
+    mdword	gain
+    mdword	state
 ends
 
 struct SDL_KeyboardEvent 
-    alignb 4
-    mbyte	type
-    mbyte	which
-    mbyte	state
+    mdword	type
+    mdword	which
+    mdword	state
     struct SDL_keysym, keysym
 ends
 
 struct SDL_MouseMotionEvent
-    alignb 4
-    mbyte	type
-    mbyte	which
-    mbyte	state
-    mword	x
-    mword	y
-    mword	xrel
-    mword	yrel
+    mdword	type
+    mdword	which
+    mdword	state
+    mdword	x
+    mdword	y
+    mdword	xrel
+    mdword	yrel
 ends
 
 struct SDL_MouseButtonEvent
-    alignb 4
-    mbyte	type
-    mbyte	which
-    mbyte	button
-    mbyte	state
+    mdword	type
+    mdword	which
+    mdword	button
+    mdword	state
     mword	x
     mword	y
 ends
 
 struct SDL_JoyAxisEvent
-    alignb 4
-    mbyte	type
-    mbyte	which
-    mbyte	axis
-    mword	value
+    mdword	type
+    mdword	which
+    mdword	axis
+    mdword	value
 ends
 
 struct SDL_JoyBallEvent
@@ -67,54 +62,46 @@ struct SDL_JoyBallEvent
 ends
 
 struct SDL_JoyHatEvent
-    alignb 4
-    mbyte	.type
-    mbyte	.which
-    mbyte	.hat
-    mbyte	.value
+    mdword	.type
+    mdword	.which
+    mdword	.hat
+    mdword	.value
 ends
 
 struct SDL_JoyButtonEvent
-    alignb 4
-    mbyte	.type
-    mbyte	.which
-    mbyte	.button
-    mbyte	.state
+    mdword	.type
+    mdword	.which
+    mdword	.button
+    mdword	.state
 ends
 
 struct SDL_ResizeEvent
-    alignb 4
-    mbyte	type
+    mdword	type
     mdword	w			; *TODO*
     mdword	h			; *TODO*
 ends
 
 struct SDL_ExposeEvent
-    alignb 4
-    mbyte	type
+    mdword	type
 ends
 
 struct SDL_QuitEvent
-    alignb 4
-    mbyte	type
+    mdword	type
 ends
 
 struct SDL_UserEvent
-    alignb 4
-    mbyte	type
+    mdword	type
     mdword	code			; *TODO*
     mdword	data1
     mdword	data2
 ends
 
 struct SDL_SysWMEvent
-    alignb 4
-    mbyte	type
+    mdword	type
     mdword	msg
 ends
 
 union SDL_Event
-    alignb 4
     mbyte	type
     struct SDL_ActiveEvent, active
     struct SDL_KeyboardEvent, key

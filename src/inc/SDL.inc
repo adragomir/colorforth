@@ -10,6 +10,7 @@ extern _SDL_QuitSubSystem
 extern _SDL_WasInit
 extern _SDL_Quit
 extern _SDL_WM_SetCaption
+extern _SDL_Delay
 
 SDL_INIT_TIMER		equ 0x00000001
 SDL_INIT_AUDIO		equ 0x00000010
@@ -43,4 +44,8 @@ SDL_INIT_EVERYTHING	equ 0x0000FFFF
 %macro		__SDL_WM_SetCaption 2
   ccall _SDL_WM_SetCaption, %1, %2
 %endmacro	;__SDL_WM_SetCaption
+
+%macro		__SDL_Delay 1
+  ccall _SDL_Delay, %1
+%endmacro	;__SDL_Init
 

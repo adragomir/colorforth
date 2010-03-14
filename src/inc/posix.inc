@@ -58,6 +58,8 @@ extern _atexit
 ;;
 %define	MAP_SHARED	0001h
 %define	MAP_PRIVATE	0002h
+%define	MAP_ANON	0x1000
+
 
 struct stat
   mdword st_dev
