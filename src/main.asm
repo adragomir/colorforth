@@ -14,7 +14,7 @@
   push eax
   mov eax, %1
   mov [var_d], eax
-  ccall _printf, msg_debug_int, dword [var_d]
+  ccall _printf, msg_debug_int, dword [var_d], dword [var_d]
   pop eax
 %endmacro
 
@@ -23,7 +23,7 @@ section .data
   run db 1
   msg_color_forth db 'colorForth', 0x0
   msg_debug_pointer db 'pointer: %x', 10, 0
-  msg_debug_int db 'int: %ld', 10, 0
+  msg_debug_int db 'int: %ld, as hex: %x', 10, 0
 
   str_error_open_block_file db "Can't open blocks file OkadWork.cf", 0Ah, 0
   str_error_stat_block_file db "Can't stat blocks file OkadWork.cf", 0Ah, 0
@@ -39,6 +39,52 @@ section .bss
   rstruct stat, icons_file_stat
   var_d resd 1
 
+; This version of colorforth has three tasks; main (the accept loop),
+; draw (user defined), and serve (also user defined).  Each has two
+; grows - down stacks.  A suffix of 's' indicates the return stack, 'd'
+; indicates the data stack.  Thus 'top_draw_return_stack' and 'top_draw_data_stack' are the tops of
+; the return and data stacks, respectively, for the draw task.
+
+return_stack_size equ 256 * 4 * 3   ; size of return stacks (3 blocks)
+data_stack_size equ 256 * 4 * 6 ; size of data stacks (6 blocks)
+forth_dict_size equ 2048 * 4  ; size of forth dictionary (2048 words, 8 blocks)
+        ; we have two arrays like this: names and addrs.
+bufsize equ 18 * 1024 ; size of floppy buffer.
+
+;   100000 dictionary
+;    a0000 return stack (main)
+;    9f400 data stack
+;    9dc00 return stack (draw)
+;    9d000 data stack
+;    9b800 return stack (serve)
+;    9ac00 data stack
+;    99400 divider (bottom of rstack, top of floppy buffer)
+;    94c00 floppy buffer
+;    92c00 forth dictionary addrs (room for 2048 entries)
+;    90c00 forth dictionary names
+;     7c00 BIOS loads boot sector here; we immediately move it to 0
+;     4800 source
+;     3000 icons
+; 0 the colorforth kernel
+    times ((3 * (return_stack_size + data_stack_size) + bufsize + 2 * forth_dict_size) / 4) dd 0
+
+;dictionary  equ 0x100000 ; TODO get rid of this
+
+top_main_return_stack equ $; gods
+top_main_data_stack equ top_main_return_stack - return_stack_size
+top_draw_return_stack equ top_main_data_stack - data_stack_size
+top_draw_data_stack equ top_draw_return_stack - return_stack_size
+top_serve_return_stack  equ top_draw_data_stack - data_stack_size
+top_serve_data_stack  equ top_serve_return_stack - return_stack_size
+end_of_stacks equ top_serve_data_stack - data_stack_size  ; end of stacks
+buffer  equ end_of_stacks - bufsize
+forth_dictionary_addresses  equ buffer - forth_dict_size
+forth_dictionary_names  equ forth_dictionary_addresses - forth_dict_size
+; ...
+
+trash_adr times 64 db 'T'
+dummy dd  0
+
 section .text
 
 extern _printf, _open, _mmap, _read
@@ -47,21 +93,9 @@ global _main                ; make the main function externally visible
 
 ; (r >> format->Rloss) << format->Rshift | (g >> format->Gloss) << format->Gshift | (b >> format->Bloss) << format->Bshift | format->Amask;
 ; 16 bit: 
-; format->Rloss : 3
-; format->Gloss : 2
-; format->Bloss : 3
-; format->Rshift : 11
-; format->Gshift : 5
-; format->Bshift : 0
-; format->Amask: 0
+; format->Rloss : 3 ; format->Gloss : 2 ; format->Bloss : 3 ; format->Rshift : 11 ; format->Gshift : 5 ; format->Bshift : 0 ; format->Amask: 0
 ; 32 bit: 
-; format->Rloss : 0
-; format->Gloss : 0
-; format->Bloss : 0
-; format->Rshift : 16
-; format->Gshift : 8
-; format->Bshift : 0
-; format->Amask: 0
+; format->Rloss : 0 ; format->Gloss : 0 ; format->Bloss : 0 ; format->Rshift : 16 ; format->Gshift : 8 ; format->Bshift : 0 ; format->Amask: 0
 
 %define sdl_rgb32(r, g, b) dword (r << 16) | (g << 8) | b | -16777216
 %define sdl_rgbsingle32(rgb) (( ((rgb >> 16) & 0xff) << 16) | (((rgb >> 8) & 0xff) << 8) | (rgb & 0xff)  | -16777216)
@@ -74,10 +108,6 @@ sdl_flip:
   __SDL_Flip dword [surface]
   pop eax
   ret
-
-sdl_getcfkey:
-  __SDL_PollEvent event
-  cmp byte [event.type], SDL_KEYDOWN
 
 program_alloc_display:
   __SDL_Init SDL_INIT_VIDEO
@@ -182,7 +212,16 @@ program_map_files:
   .sizezero:
     jmp program_exit_ok
 
+; in:  ecx - size
+; out: eax - address
+alloc_mem:
+  syscall SYS_mmap, dword 0, ecx, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_ANON, dword 0, dword 0
+  ret
+
 program_alloc_buffers:
+  mov ecx, 1024 * 384        ; dictionary size 1 MB; TODO constant here
+  call alloc_mem      
+  mov [H], eax
   ret
 
 _main:
@@ -190,33 +229,41 @@ _main:
   call program_alloc_buffers
   call program_alloc_display
 
-  .while_run:
-    .while_poll_event:
-      call program_draw_pixel
-      __SDL_PollEvent event
-      cmp eax, 0
-      je .treat_no_event ; if there was no event, go forward
-      ; here, we are sure to have an event
-      cmp byte [event.type], SDL_KEYDOWN ; was it a key event ? 
-      je .treat_key_event
-      ; was it a quit event ? 
-      cmp byte [event.type], SDL_QUIT
-      je .treat_quit_event
-      ; here, we have another kind of event
-      jne .while_poll_event
-      mov byte [run], 0
-      jmp .while_poll_event
-    .while_poll_eventquit:
-      cmp byte [run], 1
-      je .while_run
-    .treat_key_event:
-      ; TODO  XXX
-      debug_int 1
-      cmp byte [run], 1
-      je .while_run
-    .treat_quit_event:
-      call program_exit_ok
-  call program_exit_ok
+  jmp start1
+  ;.while_run:
+    ;.while_poll_event:
+      ;call program_draw_pixel
+      ;__SDL_PollEvent event
+      ;cmp eax, 0
+      ;je .while_poll_event ; if there was no event, go forward
+      ;; here, we are sure to have an event
+      ;cmp byte [event.type], SDL_KEYDOWN ; was it a key event ? 
+      ;je .treat_key_event
+      ;; was it a quit event ? 
+      ;cmp byte [event.type], SDL_QUIT
+      ;je .treat_quit_event
+      ;; here, we have another kind of event
+      ;jmp .while_poll_event
+    ;.while_poll_eventquit:
+      ;cmp byte [run], 1
+      ;je .while_run
+    ;.treat_key_event:
+      ;; TODO  XXX
+      ;mov ebx, [event.key.keysym.scancode]
+      ;mov ecx, [sdl_scancode_to_raw]
+      ;;add ecx, ebx
+      ;mov eax, [sdl_scancode_to_raw + ebx]
+      ;and eax, 0ffh ; get rid of high bits
+      ;;debug_int eax
+      ;test dword [event.key.keysym.mod], KMOD_LSHIFT | KMOD_RSHIFT
+      ;jz .not_shift
+        ;debug_int 0xff
+    ;.not_shift:
+      ;cmp byte [run], 1
+      ;je .while_run
+    ;.treat_quit_event:
+      ;call program_exit_ok
+  ;call program_exit_ok
 
 program_notimpl:
     jmp program_exit_fail
@@ -312,57 +359,12 @@ char_height equ char_padding + icon_height + char_padding     ; 30
 horizontal_chars  equ screen_width / char_width       ; 1024 / 22 = 46 (remainder 12)
 vertical_chars  equ screen_height / char_height       ; 768 / 30 = 25 (remainder 18)
 
-; This version of colorforth has three tasks; main (the accept loop),
-; draw (user defined), and serve (also user defined).  Each has two
-; grows - down stacks.  A suffix of 's' indicates the return stack, 'd'
-; indicates the data stack.  Thus 'top_draw_return_stack' and 'top_draw_data_stack' are the tops of
-; the return and data stacks, respectively, for the draw task.
-
-return_stack_size equ 256 * 4 * 3   ; size of return stacks (3 blocks)
-data_stack_size equ 256 * 4 * 6 ; size of data stacks (6 blocks)
-
-forth_dict_size equ 2048 * 4  ; size of forth dictionary (2048 words, 8 blocks)
-        ; we have two arrays like this: names and addrs.
-
-bufsize equ 18 * 1024 ; size of floppy buffer.
-
-;   100000 dictionary
-;    a0000 return stack (main)
-;    9f400 data stack
-;    9dc00 return stack (draw)
-;    9d000 data stack
-;    9b800 return stack (serve)
-;    9ac00 data stack
-;    99400 divider (bottom of rstack, top of floppy buffer)
-;    94c00 floppy buffer
-;    92c00 forth dictionary addrs (room for 2048 entries)
-;    90c00 forth dictionary names
-;     7c00 BIOS loads boot sector here; we immediately move it to 0
-;     4800 source
-;     3000 icons
-; 0 the colorforth kernel
-
-dictionary  equ 0x100000
-top_main_return_stack equ 0xa0000
-top_main_data_stack equ top_main_return_stack - return_stack_size
-top_draw_return_stack equ top_main_data_stack - data_stack_size
-top_draw_data_stack equ top_draw_return_stack - return_stack_size
-top_serve_return_stack  equ top_draw_data_stack - data_stack_size
-top_serve_data_stack  equ top_serve_return_stack - return_stack_size
-end_of_stacks equ top_serve_data_stack - data_stack_size  ; end of stacks
-buffer  equ end_of_stacks - bufsize
-forth_dictionary_addresses  equ buffer - forth_dict_size
-forth_dictionary_names  equ forth_dictionary_addresses - forth_dict_size
-; ...
-source  equ 18 * 1024
-
 warm:
   DUP_
   jmp short start1.0
 
 start1:
   ; TODO: setup arrays
-  ; TODO: do we need page protection execution here ?
   .0:
     call noshow
     call noserve
@@ -1278,7 +1280,7 @@ mk: dd 0, 0, 0        ; macros, forths, H
 ; when a word needs to be compiled. The code space begins at address 0x100000 (the
 ; one-megabyte mark), so if the code space is empty, h is set at 0x100000. As the
 ; compiler adds bytes of machine code to the code space, h advances.
-H:  dd dictionary
+H:  dd 0x100000
 
 ; last
 ;
@@ -2179,14 +2181,148 @@ numb1:
 ; either an undefined key (code=0), the N key (code=1), the spacebar (code=2), or
 ; either Alt key (code=3), then letter replaces the key code with [edx+eax] =
 ; [board+code]. Otherwise, letter returns the key code unchanged.
+;letter:
+  ;cmp al, 4
+  ;js .9 ; if al < 4, that is 0, 1, 2, 3
+  ;mov edx, [board]
+  ;mov al, [eax + edx]
+  ;.9:
+    ;ret
 letter:
-  cmp al, 4
-  js .9 ; if al < 4, that is 0, 1, 2, 3
-  mov edx, [board]
-  mov al, [eax + edx]
+  ; filters 0..9 and a..f for numeric, and returns
+  ;  flags according to al
+  and	al, al
+  js	.9
+  cmp	dword [shift], numb0		; numbers?
+  jc	.2				; yes
+  cmp	dword [current], decimal		; decimal?
+  jz	.0				;  yes
+  cmp	al, 04h				;  no check for hex
+  jz	.2
+  cmp	al, 05h
+  jz	.2
+  cmp	al, 0ah
+  jz	.2
+  cmp	al, 0eh
+  jz	.2
+  cmp	al, 10h
+  jz	.2
+  cmp	al, 13h
+  jz	.2
+  .0:
+    cmp	al, 18h
+    jc	.1
+    cmp	al, 22h
+    jc	.2
+  .1:
+    xor	eax, eax
+  .2:
+    and	al, al				; set flag
   .9:
     ret
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;; QWERTY
+; 4 to 231
+sdl_scancode_to_raw:
+  times 4 db 0, 
+  ;   a -> z = 4 -> 29
+  ;  a     b     c     d     e     f     g     h
+  db 0x1f, 0x30, 0x2e, 0x20, 0x12, 0x21, 0x22, 0x23; a
+  ;  i     j     k     l     m     n     o     p
+  db 0x17, 0x24, 0x25, 0x26, 0x32, 0x31, 0x18, 0x19; a
+  ;  q     r     s     t     u     v     w     x
+  db 0x10, 0x13, 0x1f, 0x14, 0x16, 0x2f, 0x11, 0x2d; a
+  ;  y     z
+  db 0x15, 0x2c
+  ;   1 -> 0 = 30 -> 39
+  ; numbers
+  ;  1     2     3     4     5     6     7     8
+  db 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09 
+  ;  9     0
+  db 0x0A, 0x0B
+  ;   enter = 40
+  ;   esc = 41
+  ;   backspace = 42
+  ;   tab = 43
+  ;   space = 44
+  ;  cr    ESC   bksp  tab   space
+  db 0x1c, 0x01, 0x0e, 0x0f, 0x39
+  ;   - = 45
+  ;   = = 46
+  ;   [ = 47
+  ;   ] = 48
+  ;   \ = 49
+  ;   ; = 51
+  ;   ' = 52
+  ;   top left weird key - 53
+  ;  -_    =+    [{    ]}    \|    na     ;:    '"    weird left
+  db 0x0c, 0x0d, 0x1a, 0x1b, 0x2b, 0x00,  0x27, 0x28, 0x00
+  ;   , = 54
+  ;   . = 55
+  ;   / = 56
+  ;  ,<    .>    /?
+  db 0x33, 0x34, 0x35, 
+  ;   f1 -> f12 = 58 -> 69
+  ;  na    f1    f2    f3    f4    f5    f6    f7    f8    f9    f10   f11   f12
+  db 0x00, 0x3b, 0x3c, 0x3d, 0x3e, 0x3f, 0x40, 0x41, 0x42, 0x43, 0x44, 0x57, 0x58
+  ;  na
+  db 0x00, 0x00, 0x00, 0x00
+  ;   home 74 
+  ;   pg up 75
+  ;   delete = 76
+  ;   end 77 
+  ;   pgdn 78
+  ;   right = 79
+  ;   left = 80
+  ;   down = 81
+  ;   up = 82
+  ;  home  pgup  del   end   pgdn  rt    lt    dn    up
+  db 0x47, 0x49, 0x53, 0x4f, 0x51, 0x4d, 0x4b, 0x50, 0x48
+  ; 83 84 85 86 87 88 89 90 91 92 93 94 95 96 97 98 99 
+  times 17 db 0
+  ;   tilde = 100
+  ;  ~
+  db 0x29
+  times 124 db 0
+  ;   lshift 225
+  ;   lalt 226 
+  ;   lcmd 227 
+  ;   rshift 229
+  ;   ralt 230
+  ;   rcmd 231
+  ;  lsh   lalt  lcmd  na    rsh   ralt, rcmd
+  db 0x2a, 0x38, 0x00, 0x00, 0x2a, 0x38, 0x00
+
+getkey:
+  __SDL_Delay 30
+  __SDL_PollEvent event
+  cmp eax, 0
+  je getkey ; if there was no event, go forward
+  ; here, we are sure to have an event
+  cmp byte [event.type], SDL_KEYDOWN ; was it a key event ? 
+  jne getkey
+  push ebx
+  mov ebx, [event.key.keysym.scancode]
+  mov eax, [sdl_scancode_to_raw + ebx]
+  pop ebx
+  and eax, 0ffh ; get rid of high bits
+  jz getkey
+  ret
+  
+getcfkey:
+  call getkey
+  push eax
+  xor eax,eax
+  mov [shifted], eax
+  test dword [event.key.keysym.mod], KMOD_LSHIFT | KMOD_RSHIFT
+  jz .not_shift
+  xor eax,eax
+  inc eax
+  mov [shifted], eax
+  .not_shift:
+    pop eax
+    ret
+  
 ; Reading the keyboard
 ;
 ; The key routine reads Set 1 scan codes from the keyboard controller, subtracts
@@ -2197,15 +2333,29 @@ letter:
 ; these keys.
  
 ; our values (1 - 27) for the raw keycodes that we use.
-key0  equ 16    ; the table starts at keycode 16 ; TODO USED in key:
-keys:
-  db 16, 17, 18, 19,  0,  0,  4,  5     ; Keys: QWER--UI       
-  db  6,  7,  0,  0,  0,  0, 20, 21     ;       OP----AS       
-  db 22, 23,  0,  0,  8,  9, 10, 11     ;       DF--JKL;       
-  db  0,  0,  0,  0, 24, 25, 26, 27     ;       ----ZXCV       
-  db  0,  1, 12, 13, 14, 15,  0,  0     ;       -NM<>?--       
-  db  3,  2          ;       [Alt] [Space]        
-nkeys equ $ - keys  ; and contains N values          
+align 2
+    ; scan code to colorforth char conversion.
+    ; the codes are huffman compressed etc... (the huffman index not the actual value !!!!!!!!!)
+    ; -1 for backspace/esc, -2 for return/space
+    ; and -3 for alt.
+
+keys
+    db 00,00
+    dw 0ffffh, 2a19h, 2c1ah, 001bh	;  1  esc   !1      @2  #3
+    dw 001ch, 001dh, 001eh, 001fh	  ;  5  $4    %5      ^6  &7
+    dw 2d20h, 0021h, 0018h, 0023h	  ;  9  *8    (9      )0  _-
+    dw 2b00h, 0ffffh, 0000h, 1717h	;  d  +=    bs      tab Qq
+    dw 0f0fh, 0404h, 0101h, 0202h	  ; 11  Ww    Ee      Rr  Tt
+    dw 0b0bh, 1616h, 0707h, 0303h	  ; 15  Yy    Uu      Ii  Oo
+    dw 1212h, 0000h, 0000h, 0fefeh	; 19  Pp    {[      }]  ret
+    dw 0000h, 0505h, 0808h, 1010h	  ; 1d  Lctrl Aa      Ss  Dd
+    dw 0e0eh, 0d0dh, 1414h, 2222h	  ; 21  Ff    Gg      Hh  Jj
+    dw 2424h, 0c0ch, 2928h, 0000h	  ; 25  Kk    Ll      :;  "'
+    dw 0000h, 0000h, 0000h, 2626h	  ; 29  ~`    Lshift  |\  Zz
+    dw 1515h, 0a0ah, 1111h, 1313h	  ; 2d  Xx    Cc      Vv  Bb
+    dw 0606h, 0909h, 002eh, 0025h	  ; 31  Nn    Mm      <,  >.
+    dw 2f27h, 0000h, 2d2dh, 0fdfdh	; 35  ?/    Rshift  *   Lalt
+    dw 0fefeh			; 39  space
 
 ; There are twenty-eight ColorForth-specific key codes. The blue cells are for keys 
 ; you press with your right thumb; the green, for keys you press with the four 
@@ -2284,22 +2434,22 @@ nkeys equ $ - keys  ; and contains N values
 ; TODO: fixme
 key:
   DUP_
-  xor eax, eax
+  push esi
+  push edi
   .0:
-    call dopause ; call dopause to let the other task run
-    call sdl_getcfkey
-    in al, 0x64; TODO fixme
-    test al, 1
-    jz .0
-    in al, 0x60; TODO fixme
-    test al, 0xf0   ; keycode too low, ignore it.
-    jz .0
-    cmp al, key0 + nkeys  ; keycode too high, ignore it.
-    jae .0
-    mov al, [keys - key0 + eax] ; look it up in the table and return it.
+    xor	eax, eax
+    call dopause
+    call getcfkey
+    cmp al, 3ah			; limit to 39
+    jnc .0
+    add eax, eax		; double to account for shifted characters
+    add eax, [shifted]		; +1 if shifted
+    mov al, [keys + eax]		; index into keys
+    and al, al
+    jz .0			; repeat if zero
+    pop edi
+    pop esi
     ret
-
-
 
 ; keyboard display is 9 chars wide, 4 high
 keyboard_hud_width  equ 9
@@ -3305,8 +3455,8 @@ pad:
     call edx
     jmp .0
 
-  ; the kernel gets 12 blocks - fill out to the end
-  times 12 * 1024 - ($ - $$) db 0
+; the kernel gets 12 blocks - fill out to the end
+;  times 12 * 1024 - ($ - $$) db 0
 
 ; vim:ts=2:sw=2:expandtab
 
