@@ -70,6 +70,10 @@ sdl:
 ctest:
 	g++ -arch i386 -o build/ctest src/ctest.c
 
+cf2html:
+	gcc -arch i386 -o build/cf2html src/cf2html.c
+
+
 
 postbuild:
 ifeq ($(GEN_RUN),yes)
