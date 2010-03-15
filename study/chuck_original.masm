@@ -96,6 +96,7 @@ ACT:
 show0:
     call show
     ret
+    
 show:
     pop  screen
     DUP_
@@ -235,6 +236,7 @@ qdup:
     jnz  cdup
         mov  h, edx
         ret
+    
 cdup:
     mov  edx, h
     mov  dword ptr [edx], 89fc768dh
@@ -250,6 +252,7 @@ var1:
     DUP_
     mov  eax, [4+forth0+ecx*4]
     ret
+    
 variable:
     call forthd
     mov  [forth2-forth0+ecx], offset var1
@@ -552,7 +555,6 @@ macro2 dd offset semi
        dd offset cdup
        dd offset qdup
        dd offset cdrop
-;       dd offset nip
        dd offset then
        dd offset begin
        dd 128 dup (0)
@@ -597,17 +599,10 @@ forth2 dd offset boot
        dd offset DOWN
        dd offset edit
        dd offset E
-;       dd offset font
        dd offset LMs
        dd offset RMs
        dd offset graphic
        dd offset text1
-;       dd offset set3d
-;       dd offset render
-;       dd offset vertex
-;       dd offset front
-;       dd offset top_
-;       dd offset side
        dd offset keyboard
        dd offset debug
        dd offset at
@@ -618,12 +613,10 @@ forth2 dd offset boot
        dd offset box
        dd offset line
        dd offset color
-;       dd offset clip
        dd offset octant
        dd offset sps
        dd offset last_
        dd offset unpack
-;       dd offset pack
        dd 512 dup (0)
 
 boot:
@@ -725,7 +718,7 @@ last_:
     mov  eax, (offset last-offset start)/4
     ret
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;include gen.asm ; cce.asm pio.asm ATI128.asm ATI64.asm gen.asm
+;; BEGIN gen.asm
 ;Generic graphics
 
 ALIGN 4
@@ -747,6 +740,7 @@ rgb:
 white:
     DUP_
     mov  eax, 0ffffffh
+
 color:
     call rgb
     mov  fore, eax
@@ -826,7 +820,7 @@ switch:
 clip:
     mov  edi, xy
     mov  ecx, edi
-    test CX, CX
+    test cx, cx
     jns  @f
         xor  ecx, ecx
 @@:
@@ -846,6 +840,7 @@ bit16:
     lodsw
     xchg AL, AH
     mov  ecx, 16
+
 b16:
     shl  AX, 1
         jnc  @f
@@ -890,8 +885,10 @@ emit:
     pop  edx
     pop  edi
     pop  esi
+
 BL_:
     DROP
+
 SPACE:
     add  xy, iw*10000h
     ret
@@ -964,6 +961,7 @@ box:
          add  edi, edx
         pop  ecx
         next @b
+    
 no:
     DROP
     DROP
@@ -998,6 +996,7 @@ GREEN:
     jmp  color
 
 history db 11 dup (0)
+
 ECHO_:
     push esi
      mov  ecx, 11-1
@@ -1089,43 +1088,6 @@ pAT:
     add  word ptr xy+2, AX
     DROP
     ret
-
-;cl1:
-    xor  eax, eax
-;    mov  [esi], eax
-;    ret
-;clip:
-    movsx edx, word ptr xy
-;    cmp  edx, vp
-;    jns  cl1
-;    add  eax, edx
-;    js   cl1
-;    test edx, edx
-;    jns  @f
-;        xor  edx, edx
-;@@:
-    cmp  eax, vp
-;    js   @f
-;        mov  eax, vp
-;@@:
-    sub  eax, edx
-;    mov  word ptr xy, DX
-;    movsx edx, word ptr xy+2
-;    cmp  edx, hp
-;    jns  cl1
-;    add  [esi], edx
-;    js   cl1
-;    test edx, edx
-;    jns  @f
-;        xor  edx, edx
-;@@:
-    cmp  dword ptr [esi], hp
-;    js   @f
-;        mov  dword ptr [esi], hp
-;@@:
-    sub  [esi], edx
-;    mov  word ptr xy+2, DX
-;    ret
 
 octant:
     DUP_
@@ -1284,6 +1246,7 @@ words   dd 1
 nul0:
     DROP
     jmp  @f
+
 ACCEPT:
 acceptn:
     mov  shift, offset alpha0
@@ -1415,6 +1378,7 @@ MINUS:
 NUMBER0:
     DROP
     jmp  NUMBER3
+
 NUMBER:
     call current
     mov  sign, 0
@@ -1438,6 +1402,7 @@ NUMBER3:
     add  edx, eax
 @@:
     mov  [esi], edx
+
 NUMBER2:
     DROP
     mov  shift, offset numb1
@@ -1933,8 +1898,9 @@ insert0:
          mov  ecx, words ; no
 @@:
              DROP
-             next @b
+     next @b
          ret
+
 insert1:
     push esi
      mov  esi, lcad
@@ -2042,6 +2008,7 @@ enstack:
        stosd
        mov  trash, edi
     pop  esi
+
 ens:
     DROP
     ret

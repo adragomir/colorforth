@@ -38,18 +38,18 @@ Godd_size  equ 750*4
 mains_size equ 1500*4
 maind_size equ 750*4
 gap_size   equ 750*4
-area_size  equ Godd_size+mains_size+maind_size+maind_size+gap_size
+area_size  equ Godd_size + mains_size + maind_size + maind_size + gap_size
 
-           dd  area_size/4 dup (offset dummy)
+           dd  area_size / 4 dup (offset dummy)
 
 Gods       equ $
 
 trash_adr  db  64 dup ('T')
 dummy      dd  0
 
-Godd       equ Gods-Godd_size
-mains      equ Godd-mains_size
-maind      equ mains-maind_size
+Godd       equ Gods - Godd_size
+mains      equ Godd - mains_size
+maind      equ mains - maind_size
 _STACK     ends
 
 .code
@@ -112,8 +112,7 @@ fail_process:
     call   ExitProcess		; 1 parameter
     
 bye:
-       
-exit_process:
+    exit_process:
     push   0      
     call   ExitProcess		; 1 parameter
 
@@ -138,7 +137,6 @@ ENDM
 
 hp     equ 1024    ; horizontal size
 vp     equ 768     ; vertical size
-;;! buffer equ 604*256
 bpc    equ 2       ; bytes per color (16 bit)
 
 ;   100000 dictionary
@@ -170,11 +168,8 @@ blk0:
     sub    eax, 18 shl 10
     ret
 
-
-; in:
-     edx - file name
-; out:
-    eax - memory address
+; in:  edx - file name
+; out: eax - memory address
 map_file:
     push   0               ; template file
     push   00000080h       ; attributes
@@ -220,11 +215,9 @@ map_file_ex1:
 
     pop    eax   
 map_file_ex:
-       
     ret
 
-; in:
-     eax - memory address
+; in:  eax - memory address
 unmap_file:
     push   eax
     call   UnmapViewOfFile	; 1 parameter
@@ -245,10 +238,8 @@ map_work_files:
 
     ret 
 
-; in:
-     ecx - size
-; out:
-    eax - address
+; in:  ecx - size
+; out: eax - address
 alloc_mem:
     push   40h                   ; PAGE_EXECUTE_READWRITE
     push   1000h                 ; MEM_COMMIT
@@ -341,7 +332,6 @@ wnd_proc   proc hWnd :DWORD, uMsg   :DWORD, wParam :DWORD, lParam :DWORD
     jmp    wnd_proc_ex
     
 @@:
-       
     push   [lParam]
     push   [wParam]
     push   [uMsg]
@@ -351,9 +341,7 @@ wnd_proc   proc hWnd :DWORD, uMsg   :DWORD, wParam :DWORD, lParam :DWORD
 
 wnd_proc_ex:
     mov    eax, 1
-wnd_proc_exx:
-       
-    ret 
+wnd_proc_exx:    ret 
 wnd_proc   endp
 
 
@@ -386,9 +374,7 @@ get_char:
     cmp    ebx, offset keybuf + KEYBUF_SIZE
     jnge   @f
     mov    ebx, offset keybuf
-@@:
-    
-    xor    al, al
+@@:    xor    al, al
     cmp    ebx, [keybufhead]
     je     get_char_ex
     mov    [keybuftail], ebx
@@ -520,6 +506,24 @@ MSG ends
     
 wm  MSG    <>         
 
+process_messages:
+    push   0h     	; WM_KEYLAST
+    push   0h     	; WM_KEYFIRST
+    push   0 		; [hwndmain]      
+    push   offset wm
+    call   GetMessageA	; 4 parameters
+    or     eax, eax
+    jnz    process_messages_disp
+    jmp    exit_process
+    
+process_messages_disp:    
+    push   offset wm
+    call   TranslateMessage	; 1 parameter
+    push   offset wm
+    call   DispatchMessageA	; 1 parameter
+    
+    ret
+    
     
 BITMAPINFOHEADER struc
   biSize            DWORD      ?
@@ -675,7 +679,6 @@ bload:
     call   unmap_file
     
 bload_ex:
-       
     pop    edi
     pop    esi
     DROP
@@ -691,21 +694,21 @@ warm:
 
 _start:
 start:
-    
 ; initialize stacks
     mov    eax, esp
     mov    [stack0], eax
-    mov    ecx, 64*1024/4
+    mov    ecx, 64 * 1024 / 4
 @@:
     push   ecx
     dec    ecx
     jnz    @b
     mov    esp, eax
-    sub    eax, 24*1024
+    sub    eax, 24 * 1024
     mov    [stack1], eax
-    sub    eax, 24*1024
+    sub    eax, 24 * 1024
     mov    [stack2], eax
     mov    esi, Godd
+    
     call   map_work_files
     call   alloc_buffers
     call   alloc_signal_char
@@ -713,12 +716,14 @@ start:
     call   alloc_display
 
     call   show0
+
     mov    forths, (forth1-forth0)/4
     mov    macros, (macro1-macro0)/4
     
 ; load block 0
     mov    eax, 18
     call   LOAD
+
     jmp    ACCEPT
 
 ALIGN 4
@@ -727,7 +732,6 @@ me         dd  offset God
 screen     dd  0 ; logo
 
 ROUND:
-    
     call   unPAUSE
 God        dd  0 ; Gods-2*4
     call   unPAUSE
@@ -735,7 +739,6 @@ main       dd  0 ; mains-2*4
     jmp    ROUND
 
 dopause:
-    
     DUP_
     push   esi         
     mov    eax, me     
@@ -744,7 +747,6 @@ dopause:
     jmp    eax         
 
 unPAUSE:
-    
     pop    eax        
     mov    esp, [eax] 
     mov    me, eax    
@@ -753,7 +755,6 @@ unPAUSE:
     ret
 
 ACT:
-    
     mov    edx, [stack2] ; maind-4 
     sub    edx, 4
     mov    [edx], eax   
@@ -767,18 +768,15 @@ ACT:
     ret
 
 show0:
-    
     call   show
     ret
     
 show:
-    
     pop    screen
     DUP_
     xor    eax, eax
     call   ACT
 @@:
-        
     call   graphic
     call   [screen]
     call   SWITCH
@@ -786,12 +784,10 @@ show:
     jmp    @b
 
 c_:
-     
-    mov    esi, Godd+4
+    mov    esi, Godd + 4
     ret
 
 mark:
-    
     mov    ecx, macros
     mov    mk, ecx
     mov    ecx, forths
@@ -801,7 +797,6 @@ mark:
     ret
 
 empty:
-    
     mov    ecx, mk+2*4
     mov    H, ecx
     mov    ecx, mk+4
@@ -812,14 +807,12 @@ empty:
     ret
 
 mFIND:
-    
     mov    ecx, macros
     push   edi
     lea    edi, [macro0-4+ecx*4]
     jmp    @f
 
 FIND:
-    
     mov    ecx, forths
     push   edi
     lea    edi, [forth0-4+ecx*4]
@@ -831,12 +824,10 @@ FIND:
     ret
 
 EX1:
-    
     dec    words ; from keyboard
     jz     @f
     DROP
     jmp    EX1
-
 @@:
     call   FIND
     jnz    ABORT1
@@ -856,7 +847,6 @@ ex2:
     jmp    [forth2+ecx*4]
 
 ABORT:
-    
     mov    curs, edi
     shl    edi, 2
     sub    edi, [blocks_adr] 
@@ -864,7 +854,6 @@ ABORT:
     add    edi, 18
     mov    blk, edi
 ABORT1:
-    
     mov    esp, [stack0] ; Gods
     mov    spaces+3*4, offset forthd
     mov    spaces+4*4, offset qcompile
@@ -875,25 +864,20 @@ ABORT1:
     jmp    ACCEPT
 
 sDEFINE:
-    
     pop    aDEFINE
     ret
     
 MACRO_:
-    
     call   sDEFINE
 macrod:
-    
     mov    ecx, macros
     inc    macros
     lea    ecx, [macro0+ecx*4]
     jmp    @f
 
 FORTH:
-    
     call   sDEFINE
 forthd:
-    
     mov    ecx, forths
     inc    forths
     lea    ecx, [forth0+ecx*4]
@@ -915,7 +899,6 @@ forthd:
     ret
 
 cdrop:
-    
     mov    edx, h
     mov    list, edx
     mov    byte ptr [edx], 0adh ; lodsd
@@ -993,7 +976,6 @@ literal:
     ret
 
 qCOMPILE:
-    
     call   [lit]
     mov    eax, [-4+edi*4]
     and    eax, -20o
@@ -1007,7 +989,6 @@ qCOMPILE:
 @@:
     jnz    ABORT
 call_:
-    
     mov    edx, h
     mov    list, edx
     mov    byte ptr [edx], 0e8h
@@ -1019,7 +1000,6 @@ call_:
     ret
 
 COMPILE:
-    
     call   [lit]
     mov    eax, [-4+edi*4]
     and    eax, -20o
@@ -1028,7 +1008,6 @@ COMPILE:
     jmp    @b
 
 SHORT_:
-    
     mov    lit, offset alit
     DUP_
     mov    eax, [-4+edi*4]
@@ -1036,7 +1015,6 @@ SHORT_:
     ret
 
 NUM:
-    
     mov    lit, offset alit
     DUP_
     mov    eax, [edi*4]
@@ -1044,7 +1022,6 @@ NUM:
     ret
 
 comma:
-    
     mov    ecx, 4
 @@:
     mov    edx, h
@@ -1056,22 +1033,18 @@ comma:
     ret
 
 comma1:
-    
     mov    ecx, 1
     jmp    @b
 
 comma2:
-    
     mov    ecx, 2
     jmp    @b
 
 comma3:
-    
     mov    ecx, 3
     jmp    @b
 
 semi:
-    
     mov    edx, [H]
     sub    edx, 5
     cmp    [list], edx
@@ -1086,7 +1059,6 @@ semi:
     ret
 
 then:
-    
     mov    list, esp
     mov    edx, h
     sub    edx, eax
@@ -1095,16 +1067,13 @@ then:
     ret
 
 begin:
-    
     mov    list, esp
 here:
-    
     DUP_
     mov    eax, h
     ret
 
 qlit:
-    
     mov    edx, h
     lea    edx, [edx-5]
     cmp    list, edx
@@ -1119,9 +1088,7 @@ qlit:
     jz     q1
     mov    h, edx
     jmp    cdrop   
-
 q1:
-    
     add    h, -10 ; flag nz
     ret
 @@:
@@ -1129,7 +1096,6 @@ q1:
     ret
 
 less:
-    
     cmp    [esi], eax
     js     @f ; flag nz
     xor    ecx, ecx ; flag z
@@ -1137,17 +1103,14 @@ less:
     ret
 
 qIGNORE:
-    
     test   dword ptr [-4+edi*4], -20o
     jnz    nul
     pop    edi
     pop    edi
 nul:
-    
     ret
 
 jump:
-    
     pop    edx
     add    edx, eax
     lea    edx, [5+eax*4+edx]
@@ -1156,7 +1119,6 @@ jump:
     jmp    edx
 
 LOAD:
-    
     sub    eax, 18
     shl    eax, 10-2
     mov    ebx, [blocks_adr]
@@ -1166,7 +1128,6 @@ LOAD:
     mov    edi, eax
     DROP
 INTER:
-     
     mov    edx, [edi*4]
     inc    edi
     and    edx, 17o
@@ -1339,17 +1300,14 @@ forth2 dd offset notimpl ; boot
        dd 512 dup (0)
 
 erase:
-    
     mov    ecx, eax
     shl    ecx, 8
     DROP
     push   edi
     mov    edi, eax
-    
     sub    edi, 18
     shl    edi, 2+8
     add    edi, [blocks_adr]
-
     xor    eax, eax
     rep    stosd
     pop    edi
@@ -1357,11 +1315,9 @@ erase:
     ret
 
 copy:
-    
     cmp    eax, 12   
     jc     ABORT1    
     mov    edi, eax  
-
     sub    edi, 18
     shl    edi, 2+8  
     push   esi       
@@ -1392,7 +1348,6 @@ move:
     ret
 
 debug:
-    
     mov    xy, 3*10000h+(vc-2)*ih+3
     DUP_
     mov    eax, God
@@ -1420,21 +1375,18 @@ xycr       dd 0
 fov        dd 10*(2*vp+vp/2)
 
 nc_:
-    
     DUP_
     mov    eax, (offset nc)
     shr    eax, 2
     ret
 
 xy_:
-    
     DUP_
     mov    eax, (offset xy)
     shr    eax, 2
     ret
 
 fov_:
-    
     DUP_
     mov    eax, (offset fov)
     shr    eax, 2
@@ -1516,7 +1468,6 @@ bit16:
     mov    ecx, 16
 
 b16:
-    
     shl    AX, 1
     jnc    @f
     mov    [edi], DX
@@ -1561,8 +1512,8 @@ emit:
     pop    edx
     pop    edi
     pop    esi
+
 BL_:
-    
     DROP
 
 SPACE:
@@ -1570,14 +1521,12 @@ SPACE:
     ret
 
 emit2:
-    
     push   esi
     push   edi
     push   edx
     imul   eax, 16*24/8
     mov    esi, [icons_adr]
     add    esi, eax
-;;!    lea    esi, 4icons[eax]
     call   clip
     mov    edx, fore
     mov    ecx, 24
@@ -1601,7 +1550,6 @@ text1:
     jmp    TOP
 
 line:
-    
     call   clip
     mov    ecx, [esi]
     shl    ecx, 1
@@ -1615,7 +1563,6 @@ line:
     ret
 
 box:
-    
     call   clip
     cmp    eax, vp+1
     js     @f
@@ -1642,6 +1589,7 @@ box:
     add    edi, edx
     pop    ecx
     next   @b
+    
 no:
     DROP
     DROP
@@ -1651,32 +1599,26 @@ no:
 
 yellow     equ 0ffff00h
 CYAN:
-    
     DUP_
     mov    eax, 0ffffh
     jmp    color
 MAGENTA:
-    
     DUP_
     mov    eax, 0ff00ffh
     jmp    color
 SILVER:
-       
     DUP_
     mov    eax, 0c0c0c0h
     jmp    color
 BLUE:
-    
     DUP_
     mov    eax, 4040ffh
     jmp    color
 RED:
-    
     DUP_
     mov    eax, 0ff0000h
     jmp    color
 GREEN:
-    
     DUP_
     mov    eax, 8000ff00h
     jmp    color
@@ -1684,7 +1626,6 @@ GREEN:
 history    db 11 dup (0)
 
 ECHO_:
-    
     push   esi
     mov    ecx, 11-1
     lea    edi, history
@@ -1696,7 +1637,6 @@ ECHO_:
     ret
 
 RIGHT:
-    
     DUP_
     mov    ecx, 11
     lea    edi, history
@@ -1706,7 +1646,6 @@ RIGHT:
     ret
 
 DOWN:
-    
     DUP_
     xor    edx, edx
     mov    ecx, ih
@@ -1715,7 +1654,6 @@ DOWN:
     add    edx, 3*10000h+8000h-ih+3
     mov    xy, edx
 ZERO:
-    
     test   eax, eax
     mov    eax, 0
     jnz    @f
@@ -1724,7 +1662,6 @@ ZERO:
     ret
 
 blank:
-    
     DUP_
     xor    eax, eax
     mov    xy, eax
@@ -1736,7 +1673,6 @@ blank:
     jmp    box
 
 TOP:
-    
     mov    ecx, lm
     shl    ecx, 16
     add    ecx, 3
@@ -1745,12 +1681,10 @@ TOP:
     ret
 
 qcr:
-    
     mov    CX, word ptr xy+2
     cmp    CX, word ptr rm
     js     @f
 cr:
-    
     mov    ecx, lm
     shl    ecx, 16
     mov    CX, word ptr xy
@@ -1760,19 +1694,16 @@ cr:
     ret
 
 LMs:
-    
     mov    lm, eax
     DROP
     ret
 
 RMs:
-    
     mov    rm, eax
     DROP
     ret
 
 at:
-    
     mov    word ptr xy, AX
     DROP
     mov    word ptr xy+2, AX
@@ -1780,7 +1711,6 @@ at:
     ret
 
 pAT:
-    
     add    word ptr xy, AX
     DROP
     add    word ptr xy+2, AX
@@ -1788,7 +1718,6 @@ pAT:
     ret
 
 octant:
-    
     DUP_
     mov    eax, 43h ; poly -last y+ x+ ;23h ; last y+ x+
     mov    edx, [4+esi]
@@ -1807,13 +1736,11 @@ octant:
 ; Keyboard
 
 fkeys:
-    
     call FOUR
     call SPACE
     call four
     call space
 FOUR:
-    
     mov    ecx, 4
 
 EmitN:
@@ -1828,8 +1755,7 @@ EmitN:
     ret
 
 stack:
-    
-    mov    edi, Godd-4
+    mov    edi, Godd - 4
 @@:
     mov    edx, God
     cmp    [edx], edi
@@ -1843,7 +1769,6 @@ stack:
     ret
 
 KEYBOARD:
-    
     call   text1
     DUP_
     mov    eax, keyc
@@ -1905,7 +1830,40 @@ letx:
     ret
 ; QWERTY end
 
+; returns 'Virtual-Key Codes':
+; bs = 08
+; Enter = 0d
+; shift = 10
+; Alt = 12
+; Esc = 1b
+; lshift = a0???
+; rshift = a1???
+; 0-9 = 30-39
+; a-z = 41-5a
+scankeys:
+    mov ecx, 255		; check all 255 virtual-key codes
+@@: push ecx			; save virtual-key code
+    push ecx			; vKey (virtual-key code) parameter to call
+    call GetAsyncKeyState	; key up or down? pressed since last call?
+    pop ecx			; restore virtual-key code
+    test eax, 1			; pressed since last call?
+    jnz @f			; ret NZ if so
+	dec ecx
+    jz @f			; loop. If done, ret Z
+    cmp ecx, 10h		; at shift key?
+    jnz @b
+    dec ecx			; skip checking for shift key
+    jmp @b
+@@: ret
+
 getkey:
+    call   process_messages
+    call   scankeys
+    jz     getkey
+    test   eax, 8000h		; was key still down at time of call?
+    jz     getkey		; skip it if not
+    push   0			; uMap=MAPVK_VK_TO_VSC (return scan code)
+    push   ecx			; uCode
     ; map the sdl macbook pro scancode to a ascii scan code
     call   MapVirtualKeyA	; map the virtual-key code to a scan code (ASCII version)
     and    eax, 0ffh
@@ -1913,6 +1871,13 @@ getkey:
     ret
 
 getcfkey:
+    push 0					; boolean=False (background unchanged)
+    push 0					; ptr to rect structure=Nul(re-paint entire window)
+    push [hwndmain]			; handle to window
+    call InvalidateRect		; takes 3 paramters
+    push [hwndmain]			; handle to window
+    call UpdateWindow    	; takes 1 parameter
+gck1:
     call getkey
     push eax
     xor eax,eax
@@ -1929,7 +1894,7 @@ getcfkey:
     ret
 
 ; QWERTY till QWERTY end
-    align 2
+align 2
     ; scan code to colorforth char conversion.
     ; the codes are huffman compressed etc... (the huffman index not the actual value !!!!!!!!!)
     ; -1 for backspace/esc, -2 for return/space
@@ -1977,30 +1942,18 @@ key0:
     ret
 
 ; programmable keys. Scan code to colorforth character codes
-; 0x00:
-     . esc 1 2 3 4 5 6
-; 0x08:
-     7 8 9 0 - = bs tab
-; 0x10:
-     Q W E R T Y U I
-; 0x18:
-     O P [ ] ret Lctrl A S
-; 0x20:
-     D F G H J K L ;
-; 0x28:
-     ' ` Lshift \ Z X C V
-; 0x30:
-     B N M , . / Rshift *
-; 0x38:
-     Lalt space.F1|F2|F3|F4|F5
-; 0x40:
-     F6|F7|F8|F9|F10..KP7
-; 0x48:
-     KP8|KP9|KP-|KP4|KP5|KP6|KP+|KP1
-; 0x50:
-     KP2|KP3|KP0|KP.|...F11
-; 0x58:
-     F12
+; 0x00:  . esc 1 2 3 4 5 6
+; 0x08:  7 8 9 0 - = bs tab
+; 0x10:  Q W E R T Y U I
+; 0x18:  O P [ ] ret Lctrl A S
+; 0x20:  D F G H J K L ;
+; 0x28:  ' ` Lshift \ Z X C V
+; 0x30:  B N M , . / Rshift *
+; 0x38:  Lalt space.F1|F2|F3|F4|F5
+; 0x40:  F6|F7|F8|F9|F10..KP7
+; 0x48:  KP8|KP9|KP-|KP4|KP5|KP6|KP+|KP1
+; 0x50:  KP2|KP3|KP0|KP.|...F11
+; 0x58:  F12
 pkeys db 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 	;  0..7
     db 0 , 0 , 0 , 0 , 0 , 0 , 1 , 0	;  8..f
     db 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 	; 10..17
@@ -2025,7 +1978,7 @@ pkey0:
     xor	eax, eax
     call dopause
     call getcfkey
-    cmp al, 59h
+    cmp al, 59h ; al - 59h
     jnc pkey0
     mov al, [pkeys+eax]
     and al, al
@@ -2060,17 +2013,14 @@ shifted    dd 0			; QWERTY
 
 
 nul0:
-    
     DROP
     jmp    @f
     
 ACCEPT:
 acceptn:
-    
     mov    shift, offset alpha0
     xor edi, edi		; QWERTY skip display of command key map
 ACCEPT1:
-    
     mov    board, edi
 @@:
     call   KEY
@@ -2087,7 +2037,6 @@ acmdk:
 bits       db 28
 
 PACK:
-    
     cmp    AL, 20o
     jc    pack0
     add    eax, 120o
@@ -2116,20 +2065,17 @@ pack0:
     ret
 
 LJ0:
-    
     mov    CL, bits
     add    CL, 4
     shl    dword ptr [esi], CL
     ret
 
 LJ:
-    
     call   LJ0
     DROP
     ret
 
 FULL:
-    
     call   LJ0
     inc    words
     mov    bits, 28
@@ -2139,7 +2085,6 @@ FULL:
     ret
 
 X:
-     
     call   RIGHT
     mov    eax, words
     lea    esi, [eax*4+esi]
@@ -2147,7 +2092,6 @@ X:
     jmp    ACCEPT
 
 WORD_:
-    
     call   RIGHT
     mov    words, 1
     mov    chars, 1
@@ -2155,7 +2099,6 @@ WORD_:
     mov    dword ptr [esi], 0
     mov    bits, 28
 WORD1:
-     
     call   LETTER
     jns    @f
     neg    al			; QWERTY
@@ -2170,25 +2113,21 @@ WORD1:
     inc    chars
 
 WORD0:
-      
     DROP
     call   KEY
     jmp    WORD1
 
 decimal:
-    
     mov    base, 10
     mov    shift, offset numb0
     ret
 
 hex:
-    
     mov    base, 16
     mov    shift, offset numb0 ; oct0
     ret
 
 octal:
-    
     xor    current, (offset decimal) 
     xor    current, (offset hex)
     xor    byte ptr numb0+18, 41o xor 16o ; '9' xor 'f'
@@ -2208,17 +2147,14 @@ digit      db 14, 10,  0,  0
 sign       db 0
 
 MINUS:
-    
     mov    sign, AL
     jmp    NUMBER2
 
 NUMBER0:
-    
     DROP
     jmp    NUMBER3
 
 NUMBER:
-    
     call   current
     mov    sign, 0
     xor    eax, eax		; TOS=entered number(initialized to 0)
@@ -2244,25 +2180,21 @@ NUMBER3:
     mov    [esi], edx
 
 NUMBER2:
-      
     DROP
     mov    shift, offset numb1
     jmp    NUMBER3
 
 ENDN:
-    
     DROP
     call   [anumber]
     jmp    ACCEPTn
 
 ALPHn:
-    
     DROP
     DROP
     jmp    ACCEPT
 
 ALPH:
-    
     mov    shift, offset alpha1
     jmp    WORD0
 
@@ -2270,10 +2202,8 @@ ALPH:
 hicon      db 30o, 31o, 32o, 33o, 34o, 35o, 36o, 37o
            db 40o, 41o,  5 , 23o, 12o, 20o,  4 , 16o 
 eDIG1:
-    
     DUP_
 eDIG:
-    
     push   ecx
     mov    AL, hicon[eax]
     call   EMIT
@@ -2281,14 +2211,12 @@ eDIG:
     ret
 
 oDIG:
-    
     rol    eax, 4
     DUP_
     and    eax, 0Fh
     ret
 
 hdotn:
-    
     mov    edx, eax
     neg    eax
     lea    ecx, [32+eax*4]
@@ -2297,7 +2225,6 @@ hdotn:
     mov    ecx, edx
     jmp    @f
 hdot:
-    
     mov    ecx, 8
 @@:
     call   oDIG
@@ -2307,7 +2234,6 @@ hdot:
     ret
 
 dot:
-    
     mov    ecx, 7
 @@:
     call   oDIG
@@ -2317,7 +2243,8 @@ dot:
     inc    ecx
 @@:
     call   oDIG
-@h1:call   eDIG
+@h1:
+    call   eDIG
     next   @b
     call   space
     DROP
@@ -2327,11 +2254,9 @@ dot:
     jmp    @h1
 
 qdot:
-    
     cmp    base, 10
     jnz    dot
 dot10:
-    
     mov    edx, eax
     test   edx, edx
     jns    @f
@@ -2355,12 +2280,10 @@ dot10:
     xor    edx, edx
     div    tens[ecx*4]
 D_1:
-    
     call   eDIG1
     dec    ecx
     jns    @b
 D_2:
-    
     mov    eax, edx
     call   eDIG1
     call   space ; spcr
@@ -2368,7 +2291,6 @@ D_2:
     ret
 
 unPACK:
-    
     DUP_
     test   eax, eax
     js     @f
@@ -2392,7 +2314,6 @@ unPACK:
     ret
 
 qRING:
-    
     DUP_
     inc    dword ptr [esi]
     cmp    curs, edi ; from abort, insert
@@ -2408,7 +2329,6 @@ qRING:
     ret
 
 RING:
-    
     mov    cad, edi
     sub    xy, iw*10000h ; bksp
     DUP_
@@ -2446,7 +2366,6 @@ wW:
     jmp    TYPE_
 
 type0:
-    
     sub    xy, iw*10000h ; call bspcr
     test   dword ptr [-4+edi*4], -20o
     jnz    type1
@@ -2459,7 +2378,6 @@ type0:
     jmp    KEYBOARD
 
 Cap:
-    
     call   white
     DUP_
     mov    eax, [-4+edi*4]
@@ -2470,7 +2388,6 @@ Cap:
     jmp    type2
 
 CAPS:
-    
     call   white
     DUP_
     mov    eax, [-4+edi*4]
@@ -2483,16 +2400,13 @@ CAPS:
     jmp    @b
 
 text:
-    
     call   WHITE
 TYPE_:
 type1:
-    
     DUP_
     mov    eax, [-4+edi*4]
     and    eax, -20o
 type2:
-        
     call   unPACK
     jz     @f
     call   EMIT
@@ -2504,21 +2418,17 @@ type2:
     ret
 
 gsW:
-    
     mov    edx, [-4+edi*4]
     sar    edx, 5
     jmp    gnW1
 
 var:
-    
     call   MAGENTA
     call   TYPE_
 gnW:
-    
     mov    edx, [edi*4]
     inc    edi
 gnW1:
-    
     DUP_
     mov    eax, 0f800h ; Green
     cmp    bas, offset dot10
@@ -2535,7 +2445,6 @@ nW:
     mov    edx, [edi*4]
     inc    edi
 nW1:
-    
     DUP_
     mov    eax, yellow
     cmp    bas, offset dot10
@@ -2548,7 +2457,6 @@ nW1:
     jmp    [bas]
 
 REFRESH:
-    
     call   SHOW
     call   blank
     call   text1
@@ -2567,7 +2475,6 @@ REFRESH:
     xor    eax, eax
     mov    pcad, edi ; for curs=0
 ref1:
-      
     test   dword ptr [edi*4], 0fh
     jz     @f
     call   qRING
@@ -2620,45 +2527,36 @@ vector     dd 0
 action     db 1
 
 act1:
-    
     mov    AL, 1
     jmp    @f
 act3:
-    
     mov    AL, 3
     jmp    @f
 act4:
-    
     mov    AL, 4
     jmp    @f
 act9:
-    
     mov    AL, 9
     jmp    @f
 act10:
-    
     mov    AL, 10
     jmp    @f
 act11:
-    
     mov    AL, 11
     jmp    @f
 act7:
-    
     mov    AL, 7
 @@:
     mov    action, AL
     mov    eax, [actc-4+eax*4]
     mov    aword, offset insert
 actn:
-    
     mov    keyc, eax
     pop    eax
     DROP
     jmp    ACCEPT
 
 actv:
-    
     mov    action, 12
     mov    eax, 0ff00ffh ; Magenta
     mov    aword, offset @f
@@ -2671,17 +2569,14 @@ actv:
     jmp    insert    
 
 mcur:
-    
     dec    curs
     jns    @f
 pcur:
-    
     inc    curs
 @@:
     ret
 
 mmcur:
-    
     sub    curs, 8
     jns    @f
 hcur:
@@ -2689,17 +2584,14 @@ hcur:
 @@:
     ret
 ppcur:
-    
     add    curs, 8
     ret
 
 pblk:
-    
     add    blk, 2
     add    dword ptr [esi], 2
     ret
 mblk:
-    
     cmp    blk, 20
     js     @f
     sub    blk, 2 
@@ -2746,7 +2638,6 @@ E:
     jmp    @b
 
 eout:
-    
     pop    eax
     DROP
     DROP
@@ -2758,7 +2649,6 @@ eout:
     jmp    ACCEPT
 
 destack:
-    
     mov    edx, trash
     cmp    edx, offset trash_adr ;;! buffer*4
     jnz    @f
@@ -2776,7 +2666,6 @@ destack:
     mov    trash, edx
 
 insert0:
-    
     mov    ecx, lcad  ; room available?
     add    ecx, words
     xor    ecx, lcad
@@ -2784,13 +2673,11 @@ insert0:
     jz     insert1
     mov    ecx, words ; no
 @@:
-             
     DROP
     next @b
     ret
 
 insert1:
-    
     push   esi
     mov    esi, lcad
     mov    ecx, esi
@@ -2818,14 +2705,12 @@ insert1:
     ret
 
 insert:
-    
     call   insert0
     mov    CL, action
     xor    [edi*4], CL
     jmp    ACCEPT
 
 FORMAT:
-    
     test   action, 12o ; ignore 3 and 9
     jz     @f
     DROP
@@ -2851,7 +2736,6 @@ FORMAT:
     jmp    insert
 
 FORMAT2:
-    
     DUP_
     mov    eax, 1 ; 5
     cmp    action, 4
@@ -2867,7 +2751,6 @@ FORMAT2:
     jmp    insert
 
 DEL:
-    
     call   enstack
     mov    edi, pcad
     mov    ecx, lcad
@@ -2881,7 +2764,6 @@ DEL:
     jmp    mcur
 
 enstack:
-    
     DUP_
     mov    eax, cad
     sub    eax, pcad
@@ -2910,12 +2792,11 @@ ens:
 pad:
     pop    edx
     mov    vector, edx
-    add    edx, 28*5+4			; QWERTY
+    add    edx, 28*5 + 4			; QWERTY
     mov    board, edx
-    sub    edx, 4*4+4			; QWERTY
+    sub    edx, 4*4 + 4			; QWERTY
     mov    shift, edx
 @@:
-        
     call   pKEY					; QWERTY
     mov    edx, vector
     add    edx, eax
@@ -2929,6 +2810,5 @@ pad:
 ;    dd 0
 
 code_end:
-
 end _start
 
