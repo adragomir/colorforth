@@ -156,7 +156,8 @@ ex2:	andl $-020, %eax
 abort:	movl %edi, curs
 	shrl $10 - 2, %edi
 	movl %edi, blk
-abort1:	movl gods, %esp
+abort1:
+  movl gods, %esp
 	movl $forthd, spaces + 3 * 4
 	movl $qcompile, spaces + 4 * 4
 	movl $cnum, spaces + 5 * 4
