@@ -13,7 +13,7 @@ section .data
   str_blocks_file db 'OkadWork.cf', 0
   str_icons_file db 'icons', 0
 
-	debug_str_myregs db "EDI      ESI      EBP      ESP      EBX      EDX      ECX      EAX", 0xa, 0x0
+	debug_str_myregs db "EDI      ESI      EBP      ESP      EBX      EDX      ECX      EAX", 0x10, 0x0
   debug_str_myregs_len equ $ - debug_str_myregs
 	debug_str_myflagso db "ZF=0 CF=0 OF=0 SF=0 PF=0", 0xa
 	debug_nl_char db 0xa
@@ -30,6 +30,7 @@ section .data
   debug_short_ db 'called short_', 0xa, 0x0
   debug_nul db 'called nul', 0xa, 0x0
   debug_variable db 'called variable', 0xa, 0x0
+  debug_macro db 'called macro', 0xa, 0x0
 
 section .bss 
   rstruct SDL_Surface, surface  
@@ -410,7 +411,7 @@ _main:
   ;call program_exit_ok
 
 program_notimpl:
-    jmp program_exit_fail
+    ret
 
 %include "huffman.inc"
 %include "icons.inc"
@@ -1340,7 +1341,6 @@ load:
 ; do it.)
 inter:
   mov edx, [edi * 4]
-  call debug_dumpregs
   inc edi          ; (Thus all routines work on [-4+edi*4].)
   and edx, byte 15        ; Clear all bits except color bits (0..3).
   call [spaces + edx * 4]       ; Use result as offset to routine to run. 
@@ -1826,7 +1826,13 @@ switch_:
   ;rep movsd ; move ecx double words from esi to edi
   ;pop edi
   ;pop esi
+  pushad
+  ;push esi
+  ;push edi
   call sdl_flip
+  ;pop edi
+  ;pop esi
+  popad
   ret
 
 switch:
@@ -2739,6 +2745,7 @@ word1:
   call letter
   jns .0
   mov edx, [shift]
+  call debug_dumpregs
   jmp dword [edx + eax * 4]
   .0:
     test al, al
