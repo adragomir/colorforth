@@ -2,28 +2,9 @@
 %include "posix.inc"
 %include "SDL.inc"
 
-%macro debug_pointer 1
-  push eax
-  mov eax, %1
-  mov [var_d], eax
-  ccall _printf, msg_debug_pointer, dword [var_d]
-  pop eax
-%endmacro
-
-%macro debug_int 1
-  push eax
-  mov eax, %1
-  mov [var_d], eax
-  ccall _printf, msg_debug_int, dword [var_d], dword [var_d]
-  pop eax
-%endmacro
-
-
 section .data
   run db 1
   msg_color_forth db 'colorForth', 0x0
-  msg_debug_pointer db 'pointer: %x', 10, 0
-  msg_debug_int db 'int: %ld, as hex: %x', 10, 0
 
   str_error_open_block_file db "Can't open blocks file OkadWork.cf", 0Ah, 0
   str_error_stat_block_file db "Can't stat blocks file OkadWork.cf", 0Ah, 0
@@ -32,12 +13,33 @@ section .data
   str_blocks_file db 'OkadWork.cf', 0
   str_icons_file db 'icons', 0
 
+	debug_str_myregs db "EDI      ESI      EBP      ESP      EBX      EDX      ECX      EAX", 0xa, 0x0
+  debug_str_myregs_len equ $ - debug_str_myregs
+	debug_str_myflagso db "ZF=0 CF=0 OF=0 SF=0 PF=0", 0xa
+	debug_nl_char db 0xa
+	debug_space_char db ' '
+
+  debug_qignore db 'called qignore', 0xa, 0x0
+  debug_execute db 'called execute', 0xa, 0x0
+  debug_num db 'called num', 0xa, 0x0
+  debug_forthd db 'called forthd', 0xa, 0x0
+  debug_qcompile db 'called qcompile', 0xa, 0x0
+  debug_cnum db 'called cnum', 0xa, 0x0
+  debug_cshort db 'called cshort', 0xa, 0x0
+  debug_compile db 'called compile', 0xa, 0x0
+  debug_short_ db 'called short_', 0xa, 0x0
+  debug_nul db 'called nul', 0xa, 0x0
+  debug_variable db 'called variable', 0xa, 0x0
+
 section .bss 
   rstruct SDL_Surface, surface  
   rstruct SDL_Event, event
   rstruct stat, blocks_file_stat
   rstruct stat, icons_file_stat
-  var_d resd 1
+
+	debug_tmpbytes resb 8
+	debug_myflags resb 25
+
 
 ; This version of colorforth has three tasks; main (the accept loop),
 ; draw (user defined), and serve (also user defined).  Each has two
@@ -71,7 +73,7 @@ bufsize equ 18 * 1024 ; size of floppy buffer.
 ;dictionary  equ 0x100000 ; TODO get rid of this
 
 top_main_return_stack equ $; gods
-top_main_data_stack equ top_main_return_stack - return_stack_size
+top_main_data_stack equ top_main_return_stack - return_stack_size ; godd
 top_draw_return_stack equ top_main_data_stack - data_stack_size
 top_draw_data_stack equ top_draw_return_stack - return_stack_size
 top_serve_return_stack  equ top_draw_data_stack - data_stack_size
@@ -102,6 +104,144 @@ global _main                ; make the main function externally visible
 
 %define sdl_rgb16(r, g, b) dword ((r >> 3) << 11) | ((g >> 2) << 5) | ((b >> 3)) | -16777216
 %define sdl_rgbsingle16(rgb) dword ( (((rgb >> 16) & 0xff) >> 3) << 11) | ( (((rgb >> 8) & 0xff) >> 2) << 5) | ((rgb & 0xff) >> 3)  | -16777216
+
+debug_newline:
+  pushad
+  syscall SYS_write, 1, debug_nl_char, 1
+  popad
+  ret
+
+debug_space:
+  pushad
+  syscall SYS_write, 1, debug_space_char, 1
+  popad
+  ret
+
+debug_asciidigit:
+  add al, 0x30  ; add to make 0-9 ascii
+  cmp al, 0x39  ; if the value is over 9
+  jbe digitdone ; if not skip
+  add al, 0x27  ; if so then add to make a-f
+  digitdone:
+  ret
+
+;
+; print the contents of eax in hex
+;
+debug_printhex:
+  pushad ; save a copy of the registers
+  mov edi, eax ; save a copy in edit
+  mov cl, 28 ; start with 4 bits
+  mov esi, 0 ; starting array pointer
+
+debug_hexloop1:
+  ror eax, cl ; rotate bits in eax right by amount in cl, a multiple of 4
+  and al, 00001111b ; clear top 4 bits 
+  call debug_asciidigit   ; convert to ascii 
+  mov [debug_tmpbytes + esi], al ; copy our value in to the array
+  inc esi           ; increment array pointer
+  mov eax, edi      ; restore copy
+  sub cl, 4         ; decrement four from the bit rotation
+  cmp cl, 0         ; compare to 28
+  jge debug_hexloop1 ; if greater then or equal to then continue (signed)
+
+  syscall SYS_write, 1, debug_tmpbytes, 8
+
+  popad ; restore copy of the registers
+  ret
+
+;
+; print the contents of eax in hex
+; ebx = pointer to buffer
+;
+debug_convhex:
+  push ecx ; save a copy of ecx
+  push edi
+  push esi
+  mov edi, eax ; save a copy in edit
+  mov cl, 28 ; start with 4 bits
+  mov esi, 0 ; starting array pointer
+
+debug_convloop1:
+  ror eax, cl ; rotate bits in eax right by amount in cl, a multiple of 4
+  and al, 00001111b ; clear top 4 bits 
+  call debug_asciidigit   ; convert to ascii 
+  mov [ebx + esi], al ; copy our value in to the array
+  inc esi           ; increment array pointer
+  mov eax, edi      ; restore copy
+  sub cl, 4         ; decrement four from the bit rotation
+  cmp cl, 0         ; compare to 28
+  jge debug_convloop1 ; if greater then or equal to then continue (signed)
+
+  pop esi
+  pop edi
+  pop ecx ; restore copy of the registers
+  ret
+
+;
+; dump out the registers
+;
+debug_dumpregs:
+  pushad ; first copy to return
+  pushfd ; save a copy of the cpu flags
+  pushad ; second copy for us to pop off
+
+  syscall SYS_write, 1, debug_str_myregs, debug_str_myregs_len
+  call debug_newline
+  mov ecx, 8
+  mov edi, 0
+
+debug_regsloop:
+  pop eax  ; pop the first value off the stack
+  push ecx ; push counter onto the stack
+  push eax ; push the contents back on because we have to use eax
+
+  mov ecx, debug_str_myregs ; what register?
+  add ecx, edi    ; pointer for debug_str_myregs
+  ;syscall SYS_write, 1, ecx, 4
+  pop eax       ; ok now lets get the value to print
+  call debug_printhex ; print out the contents of eax in hex 
+  call debug_space    ; print a debug_space
+
+  pop ecx       ; lets get the counter back
+  ;call debug_newline
+  add edi, 4
+  loop debug_regsloop
+
+  call debug_newline
+
+  ;now lets print the flags
+  mov ecx, 25 ; length to copy
+  mov esi, 0  ; offset pointer
+
+  copyloop: ; lets copy the .text to the .bss so we can modify it
+  mov al, [debug_str_myflagso + esi] ; move this byte here because we can't move mem to mem
+  mov [debug_myflags + esi], al ; copy the byte from the register
+  inc esi ; increment the pointer
+  loop copyloop
+
+  popfd ; restore the copy of the cpu flags so we can print them out
+  jnz nosetzf ; jump if zero flag not set
+  mov [debug_myflags+3], byte 0x31 ; set to ascii 1
+  nosetzf:
+  jnc nosetcf ; jump if carry flag not set
+  mov [debug_myflags+8], byte 0x31
+  nosetcf:
+  jno nosetof ; jump if overflow flag not set
+  mov [debug_myflags+13], byte 0x31
+  nosetof:
+  jns nosetsf ; jump if sign flag not set
+  mov [debug_myflags+18], byte 0x31
+  nosetsf: 
+  jnp nosetpf ; jump if parity flag not set
+  mov [debug_myflags+23], byte 0x31
+  nosetpf:
+
+  syscall SYS_write, 1, debug_myflags, 25
+
+  ; restore original values
+  popad ; restore original copy of the registers
+  ret
 
 sdl_flip:
   push eax
@@ -166,7 +306,7 @@ blocks_fd: dd 0
 
 program_map_files:
   ; open
-  syscall SYS_open, str_blocks_file, O_RDONLY
+  syscall SYS_open, str_blocks_file, O_RDWR
   jc .cantopen
 
   mov dword [blocks_fd], dword eax
@@ -178,15 +318,16 @@ program_map_files:
   cmp ecx, 0
   je .sizezero; if size is 0
 
-  ;void * mmap(void *addr, size_t len, int prot, int flags, int fd, off_t offset);
-  syscall SYS_mmap, dword 0, ecx, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_SHARED, dword [blocks_fd], dword 0
-  mov dword [blocks_address], eax
+  syscall SYS_mmap, dword 0, ecx, PROT_READ | PROT_WRITE, MAP_SHARED, dword [blocks_fd], dword 0
+  mov [blocks_address], eax
+  jc .cantmmap
+  ;or     eax, eax
 
   ; TODO close the file on close
   ;syscall SYS_munmap, dword [blocks_address], ecx
 
   ; open
-  syscall SYS_open, str_icons_file, O_RDONLY
+  syscall SYS_open, str_icons_file, O_RDWR
   jc .cantopen
 
   mov dword [icons_fd], dword eax
@@ -198,8 +339,8 @@ program_map_files:
   cmp ecx, 0
   je .sizezero; if size is 0
 
-  ;void * mmap(void *addr, size_t len, int prot, int flags, int fd, off_t offset);
-  syscall SYS_mmap, dword 0, ecx, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_SHARED, dword [icons_fd], dword 0
+  syscall SYS_mmap, dword 0, ecx, PROT_READ | PROT_WRITE, MAP_SHARED, dword [icons_fd], dword 0
+  jc .cantmmap
   mov dword [icons_address], eax
 
   ret
@@ -208,6 +349,9 @@ program_map_files:
     jmp program_exit_fail
   .cantstat:
     ccall _printf, str_error_open_block_file
+    jmp program_exit_fail
+  .cantmmap:
+    ccall _printf, str_error_mmap_block_file
     jmp program_exit_fail
   .sizezero:
     jmp program_exit_ok
@@ -361,10 +505,17 @@ vertical_chars  equ screen_height / char_height       ; 768 / 30 = 25 (remainder
 
 warm:
   DUP_
-  jmp short start1.0
+  jmp start1.0
 
 start1:
   ; TODO: setup arrays
+  mov [top_serve_data_stack - 12], dword 8
+  mov [top_serve_data_stack - 16], dword 90
+  mov esi, top_main_data_stack
+
+  ;mov esi, top_main_data_stack
+  ;lea esi, [top_main_data_stack + ebp] 
+  
   .0:
     call noshow
     call noserve
@@ -373,14 +524,17 @@ start1:
     mov dword [trash], buffer
     ; copy initial forth dictionary up to its real address
     push esi
+
     lea esi, [forth_words_names]
     mov edi, forth_dictionary_names
     mov ecx, [forths]
-    rep movsd
+    rep movsd ; esi source, edi destination, ecx times
+
     lea esi, [forth_words_addresses]
     mov edi, forth_dictionary_addresses
     mov ecx, [forths]
-    rep movsd
+    rep movsd ; esi source edi destination, ecx times
+
     pop esi
     
     ; load block 18, and start the colorforth system
@@ -470,7 +624,7 @@ resume:
 to_draw:
   mov edx, top_draw_data_stack - 4  ; data stack is empty.
   mov ecx, top_draw_return_stack - 4  ; return stack contains our return address
-  pop dword [ecx]
+  pop dword [ecx] ; ecx = address of .0 in show
   lea ecx, [ecx - 4]  ; and the data stack pointer
   mov [ecx], edx
   mov [draw], ecx   ; store it in the draw slot
@@ -481,7 +635,7 @@ to_serve:
   mov edx, top_serve_data_stack - 4
   mov ecx, top_serve_return_stack - 4
   pop dword [ecx]
-  lea ecx, [ecx - 4]
+  lea ecx, [ecx - 4] ; TODO XXX PROBLEM
   mov [ecx], edx
   mov [serv], ecx
   ret
@@ -502,7 +656,7 @@ noshow:
 ; (Note "call [screen]" - if show is called from show0, this just returns to show
 ; - if show is called from refresh, this runs almost all of refresh)
 show:
-  pop dword [udraw]
+  pop dword [udraw] ; udraw = address of "ret" in nowhow
   call to_draw
   .0:
     ; the drawing loop.
@@ -1133,7 +1287,6 @@ qignore:
   jnz nul        ;   null, return to interpreter.
   pop edi        ; Otherwise, exit interpreter. [RST]
   pop edi        ; [RST]
-
 nul:
   ret
 
@@ -1168,14 +1321,14 @@ jump:
 
 load:
 ; ( b -- ) Interprets pre-parsed words in the block given.
-  sub    eax, 18
-  shl    eax, 10-2
-  mov    ebx, [blocks_address]
-  shr    ebx, 2
+  sub    eax, 18 ; block, delete 18, because we don't have binary content
+  shl    eax, 10-2 ; multiply by 256
+  mov    ebx, [blocks_address] ; ebx contains the ADDRESS of the block contents
+  shr    ebx, 2 ; divide the address by 4
   add    eax, ebx
   push edi      ; [RST]
   mov edi, eax
-  DROP
+  DROP ; eax <- esi ; esi = esi + 4
 
 ; inter
 
@@ -1187,6 +1340,7 @@ load:
 ; do it.)
 inter:
   mov edx, [edi * 4]
+  call debug_dumpregs
   inc edi          ; (Thus all routines work on [-4+edi*4].)
   and edx, byte 15        ; Clear all bits except color bits (0..3).
   call [spaces + edx * 4]       ; Use result as offset to routine to run. 
@@ -1211,11 +1365,10 @@ inter:
 ; e null
 ; f null
 
-; align 4
+align 4
 ; 
 spaces:
   dd qignore, execute, num        ; colors 0..2
-
 adefine:
   dd forthd          ; color 3 
     ; This is altered by sdefine, which stores the
@@ -2467,7 +2620,7 @@ board:  dd keyboard_layout_alpha - 4  ; current keyboard (finger keys)
 ; Shift generally points to one of the following tables:
 ; alpha0, alpha1, graph0, graph1, numb0, numb1.
 shift:  dd alpha1 ; current shift (thumb) keys
-; ColorForth displays numbers in one of two formats — decimal and hexadecimal. 
+; ColorForth displays numbers in one of two formats â decimal and hexadecimal. 
 ; Decimal stores 10 here; hex stores 16 here. 
 ; Therefore routines with "cmp base, 10 : jz base10" fall into handling hexadecimal. 
 base: dd 10
@@ -2839,7 +2992,8 @@ unpack:
   rol eax, 4          ; Convert character into character
   and eax, byte 7    ;   code (0..7).
   ret
-  .0: shl eax, 1          ; Five-bit character begins with 10.
+  .0:
+    shl eax, 1          ; Five-bit character begins with 10.
     js .1        ; Branch if character begins with 11.
     shl dword [esi], 5        ; Remove 5-bit character from word.
     rol eax, 4          ; Convert character into character
