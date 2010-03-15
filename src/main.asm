@@ -290,6 +290,7 @@ program_draw_pixel:
   pop eax
   ret
 
+bye:
 program_exit_ok:
   __SDL_Quit
   syscall SYS_exit, 0
@@ -2458,6 +2459,8 @@ getkey:
   cmp eax, 0
   je getkey ; if there was no event, go forward
   ; here, we are sure to have an event
+  cmp byte [event.type], SDL_QUIT 
+  je program_exit_ok
   cmp byte [event.type], SDL_KEYDOWN ; was it a key event ? 
   jne getkey
   push ebx
@@ -2610,6 +2613,40 @@ key:
     pop esi
     ret
 
+pkeys
+  db 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 	;  0..7
+  db 0 , 0 , 0 , 0 , 0 , 0 , 1 , 0	;  8..f
+  db 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 	; 10..17
+  db 0 , 0 , 0 , 0 , 2 , 0 , 0 , 0	; 18..1f
+  db 0 , 0 , 0 , 0 , 20, 17, 25, 22	; 20..27
+  db 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0	; 28..2f
+  db 0 , 0 , 18, 0 , 0 , 26, 0 , 0 	; 30..37
+  db 3 , 2 , 0 , 4 , 5 , 6 , 7 , 8	; 38..3f
+  db 9 , 10, 11, 12, 13, 0 , 0 , 16	; 40..47
+  db 17, 18, 19, 20, 21, 22, 23, 24	; 48..4f
+  db 25, 26, 27, 28, 0 , 0 , 0 , 14	; 50..57
+  db 15								; 58
+
+; key handler for pad. Returns 0..27 for
+; the 28 programmable keys.
+pkey:
+  DUP_
+  push esi
+  push edi
+pkey0:
+  xor	eax, eax
+  call dopause
+  call getcfkey
+  cmp al, 59h ; al - 59h
+  jnc pkey0
+  mov al, [pkeys + eax]
+  and al, al
+  jz pkey0
+  dec al
+  pop edi
+  pop esi
+  ret
+
 ; keyboard display is 9 chars wide, 4 high
 keyboard_hud_width  equ 9
 keyboard_hud_height equ 4
@@ -2660,10 +2697,20 @@ accept1:
 
 accept2:
   call key ; TODOKEY
-  cmp al, 4
-  jns near first
+  ;cmp al, 4
+  ;jns near first
+  ;mov edx, [shift]
+  ;jmp [edx + eax * 4]
+  js acmdk
+  add dword [shift], 20
+  call word_
+  call [aword]
+  jmp accept
+acmdk:
+  call debug_dumpregs
+  neg al; QWERTY
   mov edx, [shift]
-  jmp [edx + eax * 4]
+  jmp dword [edx+eax*4]
 
 ; Pre-parsing words
 ;
@@ -2744,8 +2791,8 @@ word_:
 word1:
   call letter
   jns .0
+  neg al; QWERTY
   mov edx, [shift]
-  call debug_dumpregs
   jmp dword [edx + eax * 4]
   .0:
     test al, al
@@ -2799,15 +2846,17 @@ minus:
 number0:
   DROP
   jmp short number3
+
 number:
   call [current]
   mov byte [sign], 0
-  xor eax, eax
+  xor eax, eax ; TOS=entered number(initialized to 0)
 
 number3:
   call key ; TODOKEY
   call letter
   jns .0
+  neg al; QWERTY
   mov edx, [shift]
   jmp dword [edx + eax * 4]
   .0:
@@ -3404,7 +3453,8 @@ shadow:
   xor dword [esi], byte 1
   ret
 
-e0: DROP
+e0:
+  DROP
   jmp short e_1
 
 edit: 
@@ -3425,10 +3475,10 @@ e:
 
 e_1: 
   mov dword [shift], ekbd0
-  mov dword [board], ekbd - 4
+  mov dword [board], ekbd - 4; QWERTY - 4
   mov dword [keyc], _yellow
   .0:
-    call key ; TODOKEY
+    call key ; TODO pkey
     call near [ekeys + eax * 4] ; index into ekeys
     DROP
     jmp .0
@@ -3602,12 +3652,12 @@ enstack:
 pad:
   pop edx
   mov [vector], edx
-  add edx, 28 * 5 ; + 4 qwerty
+  add edx, 28 * 5 ; + 4 QWERTY
   mov [board], edx
-  sub edx, byte 4 * 4 ; +4 qwerty
+  sub edx, byte 4 * 4 ; +4 QWERTY
   mov [shift], edx
   .0:
-    call key      ; pkey, qwerty ; TODOKEY
+    call key      ; pkey, QWERTY ; TODOKEY
     mov edx, [vector]
     add edx, eax
     lea edx, [5 + eax * 4 + edx]

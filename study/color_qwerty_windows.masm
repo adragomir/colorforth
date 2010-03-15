@@ -2620,8 +2620,9 @@ E0:
 edit:
     mov    blk, eax
     DROP
+
 E:
-     DUP_
+    DUP_
     mov    eax, blk
     mov    anumber, offset FORMAT
     mov    byte ptr alpha0+4*4, 45o ; .
