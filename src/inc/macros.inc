@@ -25,23 +25,6 @@
   %endrep
 %endmacro
 
-;-Sys Call
-;   syscall funcName, param1, param2, param3
-%macro syscall 2-*
-  %define _sysfunc %1
-  ;push eax
-  %rep %0 - 1
-    %rotate -1
-    push dword %1
-  %endrep
-  mov eax, _sysfunc
-  sub esp, 4
-  int 0x80
-  add esp, (%0) * 4
-  ;pop eax
-%endmacro
-
-
 %macro syscall 1-*
   %define _sysfunc %1
   %assign __params %0 - 1
@@ -140,34 +123,6 @@
   ; comparable to a leave instruction
   mov esp, ebp
   pop ebp
-%endmacro
-
-%macro stdcall 2-* ;Windows StdCall: push last value first, no cleanup
-  %define _func %1
-  %rep %0-1
-    %rotate -1
-    push %1
-  %endrep
-    call _func
-%endmacro
-
-%macro fastcall 2-*        
-  %define _func %1
-  %assign __pnum 1
-  %rep %0-4
-    %rotate -1
-    %if __pnum = 1
-      mov eax, %1
-    %elif __pnum = 2
-      mov edx, %1
-    %elif __pnum = 3
-      mov ebx, %1
-    %else
-      push %1
-    %endif
-    %assign __pnum __pnum + 1
-  %endrep
-    call _func
 %endmacro
 
 ;-IF-THEN-ELSE Loops

@@ -54,7 +54,7 @@ $(TARGET): $(ALL_OBJECT_FILES)
 	$(LD) $(NASMLFLAGS) $(LDFLAGS) $+ -o $@
 
 %.o:
-	$(NASM) $(NASMFLAGS) -o $@ $(call TO_SRC,$(basename $@).$(EXT))
+	$(NASM) $(NASMFLAGS) -l $@.lst -o $@ $(call TO_SRC,$(basename $@).$(EXT))
 
 prebuild:
 #	clear
@@ -66,6 +66,10 @@ sizes:
 
 sdl:
 	g++ -arch i386 -L/usr/local/lib -I/usr/local/include -lSDL -lSDL_image -lSDL_ttf -lSDLMain -o build/sdl src/sdl.c
+
+ctest:
+	g++ -arch i386 -o build/ctest src/ctest.c
+
 
 postbuild:
 ifeq ($(GEN_RUN),yes)
