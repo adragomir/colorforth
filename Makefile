@@ -33,7 +33,7 @@ ALL_OBJECT_FILES:=$(strip $(addsuffix .o, $(basename $(call TO_OBJS,$(ALL_CODE_F
 ALL_HEADER_FILES:=$(strip $(foreach DIR,$(SRC_DIRS), $(wildcard $(DIR)/*.$(H_EXT))))
 ALL_SRC_FILES:=$(ALL_CODE_FILES) $(ALL_HEADER_FILES)
 
-.PHONY: world prebuild postbuild clean final run restore preproc
+.PHONY: world prebuild postbuild clean final run restore preproc sizes sdl ctest cf2html html
 
 # Make everything in debug
 world: NASMFLAGS:=$(BASE_FLAGS) $(DEBUG_FLAGS)
@@ -73,7 +73,8 @@ ctest:
 cf2html:
 	gcc -arch i386 -o build/cf2html src/cf2html.c
 
-
+html:
+	for i in block_files/*.cf; do build/cf2html < $$i > $$i.html; done
 
 postbuild:
 ifeq ($(GEN_RUN),yes)
