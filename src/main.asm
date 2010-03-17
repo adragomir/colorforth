@@ -2387,7 +2387,7 @@ sdl_scancode_to_raw:
   times 4 db 0, 
   ;   a -> z = 4 -> 29
   ;  a     b     c     d     e     f     g     h
-  db 0x1f, 0x30, 0x2e, 0x20, 0x12, 0x21, 0x22, 0x23; a
+  db 0x1e, 0x30, 0x2e, 0x20, 0x12, 0x21, 0x22, 0x23; a
   ;  i     j     k     l     m     n     o     p
   db 0x17, 0x24, 0x25, 0x26, 0x32, 0x31, 0x18, 0x19; a
   ;  q     r     s     t     u     v     w     x
@@ -2598,17 +2598,17 @@ key:
   DUP_
   push esi
   push edi
-  .0:
+key0:
     xor	eax, eax
     call dopause
     call getcfkey
     cmp al, 3ah			; limit to 39
-    jnc .0
+    jnc key0
     add eax, eax		; double to account for shifted characters
     add eax, [shifted]		; +1 if shifted
     mov al, [keys + eax]		; index into keys
     and al, al
-    jz .0			; repeat if zero
+    jz key0			; repeat if zero
     pop edi
     pop esi
     ret
@@ -2707,7 +2707,6 @@ accept2:
   call [aword]
   jmp accept
 acmdk:
-  call debug_dumpregs
   neg al; QWERTY
   mov edx, [shift]
   jmp dword [edx+eax*4]
@@ -2735,7 +2734,8 @@ pack:
   inc ecx    ;   set character size to 5 bits and
   xor al, 30q      ;   change character to bitpattern
 
-pack1:  mov edx, eax
+pack1: 
+  mov edx, eax
   mov ch, cl
   .0:
     cmp [bits_], cl
@@ -3472,13 +3472,12 @@ e:
   mov byte [alpha0 + 16], Idot
   mov dword [alpha0 + 4], e0
   call refresh
-
 e_1: 
   mov dword [shift], ekbd0
   mov dword [board], ekbd - 4; QWERTY - 4
   mov dword [keyc], _yellow
   .0:
-    call key ; TODO pkey
+    call pkey ; TODO pkey
     call near [ekeys + eax * 4] ; index into ekeys
     DROP
     jmp .0
