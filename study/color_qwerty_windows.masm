@@ -1348,7 +1348,7 @@ move:
     ret
 
 debug:
-    mov    xy, 3*10000h+(vc-2)*ih+3
+    mov    xy, 3 * 10000h + ( vc - 2 ) * ih + 3
     DUP_
     mov    eax, God
     push   [eax]
@@ -1740,6 +1740,7 @@ fkeys:
     call SPACE
     call four
     call space
+
 FOUR:
     mov    ecx, 4
 
@@ -1942,34 +1943,22 @@ key0:
     ret
 
 ; programmable keys. Scan code to colorforth character codes
-; 0x00:  . esc 1 2 3 4 5 6
-; 0x08:  7 8 9 0 - = bs tab
-; 0x10:  Q W E R T Y U I
-; 0x18:  O P [ ] ret Lctrl A S
-; 0x20:  D F G H J K L ;
-; 0x28:  ' ` Lshift \ Z X C V
-; 0x30:  B N M , . / Rshift *
-; 0x38:  Lalt space.F1|F2|F3|F4|F5
-; 0x40:  F6|F7|F8|F9|F10..KP7
-; 0x48:  KP8|KP9|KP-|KP4|KP5|KP6|KP+|KP1
-; 0x50:  KP2|KP3|KP0|KP.|...F11
-; 0x58:  F12
-pkeys db 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 	;  0..7
-    db 0 , 0 , 0 , 0 , 0 , 0 , 1 , 0	;  8..f
-    db 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 	; 10..17
-    db 0 , 0 , 0 , 0 , 2 , 0 , 0 , 0	; 18..1f
-    db 0 , 0 , 0 , 0 , 20, 17, 25, 22	; 20..27
-    db 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0	; 28..2f
-    db 0 , 0 , 18, 0 , 0 , 26, 0 , 0 	; 30..37
-    db 3 , 2 , 0 , 4 , 5 , 6 , 7 , 8	; 38..3f
-    db 9 , 10, 11, 12, 13, 0 , 0 , 16	; 40..47
-    db 17, 18, 19, 20, 21, 22, 23, 24	; 48..4f
-    db 25, 26, 27, 28, 0 , 0 , 0 , 14	; 50..57
-    db 15								; 58
+pkeys
+  db 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 	;  0..7     . esc 1 2 3 4 5 6
+  db 0 , 0 , 0 , 0 , 0 , 0 , 1 , 0	;  8..f     7 8 9 0 - = bs tab
+  db 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 	; 10..17    Q W E R T Y U I
+  db 0 , 0 , 0 , 0 , 2 , 0 , 0 , 0	; 18..1f    O P [ ] ret Lctrl A S
+  db 0 , 0 , 0 , 0 , 20, 17, 25, 22	; 20..27    D F G H J K L ;
+  db 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0	; 28..2f    ' ` Lshift \ Z X C V
+  db 0 , 0 , 18, 0 , 0 , 26, 0 , 0 	; 30..37    B N M , . / Rshift *
+  db 3 , 2 , 0 , 4 , 5 , 6 , 7 , 8	; 38..3f    Lalt space.F1|F2|F3|F4|F5
+  db 9 , 10, 11, 12, 13, 0 , 0 , 16	; 40..47    F6|F7|F8|F9|F10..KP7
+  db 17, 18, 19, 20, 21, 22, 23, 24	; 48..4f    KP8|KP9|KP-|KP4|KP5|KP6|KP+|KP1
+  db 25, 26, 27, 28, 0 , 0 , 0 , 14	; 50..57    KP2|KP3|KP0|KP.|...F11
+  db 15								; 58                      F12
 
 ; key handler for pad. Returns 0..27 for
 ; the 28 programmable keys.
-
 pkey:
     DUP_
     push esi
@@ -2034,6 +2023,12 @@ acmdk:
     mov    edx, shift
     jmp    dword ptr [edx+eax*4]
 
+; Pre-parsing words
+;
+; Pack takes a single character (first item on stack), converts it into a pre-
+; parsed-source bit pattern, and adds the bit pattern to a pre-parsed word (second
+; item on stack), if the word is full already, a new word is started.
+
 bits       db 28
 
 PACK:
@@ -2059,9 +2054,9 @@ pack0:
     dec    CL
     jmp    @b
 @@:
-    shl    dword ptr [esi], CL
+    shl    dword ptr [esi], cl
     xor    [esi], eax
-    sub    bits, CL
+    sub    bits, cl
     ret
 
 LJ0:
@@ -2098,6 +2093,7 @@ WORD_:
     DUP_
     mov    dword ptr [esi], 0
     mov    bits, 28
+
 WORD1:
     call   LETTER
     jns    @f
@@ -2139,11 +2135,13 @@ Xn:
     DROP
     jmp    ACCEPTn
 
-digit      db 14, 10,  0,  0
+digit      
+           db 14, 10,  0,  0
            db  0,  0, 12,  0,  0,  0, 15,  0
            db 13,  0,  0, 11,  0,  0,  0,  0
            db  0,  1,  2,  3,  4,  5,  6,  7
            db  8,  9
+
 sign       db 0
 
 MINUS:
@@ -2158,6 +2156,7 @@ NUMBER:
     call   current
     mov    sign, 0
     xor    eax, eax		; TOS=entered number(initialized to 0)
+
 NUMBER3:
     call   KEY
     call   LETTER
@@ -2198,11 +2197,13 @@ ALPH:
     mov    shift, offset alpha1
     jmp    WORD0
 
-
+; Character codes for the sixteen hexadecimal digits.
 hicon      db 30o, 31o, 32o, 33o, 34o, 35o, 36o, 37o
            db 40o, 41o,  5 , 23o, 12o, 20o,  4 , 16o 
+
 eDIG1:
     DUP_
+
 eDIG:
     push   ecx
     mov    AL, hicon[eax]
@@ -2256,6 +2257,7 @@ dot:
 qdot:
     cmp    base, 10
     jnz    dot
+
 dot10:
     mov    edx, eax
     test   edx, edx
@@ -2344,6 +2346,7 @@ RING:
 @@:
     jmp    EMIT
 
+; Red word
 rW:
     mov    CX, word ptr xy+2
     cmp    CX, word ptr lm
@@ -2428,6 +2431,7 @@ var:
 gnW:
     mov    edx, [edi*4]
     inc    edi
+
 gnW1:
     DUP_
     mov    eax, 0f800h ; Green
@@ -2474,6 +2478,7 @@ REFRESH:
 
     xor    eax, eax
     mov    pcad, edi ; for curs=0
+
 ref1:
     test   dword ptr [edi*4], 0fh
     jz     @f
@@ -2505,29 +2510,16 @@ pcad       dd 0
 lcad       dd 0
 trash      dd offset trash_adr ;;! buffer*4
 
-; initial key functions in editor
-ekeys
-    dd offset nul, offset eout, offset shadow, offset act3		; 0-3
-    dd offset act4, offset act1, offset actv, offset act7		  ; 4-7
-    dd offset act9, offset act10, offset act11, offset edjmp	; 8-11		; F8 should now be 'jump'
-    dd offset nul, offset nul, offset nul, offset hcur		    ; 12-15
-    dd offset mmcur, offset mblk, offset nul, offset mcur		  ; 16-19
-    dd offset nul, offset pcur, offset nul, offset shadow		  ; 20-23
+; Action colors.
+actc       dd yellow, 0, 0ff0000h, 0c000h
+           dd 0, 0, 0ffffh, 0
+           dd 0ffffffh, 0ffffffh, 0ffffffh, 8080ffh
 
-ekbd0	
-    dd offset ppcur, offset pblk, offset destack, offset del	; 24-28 ; used as dummy execution vectors for ekbd
-    db  0 , 64o, 10o,  0						; initial control key map in editor (shift)
-; note that there are 4 db per line, so it stays word aligned
-
-; characters to display in the key map (keyboard only displays the 12 function keys) (board)
-ekbd	db  1 , 15o, 13o, 11o
-    db 12o,  2 , 72o, 70o
-    db  0 ,  0 ,  0 ,  0
-
-actc       dd yellow, 0, 0ff0000h, 0c000h, 0, 0, 0ffffh
-           dd 0, 0ffffffh, 0ffffffh, 0ffffffh, 8080ffh
 vector     dd 0
 action     db 1
+
+
+; These "actxxx" routines and variables wouldn't be connected with act, would they?
 
 act1:
     mov    AL, 1
@@ -2553,6 +2545,7 @@ act7:
     mov    action, AL
     mov    eax, [actc-4+eax*4]
     mov    aword, offset insert
+
 actn:
     mov    keyc, eax
     pop    eax
@@ -2615,6 +2608,26 @@ shadow:
     xor    blk, 1
     xor    dword ptr [esi], 1
     ret
+
+; initial key functions in editor
+ekeys
+    dd offset nul, offset eout, offset shadow, offset act3		; 0-3
+    dd offset act4, offset act1, offset actv, offset act7		  ; 4-7
+    dd offset act9, offset act10, offset act11, offset edjmp	; 8-11		; F8 should now be 'jump'
+    dd offset nul, offset nul, offset nul, offset hcur		    ; 12-15
+    dd offset mmcur, offset mblk, offset nul, offset mcur		  ; 16-19
+    dd offset nul, offset pcur, offset nul, offset shadow		  ; 20-23
+
+ekbd0	
+    dd offset ppcur, offset pblk, offset destack, offset del	; 24-28 ; used as dummy execution vectors for ekbd
+    db  0 , 64o, 10o,  0						; initial control key map in editor (shift)
+; note that there are 4 db per line, so it stays word aligned
+
+; characters to display in the key map (keyboard only displays the 12 function keys) (board)
+ekbd	db  1 , 15o, 13o, 11o
+    db 12o,  2 , 72o, 70o
+    db  0 ,  0 ,  0 ,  0
+
 
 E0:
     DROP

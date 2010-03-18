@@ -1,0 +1,3457 @@
+<html xmlns:v="urn:schemas-microsoft-com:vml"
+xmlns:o="urn:schemas-microsoft-com:office:office"
+xmlns:w="urn:schemas-microsoft-com:office:word"
+xmlns:st1="urn:schemas-microsoft-com:office:smarttags"
+xmlns="http://www.w3.org/TR/REC-html40">
+
+<head>
+<meta http-equiv=Content-Type content="text/html; charset=windows-1252">
+<meta name=ProgId content=Word.Document>
+<meta name=Generator content="Microsoft Word 10">
+<meta name=Originator content="Microsoft Word 10">
+<link rel=File-List href="ColorForth_Tutorial_files/filelist.xml">
+<link rel=Edit-Time-Data href="ColorForth_Tutorial_files/editdata.mso">
+<!--[if !mso]>
+<style>
+v\:* {behavior:url(#default#VML);}
+o\:* {behavior:url(#default#VML);}
+w\:* {behavior:url(#default#VML);}
+.shape {behavior:url(#default#VML);}
+</style>
+<![endif]-->
+<title>OKAD2 Users' Manual</title>
+<o:SmartTagType namespaceuri="urn:schemas-microsoft-com:office:smarttags"
+ name="date"/>
+<o:SmartTagType namespaceuri="urn:schemas-microsoft-com:office:smarttags"
+ name="place"/>
+<!--[if gte mso 9]><xml>
+ <o:DocumentProperties>
+  <o:Author>OKAD2 Working Group</o:Author>
+  <o:Description>Information for engineers using OKAD2&#13;&#10;</o:Description>
+  <o:Template>TPL Drafts.dot</o:Template>
+  <o:LastAuthor>A Sharma</o:LastAuthor>
+  <o:Revision>4</o:Revision>
+  <o:TotalTime>25</o:TotalTime>
+  <o:LastPrinted>2006-12-30T10:47:00Z</o:LastPrinted>
+  <o:Created>2009-04-24T02:04:00Z</o:Created>
+  <o:LastSaved>2009-04-24T02:27:00Z</o:LastSaved>
+  <o:Pages>1</o:Pages>
+  <o:Words>1319</o:Words>
+  <o:Characters>7520</o:Characters>
+  <o:Company>IntellaSys Corporation</o:Company>
+  <o:Lines>62</o:Lines>
+  <o:Paragraphs>17</o:Paragraphs>
+  <o:CharactersWithSpaces>8822</o:CharactersWithSpaces>
+  <o:Version>10.6845</o:Version>
+ </o:DocumentProperties>
+</xml><![endif]--><!--[if gte mso 9]><xml>
+ <w:WordDocument>
+  <w:PunctuationKerning/>
+  <w:DrawingGridHorizontalSpacing>6 pt</w:DrawingGridHorizontalSpacing>
+  <w:DrawingGridVerticalSpacing>6 pt</w:DrawingGridVerticalSpacing>
+  <w:DisplayVerticalDrawingGridEvery>0</w:DisplayVerticalDrawingGridEvery>
+  <w:UseMarginsForDrawingGridOrigin/>
+  <w:Compatibility>
+   <w:BalanceSingleByteDoubleByteWidth/>
+   <w:DoNotLeaveBackslashAlone/>
+   <w:ULTrailSpace/>
+   <w:DoNotExpandShiftReturn/>
+   <w:WW6BorderRules/>
+   <w:FootnoteLayoutLikeWW8/>
+   <w:ShapeLayoutLikeWW8/>
+   <w:AlignTablesRowByRow/>
+   <w:ForgetLastTabAlignment/>
+   <w:AutoSpaceLikeWord95/>
+   <w:LayoutRawTableWidth/>
+   <w:LayoutTableRowsApart/>
+   <w:UseWord97LineBreakingRules/>
+  </w:Compatibility>
+  <w:BrowserLevel>MicrosoftInternetExplorer4</w:BrowserLevel>
+ </w:WordDocument>
+</xml><![endif]--><!--[if !mso]><object
+ classid="clsid:38481807-CA0E-42D2-BF39-B33AF135CC4D" id=ieooui></object>
+<style>
+st1\:*{behavior:url(#ieooui) }
+</style>
+<![endif]-->
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:Courier;
+	panose-1:2 7 4 9 2 2 5 2 4 4;
+	mso-font-charset:0;
+	mso-generic-font-family:modern;
+	mso-font-format:other;
+	mso-font-pitch:fixed;
+	mso-font-signature:3 0 0 0 1 0;}
+@font-face
+	{font-family:Tahoma;
+	panose-1:2 11 6 4 3 5 4 4 2 4;
+	mso-font-charset:0;
+	mso-generic-font-family:swiss;
+	mso-font-pitch:variable;
+	mso-font-signature:1627421319 -2147483648 8 0 66047 0;}
+@font-face
+	{font-family:"Andale Mono";
+	mso-font-alt:"Courier New";
+	mso-font-charset:0;
+	mso-generic-font-family:modern;
+	mso-font-pitch:fixed;
+	mso-font-signature:647 0 0 0 159 0;}
+@font-face
+	{font-family:Consolas;
+	mso-font-charset:0;
+	mso-generic-font-family:modern;
+	mso-font-pitch:fixed;
+	mso-font-signature:-1610611985 1073750091 0 0 159 0;}
+@font-face
+	{font-family:Calibri;
+	mso-font-charset:0;
+	mso-generic-font-family:swiss;
+	mso-font-pitch:variable;
+	mso-font-signature:-1610611985 1073750139 0 0 159 0;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{mso-style-parent:"";
+	margin:0in;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+h1
+	{mso-style-next:"Body Text";
+	margin-top:12.0pt;
+	margin-right:0in;
+	margin-bottom:6.0pt;
+	margin-left:0in;
+	text-indent:0in;
+	mso-pagination:widow-orphan;
+	page-break-after:avoid;
+	mso-outline-level:1;
+	mso-list:l0 level1 lfo1;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:18.0pt;
+	mso-bidi-font-size:10.0pt;
+	font-family:Arial;
+	mso-bidi-font-family:"Times New Roman";
+	mso-font-kerning:14.0pt;
+	mso-bidi-font-weight:normal;}
+h2
+	{mso-style-next:"Body Text";
+	margin-top:8.0pt;
+	margin-right:0in;
+	margin-bottom:6.0pt;
+	margin-left:9.0pt;
+	text-indent:0in;
+	mso-pagination:widow-orphan;
+	page-break-after:avoid;
+	mso-outline-level:2;
+	mso-list:l0 level2 lfo1;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:14.0pt;
+	mso-bidi-font-size:10.0pt;
+	font-family:Arial;
+	mso-bidi-font-family:"Times New Roman";
+	mso-font-kerning:14.0pt;
+	mso-bidi-font-weight:normal;
+	font-style:italic;
+	mso-bidi-font-style:normal;}
+h3
+	{mso-style-link:" Char3";
+	mso-style-next:"Body Text";
+	margin-top:6.0pt;
+	margin-right:0in;
+	margin-bottom:4.0pt;
+	margin-left:40.5pt;
+	text-indent:0in;
+	mso-pagination:widow-orphan;
+	page-break-after:avoid;
+	mso-outline-level:3;
+	mso-list:l0 level3 lfo1;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:12.0pt;
+	mso-bidi-font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-font-kerning:14.0pt;
+	mso-bidi-font-weight:normal;}
+h4
+	{mso-style-next:"Body Text";
+	margin-top:6.0pt;
+	margin-right:0in;
+	margin-bottom:4.0pt;
+	margin-left:0in;
+	text-indent:0in;
+	mso-pagination:widow-orphan;
+	page-break-after:avoid;
+	mso-outline-level:4;
+	mso-list:l0 level4 lfo1;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:12.0pt;
+	mso-bidi-font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-font-kerning:14.0pt;
+	mso-bidi-font-weight:normal;
+	font-style:italic;
+	mso-bidi-font-style:normal;}
+h5
+	{mso-style-next:"Body Text";
+	margin-top:6.0pt;
+	margin-right:0in;
+	margin-bottom:4.0pt;
+	margin-left:0in;
+	text-indent:0in;
+	mso-pagination:widow-orphan;
+	page-break-after:avoid;
+	mso-outline-level:5;
+	mso-list:l0 level5 lfo1;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:Arial;
+	mso-bidi-font-family:"Times New Roman";
+	mso-font-kerning:14.0pt;
+	mso-bidi-font-weight:normal;}
+h6
+	{mso-style-next:"Body Text";
+	margin-top:6.0pt;
+	margin-right:0in;
+	margin-bottom:4.0pt;
+	margin-left:0in;
+	text-indent:0in;
+	mso-pagination:widow-orphan;
+	page-break-after:avoid;
+	mso-outline-level:6;
+	mso-list:l0 level6 lfo1;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:Arial;
+	mso-bidi-font-family:"Times New Roman";
+	mso-font-kerning:14.0pt;
+	mso-bidi-font-weight:normal;
+	font-style:italic;
+	mso-bidi-font-style:normal;}
+p.MsoHeading7, li.MsoHeading7, div.MsoHeading7
+	{mso-style-next:"Body Text";
+	margin-top:4.0pt;
+	margin-right:0in;
+	margin-bottom:3.0pt;
+	margin-left:0in;
+	text-indent:0in;
+	mso-pagination:widow-orphan;
+	page-break-after:avoid;
+	mso-outline-level:7;
+	mso-list:l0 level7 lfo1;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";
+	mso-font-kerning:14.0pt;
+	font-weight:bold;
+	mso-bidi-font-weight:normal;}
+p.MsoHeading8, li.MsoHeading8, div.MsoHeading8
+	{mso-style-next:"Body Text";
+	margin-top:4.0pt;
+	margin-right:0in;
+	margin-bottom:3.0pt;
+	margin-left:0in;
+	text-indent:0in;
+	mso-pagination:widow-orphan;
+	page-break-after:avoid;
+	mso-outline-level:8;
+	mso-list:l0 level8 lfo1;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";
+	mso-font-kerning:14.0pt;
+	font-weight:bold;
+	mso-bidi-font-weight:normal;
+	font-style:italic;
+	mso-bidi-font-style:normal;}
+p.MsoHeading9, li.MsoHeading9, div.MsoHeading9
+	{mso-style-next:"Body Text";
+	margin-top:4.0pt;
+	margin-right:0in;
+	margin-bottom:3.0pt;
+	margin-left:0in;
+	text-indent:0in;
+	mso-pagination:widow-orphan;
+	page-break-after:avoid;
+	mso-outline-level:9;
+	mso-list:l0 level9 lfo1;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";
+	mso-font-kerning:14.0pt;
+	font-weight:bold;
+	mso-bidi-font-weight:normal;
+	font-style:italic;
+	mso-bidi-font-style:normal;}
+p.MsoIndex1, li.MsoIndex1, div.MsoIndex1
+	{mso-style-noshow:yes;
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:0in;
+	margin-left:.5in;
+	margin-bottom:.0001pt;
+	text-indent:-.5in;
+	mso-pagination:widow-orphan;
+	tab-stops:right dotted 2.75in;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.MsoIndex2, li.MsoIndex2, div.MsoIndex2
+	{mso-style-noshow:yes;
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:0in;
+	margin-left:.75in;
+	margin-bottom:.0001pt;
+	text-indent:-.5in;
+	mso-pagination:widow-orphan;
+	tab-stops:right dotted 2.75in;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.MsoIndex3, li.MsoIndex3, div.MsoIndex3
+	{mso-style-noshow:yes;
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:0in;
+	margin-left:1.0in;
+	margin-bottom:.0001pt;
+	text-indent:-.5in;
+	mso-pagination:widow-orphan;
+	tab-stops:right dotted 2.75in;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.MsoIndex4, li.MsoIndex4, div.MsoIndex4
+	{mso-style-noshow:yes;
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:0in;
+	margin-left:1.25in;
+	margin-bottom:.0001pt;
+	text-indent:-.5in;
+	mso-pagination:widow-orphan;
+	tab-stops:right dotted 2.75in;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.MsoIndex5, li.MsoIndex5, div.MsoIndex5
+	{mso-style-noshow:yes;
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:0in;
+	margin-left:1.5in;
+	margin-bottom:.0001pt;
+	text-indent:-.5in;
+	mso-pagination:widow-orphan;
+	tab-stops:right dotted 2.75in;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.MsoIndex6, li.MsoIndex6, div.MsoIndex6
+	{mso-style-noshow:yes;
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:0in;
+	margin-left:1.25in;
+	margin-bottom:.0001pt;
+	text-indent:-.5in;
+	mso-pagination:widow-orphan;
+	tab-stops:right dotted 2.75in;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.MsoIndex7, li.MsoIndex7, div.MsoIndex7
+	{mso-style-noshow:yes;
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:0in;
+	margin-left:1.5in;
+	margin-bottom:.0001pt;
+	text-indent:-.5in;
+	mso-pagination:widow-orphan;
+	tab-stops:right dotted 2.75in;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.MsoIndex8, li.MsoIndex8, div.MsoIndex8
+	{mso-style-noshow:yes;
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:0in;
+	margin-left:1.75in;
+	margin-bottom:.0001pt;
+	text-indent:-.5in;
+	mso-pagination:widow-orphan;
+	tab-stops:right dotted 2.75in;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.MsoIndex9, li.MsoIndex9, div.MsoIndex9
+	{mso-style-noshow:yes;
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:0in;
+	margin-left:2.0in;
+	margin-bottom:.0001pt;
+	text-indent:-.5in;
+	mso-pagination:widow-orphan;
+	tab-stops:right dotted 2.75in;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.MsoToc1, li.MsoToc1, div.MsoToc1
+	{mso-style-noshow:yes;
+	margin-top:9.0pt;
+	margin-right:0in;
+	margin-bottom:6.0pt;
+	margin-left:0in;
+	mso-pagination:widow-orphan;
+	tab-stops:right dotted 6.0in;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Times New Roman";
+	mso-bidi-font-family:"Times New Roman";
+	font-weight:bold;
+	mso-bidi-font-weight:normal;}
+p.MsoToc2, li.MsoToc2, div.MsoToc2
+	{mso-style-noshow:yes;
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:0in;
+	margin-left:.25in;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	tab-stops:right dotted 6.0in;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.MsoToc3, li.MsoToc3, div.MsoToc3
+	{mso-style-noshow:yes;
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:0in;
+	margin-left:.5in;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	tab-stops:right dotted 6.0in;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.MsoToc4, li.MsoToc4, div.MsoToc4
+	{mso-style-noshow:yes;
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:0in;
+	margin-left:.75in;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	tab-stops:right dotted 6.0in;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";
+	font-style:italic;
+	mso-bidi-font-style:normal;}
+p.MsoToc5, li.MsoToc5, div.MsoToc5
+	{mso-style-noshow:yes;
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:0in;
+	margin-left:1.0in;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	tab-stops:right dotted 6.0in;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.MsoToc6, li.MsoToc6, div.MsoToc6
+	{mso-style-noshow:yes;
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:0in;
+	margin-left:1.25in;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	tab-stops:right dotted 6.0in;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.MsoToc7, li.MsoToc7, div.MsoToc7
+	{mso-style-noshow:yes;
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:0in;
+	margin-left:1.5in;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	tab-stops:right dotted 6.0in;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.MsoToc8, li.MsoToc8, div.MsoToc8
+	{mso-style-noshow:yes;
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:0in;
+	margin-left:1.75in;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	tab-stops:right dotted 6.0in;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.MsoToc9, li.MsoToc9, div.MsoToc9
+	{mso-style-noshow:yes;
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:0in;
+	margin-left:2.0in;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	tab-stops:right dotted 6.0in;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.MsoFootnoteText, li.MsoFootnoteText, div.MsoFootnoteText
+	{mso-style-noshow:yes;
+	mso-style-parent:"Footnote Base";
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:6.0pt;
+	margin-left:9.35pt;
+	text-indent:-9.35pt;
+	line-height:11.0pt;
+	mso-line-height-rule:exactly;
+	mso-pagination:widow-orphan;
+	tab-stops:9.35pt;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:9.0pt;
+	mso-bidi-font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.MsoCommentText, li.MsoCommentText, div.MsoCommentText
+	{mso-style-noshow:yes;
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:6.0pt;
+	margin-left:9.35pt;
+	text-indent:-9.35pt;
+	line-height:11.0pt;
+	mso-line-height-rule:exactly;
+	mso-pagination:widow-orphan;
+	tab-stops:9.35pt;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.MsoHeader, li.MsoHeader, div.MsoHeader
+	{mso-style-noshow:yes;
+	margin:0in;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan lines-together;
+	tab-stops:center 3.0in right 6.0in;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.MsoFooter, li.MsoFooter, div.MsoFooter
+	{margin:0in;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan lines-together;
+	tab-stops:center 3.0in right 6.0in;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.MsoIndexHeading, li.MsoIndexHeading, div.MsoIndexHeading
+	{mso-style-noshow:yes;
+	mso-style-next:"Index 1";
+	margin-top:6.0pt;
+	margin-right:0in;
+	margin-bottom:0in;
+	margin-left:0in;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	page-break-after:avoid;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:14.0pt;
+	mso-bidi-font-size:10.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Times New Roman";
+	mso-bidi-font-family:"Times New Roman";
+	mso-font-kerning:14.0pt;
+	font-weight:bold;
+	mso-bidi-font-weight:normal;}
+p.MsoCaption, li.MsoCaption, div.MsoCaption
+	{mso-style-next:"Body Text";
+	margin-top:6.0pt;
+	margin-right:0in;
+	margin-bottom:8.0pt;
+	margin-left:0in;
+	mso-pagination:widow-orphan;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:9.0pt;
+	mso-bidi-font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";
+	font-style:italic;
+	mso-bidi-font-style:normal;}
+p.MsoTof, li.MsoTof, div.MsoTof
+	{mso-style-noshow:yes;
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:0in;
+	margin-left:.5in;
+	margin-bottom:.0001pt;
+	text-indent:-.5in;
+	mso-pagination:widow-orphan;
+	tab-stops:right dotted 6.0in;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+span.MsoFootnoteReference
+	{mso-style-noshow:yes;
+	mso-style-parent:"";
+	vertical-align:super;}
+span.MsoCommentReference
+	{mso-style-noshow:yes;
+	mso-style-parent:"";
+	mso-ansi-font-size:8.0pt;}
+span.MsoLineNumber
+	{mso-style-noshow:yes;
+	mso-style-parent:"";
+	mso-ansi-font-size:9.0pt;
+	font-family:Arial;
+	mso-ascii-font-family:Arial;
+	mso-hansi-font-family:Arial;
+	mso-bidi-font-family:Arial;}
+span.MsoPageNumber
+	{mso-style-noshow:yes;
+	mso-style-parent:"";
+	font-weight:bold;
+	mso-bidi-font-weight:normal;}
+span.MsoEndnoteReference
+	{mso-style-noshow:yes;
+	mso-style-parent:"";
+	vertical-align:super;}
+p.MsoEndnoteText, li.MsoEndnoteText, div.MsoEndnoteText
+	{mso-style-noshow:yes;
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:6.0pt;
+	margin-left:9.35pt;
+	text-indent:-9.35pt;
+	line-height:11.0pt;
+	mso-line-height-rule:exactly;
+	mso-pagination:widow-orphan;
+	tab-stops:9.35pt;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:9.0pt;
+	mso-bidi-font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.MsoToa, li.MsoToa, div.MsoToa
+	{mso-style-noshow:yes;
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:0in;
+	margin-left:.25in;
+	margin-bottom:.0001pt;
+	text-indent:-.25in;
+	mso-pagination:widow-orphan;
+	tab-stops:right dotted 6.0in;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.MsoMacroText, li.MsoMacroText, div.MsoMacroText
+	{mso-style-noshow:yes;
+	mso-style-parent:"Body Text";
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:8.0pt;
+	margin-left:0in;
+	mso-pagination:widow-orphan;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Courier New";
+	mso-fareast-font-family:"Times New Roman";
+	mso-bidi-font-family:"Times New Roman";}
+p.MsoToaHeading, li.MsoToaHeading, div.MsoToaHeading
+	{mso-style-noshow:yes;
+	mso-style-parent:"Section Heading";
+	mso-style-next:"Table of Authorities";
+	margin-top:6.0pt;
+	margin-right:0in;
+	margin-bottom:8.0pt;
+	margin-left:0in;
+	mso-pagination:widow-orphan;
+	page-break-after:avoid;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:14.0pt;
+	mso-bidi-font-size:10.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Times New Roman";
+	mso-bidi-font-family:"Times New Roman";
+	mso-font-kerning:14.0pt;
+	font-weight:bold;
+	mso-bidi-font-weight:normal;}
+p.MsoList, li.MsoList, div.MsoList
+	{mso-style-noshow:yes;
+	mso-style-parent:"Body Text";
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:4.0pt;
+	margin-left:.5in;
+	text-indent:-.25in;
+	mso-pagination:widow-orphan;
+	tab-stops:.5in;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.MsoListBullet, li.MsoListBullet, div.MsoListBullet
+	{mso-style-noshow:yes;
+	mso-style-parent:List;
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:8.0pt;
+	margin-left:.5in;
+	text-indent:-.25in;
+	mso-pagination:widow-orphan;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.MsoListNumber, li.MsoListNumber, div.MsoListNumber
+	{mso-style-noshow:yes;
+	mso-style-parent:List;
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:8.0pt;
+	margin-left:.5in;
+	text-indent:-.25in;
+	mso-pagination:widow-orphan;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.MsoList2, li.MsoList2, div.MsoList2
+	{mso-style-noshow:yes;
+	mso-style-parent:List;
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:4.0pt;
+	margin-left:.75in;
+	text-indent:-.25in;
+	mso-pagination:widow-orphan;
+	tab-stops:.75in;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.MsoList3, li.MsoList3, div.MsoList3
+	{mso-style-noshow:yes;
+	mso-style-parent:List;
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:4.0pt;
+	margin-left:1.0in;
+	text-indent:-.25in;
+	mso-pagination:widow-orphan;
+	tab-stops:1.0in;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.MsoList4, li.MsoList4, div.MsoList4
+	{mso-style-noshow:yes;
+	mso-style-parent:List;
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:4.0pt;
+	margin-left:1.25in;
+	text-indent:-.25in;
+	mso-pagination:widow-orphan;
+	tab-stops:1.25in;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.MsoList5, li.MsoList5, div.MsoList5
+	{mso-style-noshow:yes;
+	mso-style-parent:List;
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:4.0pt;
+	margin-left:1.5in;
+	text-indent:-.25in;
+	mso-pagination:widow-orphan;
+	tab-stops:1.5in;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.MsoListBullet2, li.MsoListBullet2, div.MsoListBullet2
+	{mso-style-noshow:yes;
+	mso-style-parent:"List Bullet";
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:8.0pt;
+	margin-left:.75in;
+	text-indent:-.25in;
+	mso-pagination:widow-orphan;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.MsoListBullet3, li.MsoListBullet3, div.MsoListBullet3
+	{mso-style-noshow:yes;
+	mso-style-parent:"List Bullet";
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:8.0pt;
+	margin-left:1.0in;
+	text-indent:-.25in;
+	mso-pagination:widow-orphan;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.MsoListBullet4, li.MsoListBullet4, div.MsoListBullet4
+	{mso-style-noshow:yes;
+	mso-style-parent:"List Bullet";
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:8.0pt;
+	margin-left:1.25in;
+	text-indent:-.25in;
+	mso-pagination:widow-orphan;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.MsoListBullet5, li.MsoListBullet5, div.MsoListBullet5
+	{mso-style-noshow:yes;
+	mso-style-parent:"List Bullet";
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:8.0pt;
+	margin-left:1.5in;
+	text-indent:-.25in;
+	mso-pagination:widow-orphan;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.MsoListNumber2, li.MsoListNumber2, div.MsoListNumber2
+	{mso-style-noshow:yes;
+	mso-style-parent:"List Number";
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:8.0pt;
+	margin-left:.75in;
+	text-indent:-.25in;
+	mso-pagination:widow-orphan;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.MsoListNumber3, li.MsoListNumber3, div.MsoListNumber3
+	{mso-style-noshow:yes;
+	mso-style-parent:"List Number";
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:8.0pt;
+	margin-left:1.0in;
+	text-indent:-.25in;
+	mso-pagination:widow-orphan;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.MsoListNumber4, li.MsoListNumber4, div.MsoListNumber4
+	{mso-style-noshow:yes;
+	mso-style-parent:"List Number";
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:8.0pt;
+	margin-left:1.25in;
+	text-indent:-.25in;
+	mso-pagination:widow-orphan;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.MsoListNumber5, li.MsoListNumber5, div.MsoListNumber5
+	{mso-style-noshow:yes;
+	mso-style-parent:"List Number";
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:8.0pt;
+	margin-left:1.5in;
+	text-indent:-.25in;
+	mso-pagination:widow-orphan;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.MsoTitle, li.MsoTitle, div.MsoTitle
+	{mso-style-parent:"Heading Base";
+	margin-top:.25in;
+	margin-right:0in;
+	margin-bottom:8.0pt;
+	margin-left:0in;
+	text-align:center;
+	mso-pagination:widow-orphan;
+	page-break-after:avoid;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:20.0pt;
+	mso-bidi-font-size:10.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Times New Roman";
+	mso-bidi-font-family:"Times New Roman";
+	mso-font-kerning:14.0pt;
+	font-weight:bold;
+	mso-bidi-font-weight:normal;}
+p.MsoBodyText, li.MsoBodyText, div.MsoBodyText
+	{mso-style-link:" Char2";
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:8.0pt;
+	margin-left:0in;
+	mso-pagination:widow-orphan;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.MsoBodyTextIndent, li.MsoBodyTextIndent, div.MsoBodyTextIndent
+	{mso-style-noshow:yes;
+	mso-style-parent:"Body Text";
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:8.0pt;
+	margin-left:.25in;
+	mso-pagination:widow-orphan;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.MsoListContinue, li.MsoListContinue, div.MsoListContinue
+	{mso-style-noshow:yes;
+	mso-style-parent:List;
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:8.0pt;
+	margin-left:.5in;
+	text-indent:-.25in;
+	mso-pagination:widow-orphan;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.MsoListContinue2, li.MsoListContinue2, div.MsoListContinue2
+	{mso-style-noshow:yes;
+	mso-style-parent:"List Continue";
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:8.0pt;
+	margin-left:.75in;
+	text-indent:-.25in;
+	mso-pagination:widow-orphan;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.MsoListContinue3, li.MsoListContinue3, div.MsoListContinue3
+	{mso-style-noshow:yes;
+	mso-style-parent:"List Continue";
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:8.0pt;
+	margin-left:1.0in;
+	text-indent:-.25in;
+	mso-pagination:widow-orphan;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.MsoListContinue4, li.MsoListContinue4, div.MsoListContinue4
+	{mso-style-noshow:yes;
+	mso-style-parent:"List Continue";
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:8.0pt;
+	margin-left:1.25in;
+	text-indent:-.25in;
+	mso-pagination:widow-orphan;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.MsoListContinue5, li.MsoListContinue5, div.MsoListContinue5
+	{mso-style-noshow:yes;
+	mso-style-parent:"List Continue";
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:8.0pt;
+	margin-left:1.5in;
+	text-indent:-.25in;
+	mso-pagination:widow-orphan;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.MsoMessageHeader, li.MsoMessageHeader, div.MsoMessageHeader
+	{mso-style-noshow:yes;
+	mso-style-parent:"Body Text";
+	margin-top:0in;
+	margin-right:2.0in;
+	margin-bottom:12.0pt;
+	margin-left:.75in;
+	text-indent:-.75in;
+	mso-pagination:widow-orphan lines-together;
+	tab-stops:2.5in 3.25in;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Times New Roman";
+	mso-bidi-font-family:"Times New Roman";}
+p.MsoSubtitle, li.MsoSubtitle, div.MsoSubtitle
+	{mso-style-parent:Title;
+	mso-style-next:"Body Text";
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:12.0pt;
+	margin-left:0in;
+	text-align:center;
+	mso-pagination:widow-orphan;
+	page-break-after:avoid;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:14.0pt;
+	mso-bidi-font-size:10.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Times New Roman";
+	mso-bidi-font-family:"Times New Roman";
+	mso-font-kerning:14.0pt;
+	font-style:italic;
+	mso-bidi-font-style:normal;}
+p.MsoDate, li.MsoDate, div.MsoDate
+	{mso-style-noshow:yes;
+	mso-style-parent:"Body Text";
+	margin-top:24.0pt;
+	margin-right:0in;
+	margin-bottom:8.0pt;
+	margin-left:0in;
+	text-align:center;
+	mso-pagination:widow-orphan;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";
+	font-weight:bold;
+	mso-bidi-font-weight:normal;}
+a:link, span.MsoHyperlink
+	{mso-style-noshow:yes;
+	color:blue;
+	text-decoration:underline;
+	text-underline:single;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;
+	text-underline:single;}
+em
+	{mso-style-parent:"";
+	mso-bidi-font-style:normal;}
+p.MsoPlainText, li.MsoPlainText, div.MsoPlainText
+	{mso-style-link:" Char";
+	margin:0in;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:10.5pt;
+	font-family:Consolas;
+	mso-fareast-font-family:Calibri;
+	mso-bidi-font-family:"Times New Roman";}
+p.BlockQuotation, li.BlockQuotation, div.BlockQuotation
+	{mso-style-name:"Block Quotation";
+	mso-style-parent:"Body Text";
+	margin-top:0in;
+	margin-right:.5in;
+	margin-bottom:8.0pt;
+	margin-left:.5in;
+	mso-pagination:widow-orphan lines-together;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";
+	font-style:italic;
+	mso-bidi-font-style:normal;}
+p.BlockQuotationFirst, li.BlockQuotationFirst, div.BlockQuotationFirst
+	{mso-style-name:"Block Quotation First";
+	mso-style-parent:"Block Quotation";
+	mso-style-next:"Block Quotation";
+	margin-top:6.0pt;
+	margin-right:.5in;
+	margin-bottom:8.0pt;
+	margin-left:.5in;
+	mso-pagination:widow-orphan lines-together;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";
+	font-style:italic;
+	mso-bidi-font-style:normal;}
+p.BlockQuotationLast, li.BlockQuotationLast, div.BlockQuotationLast
+	{mso-style-name:"Block Quotation Last";
+	mso-style-parent:"Block Quotation";
+	mso-style-next:"Body Text";
+	margin-top:0in;
+	margin-right:.5in;
+	margin-bottom:12.0pt;
+	margin-left:.5in;
+	mso-pagination:widow-orphan lines-together;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";
+	font-style:italic;
+	mso-bidi-font-style:normal;}
+p.BodyTextKeep, li.BodyTextKeep, div.BodyTextKeep
+	{mso-style-name:"Body Text Keep";
+	mso-style-parent:"Body Text";
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:8.0pt;
+	margin-left:0in;
+	mso-pagination:widow-orphan;
+	page-break-after:avoid;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.ChapterLabel, li.ChapterLabel, div.ChapterLabel
+	{mso-style-name:"Chapter Label";
+	mso-style-next:Normal;
+	margin-top:.25in;
+	margin-right:0in;
+	margin-bottom:0in;
+	margin-left:0in;
+	margin-bottom:.0001pt;
+	text-align:center;
+	mso-pagination:widow-orphan;
+	page-break-after:avoid;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:12.0pt;
+	mso-bidi-font-size:10.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Times New Roman";
+	mso-bidi-font-family:"Times New Roman";
+	mso-font-kerning:14.0pt;
+	font-weight:bold;
+	mso-bidi-font-weight:normal;
+	text-decoration:underline;
+	text-underline:single;}
+p.ChapterSubtitle, li.ChapterSubtitle, div.ChapterSubtitle
+	{mso-style-name:"Chapter Subtitle";
+	mso-style-next:"Body Text";
+	margin-top:.25in;
+	margin-right:0in;
+	margin-bottom:.25in;
+	margin-left:0in;
+	text-align:center;
+	mso-pagination:widow-orphan lines-together;
+	page-break-after:avoid;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:14.0pt;
+	mso-bidi-font-size:10.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Times New Roman";
+	mso-bidi-font-family:"Times New Roman";
+	mso-font-kerning:14.0pt;
+	font-style:italic;
+	mso-bidi-font-style:normal;}
+p.ChapterTitle, li.ChapterTitle, div.ChapterTitle
+	{mso-style-name:"Chapter Title";
+	mso-style-next:"Chapter Subtitle";
+	margin-top:30.0pt;
+	margin-right:0in;
+	margin-bottom:0in;
+	margin-left:0in;
+	margin-bottom:.0001pt;
+	text-align:center;
+	mso-pagination:widow-orphan lines-together;
+	page-break-after:avoid;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:16.0pt;
+	mso-bidi-font-size:10.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Times New Roman";
+	mso-bidi-font-family:"Times New Roman";
+	mso-font-kerning:14.0pt;
+	font-weight:bold;
+	mso-bidi-font-weight:normal;}
+p.DocumentLabel, li.DocumentLabel, div.DocumentLabel
+	{mso-style-name:"Document Label";
+	margin-top:12.0pt;
+	margin-right:0in;
+	margin-bottom:.25in;
+	margin-left:0in;
+	mso-pagination:widow-orphan;
+	page-break-after:avoid;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:18.0pt;
+	mso-bidi-font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";
+	mso-font-kerning:14.0pt;
+	font-weight:bold;
+	mso-bidi-font-weight:normal;}
+p.FooterEven, li.FooterEven, div.FooterEven
+	{mso-style-name:"Footer Even";
+	mso-style-parent:Footer;
+	margin:0in;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan lines-together;
+	tab-stops:center 3.0in right 6.0in;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.FooterFirst, li.FooterFirst, div.FooterFirst
+	{mso-style-name:"Footer First";
+	mso-style-parent:Footer;
+	margin:0in;
+	margin-bottom:.0001pt;
+	text-align:center;
+	mso-pagination:widow-orphan lines-together;
+	tab-stops:center 3.0in;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.FooterOdd, li.FooterOdd, div.FooterOdd
+	{mso-style-name:"Footer Odd";
+	mso-style-parent:Footer;
+	margin:0in;
+	margin-bottom:.0001pt;
+	text-align:right;
+	mso-pagination:widow-orphan lines-together;
+	tab-stops:right 0in center 3.0in right 6.0in;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.FootnoteBase, li.FootnoteBase, div.FootnoteBase
+	{mso-style-name:"Footnote Base";
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:0in;
+	margin-left:9.35pt;
+	margin-bottom:.0001pt;
+	text-indent:-9.35pt;
+	line-height:11.0pt;
+	mso-line-height-rule:exactly;
+	mso-pagination:widow-orphan;
+	tab-stops:9.35pt;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:9.0pt;
+	mso-bidi-font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.HeaderBase, li.HeaderBase, div.HeaderBase
+	{mso-style-name:"Header Base";
+	margin:0in;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan lines-together;
+	tab-stops:center 3.0in right 6.0in;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.HeaderEven, li.HeaderEven, div.HeaderEven
+	{mso-style-name:"Header Even";
+	mso-style-parent:Header;
+	margin:0in;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan lines-together;
+	tab-stops:center 3.0in right 6.0in;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.HeaderFirst, li.HeaderFirst, div.HeaderFirst
+	{mso-style-name:"Header First";
+	mso-style-parent:Header;
+	margin:0in;
+	margin-bottom:.0001pt;
+	text-align:center;
+	mso-pagination:widow-orphan lines-together;
+	tab-stops:center 3.0in;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.HeaderOdd, li.HeaderOdd, div.HeaderOdd
+	{mso-style-name:"Header Odd";
+	mso-style-parent:Header;
+	margin:0in;
+	margin-bottom:.0001pt;
+	text-align:right;
+	mso-pagination:widow-orphan lines-together;
+	tab-stops:right 0in center 3.0in right 6.0in;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.HeadingBase, li.HeadingBase, div.HeadingBase
+	{mso-style-name:"Heading Base";
+	mso-style-next:"Body Text";
+	margin-top:12.0pt;
+	margin-right:0in;
+	margin-bottom:6.0pt;
+	margin-left:0in;
+	mso-pagination:widow-orphan;
+	page-break-after:avoid;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:18.0pt;
+	mso-bidi-font-size:10.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Times New Roman";
+	mso-bidi-font-family:"Times New Roman";
+	mso-font-kerning:14.0pt;
+	font-weight:bold;
+	mso-bidi-font-weight:normal;}
+p.IndexBase, li.IndexBase, div.IndexBase
+	{mso-style-name:"Index Base";
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:0in;
+	margin-left:.5in;
+	margin-bottom:.0001pt;
+	text-indent:-.5in;
+	mso-pagination:widow-orphan;
+	tab-stops:right dotted 2.75in;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.ListBulletFirst, li.ListBulletFirst, div.ListBulletFirst
+	{mso-style-name:"List Bullet First";
+	mso-style-parent:"List Bullet";
+	mso-style-next:"List Bullet";
+	margin-top:4.0pt;
+	margin-right:0in;
+	margin-bottom:8.0pt;
+	margin-left:.5in;
+	text-indent:-.25in;
+	mso-pagination:widow-orphan;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.ListBulletLast, li.ListBulletLast, div.ListBulletLast
+	{mso-style-name:"List Bullet Last";
+	mso-style-parent:"List Bullet";
+	mso-style-next:"Body Text";
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:12.0pt;
+	margin-left:.5in;
+	text-indent:-.25in;
+	mso-pagination:widow-orphan;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.ListFirst, li.ListFirst, div.ListFirst
+	{mso-style-name:"List First";
+	mso-style-parent:List;
+	mso-style-next:List;
+	margin-top:4.0pt;
+	margin-right:0in;
+	margin-bottom:4.0pt;
+	margin-left:.5in;
+	text-indent:-.25in;
+	mso-pagination:widow-orphan;
+	tab-stops:.5in;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.ListLast, li.ListLast, div.ListLast
+	{mso-style-name:"List Last";
+	mso-style-parent:List;
+	mso-style-next:"Body Text";
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:12.0pt;
+	margin-left:.5in;
+	text-indent:-.25in;
+	mso-pagination:widow-orphan;
+	tab-stops:.5in;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.ListNumberFirst, li.ListNumberFirst, div.ListNumberFirst
+	{mso-style-name:"List Number First";
+	mso-style-parent:"List Number";
+	mso-style-next:"List Number";
+	margin-top:4.0pt;
+	margin-right:0in;
+	margin-bottom:8.0pt;
+	margin-left:.5in;
+	text-indent:-.25in;
+	mso-pagination:widow-orphan;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.ListNumberLast, li.ListNumberLast, div.ListNumberLast
+	{mso-style-name:"List Number Last";
+	mso-style-parent:"List Number";
+	mso-style-next:"Body Text";
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:12.0pt;
+	margin-left:.5in;
+	text-indent:-.25in;
+	mso-pagination:widow-orphan;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.PartLabel, li.PartLabel, div.PartLabel
+	{mso-style-name:"Part Label";
+	mso-style-parent:"Heading Base";
+	mso-style-next:Normal;
+	margin-top:30.0pt;
+	margin-right:0in;
+	margin-bottom:8.0pt;
+	margin-left:0in;
+	text-align:center;
+	mso-pagination:widow-orphan;
+	page-break-after:avoid;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:12.0pt;
+	mso-bidi-font-size:10.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Times New Roman";
+	mso-bidi-font-family:"Times New Roman";
+	mso-font-kerning:14.0pt;
+	text-decoration:underline;
+	text-underline:single;}
+p.PartSubtitle, li.PartSubtitle, div.PartSubtitle
+	{mso-style-name:"Part Subtitle";
+	mso-style-next:"Body Text";
+	margin-top:.25in;
+	margin-right:0in;
+	margin-bottom:6.0pt;
+	margin-left:0in;
+	text-align:center;
+	mso-pagination:widow-orphan;
+	page-break-after:avoid;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:16.0pt;
+	mso-bidi-font-size:10.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Times New Roman";
+	mso-bidi-font-family:"Times New Roman";
+	mso-font-kerning:14.0pt;
+	font-style:italic;
+	mso-bidi-font-style:normal;}
+p.PartTitle, li.PartTitle, div.PartTitle
+	{mso-style-name:"Part Title";
+	mso-style-parent:"Heading Base";
+	mso-style-next:"Part Subtitle";
+	margin-top:30.0pt;
+	margin-right:0in;
+	margin-bottom:6.0pt;
+	margin-left:0in;
+	text-align:center;
+	mso-pagination:widow-orphan;
+	page-break-after:avoid;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:18.0pt;
+	mso-bidi-font-size:10.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Times New Roman";
+	mso-bidi-font-family:"Times New Roman";
+	mso-font-kerning:14.0pt;
+	font-weight:bold;
+	mso-bidi-font-weight:normal;}
+p.Picture, li.Picture, div.Picture
+	{mso-style-name:Picture;
+	mso-style-parent:"Body Text";
+	mso-style-next:Caption;
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:8.0pt;
+	margin-left:0in;
+	mso-pagination:widow-orphan;
+	page-break-after:avoid;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.SectionHeading, li.SectionHeading, div.SectionHeading
+	{mso-style-name:"Section Heading";
+	mso-style-parent:"Heading Base";
+	margin-top:6.0pt;
+	margin-right:0in;
+	margin-bottom:8.0pt;
+	margin-left:0in;
+	mso-pagination:widow-orphan;
+	page-break-after:avoid;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:14.0pt;
+	mso-bidi-font-size:10.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Times New Roman";
+	mso-bidi-font-family:"Times New Roman";
+	mso-font-kerning:14.0pt;
+	font-weight:bold;
+	mso-bidi-font-weight:normal;}
+p.SectionLabel, li.SectionLabel, div.SectionLabel
+	{mso-style-name:"Section Label";
+	mso-style-parent:"Heading Base";
+	mso-style-next:"Body Text";
+	margin-top:12.0pt;
+	margin-right:0in;
+	margin-bottom:.25in;
+	margin-left:0in;
+	text-align:center;
+	mso-pagination:widow-orphan lines-together;
+	page-break-after:avoid;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:18.0pt;
+	mso-bidi-font-size:10.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Times New Roman";
+	mso-bidi-font-family:"Times New Roman";
+	mso-font-kerning:14.0pt;
+	font-weight:bold;
+	mso-bidi-font-weight:normal;}
+p.SubtitleCover, li.SubtitleCover, div.SubtitleCover
+	{mso-style-name:"Subtitle Cover";
+	mso-style-next:"Body Text";
+	margin-top:12.0pt;
+	margin-right:0in;
+	margin-bottom:8.0pt;
+	margin-left:0in;
+	text-align:center;
+	mso-pagination:widow-orphan;
+	page-break-after:avoid;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:18.0pt;
+	mso-bidi-font-size:10.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Times New Roman";
+	mso-bidi-font-family:"Times New Roman";
+	mso-font-kerning:14.0pt;
+	font-style:italic;
+	mso-bidi-font-style:normal;}
+p.TitleCover, li.TitleCover, div.TitleCover
+	{mso-style-name:"Title Cover";
+	mso-style-parent:"Heading Base";
+	mso-style-next:"Subtitle Cover";
+	margin-top:.5in;
+	margin-right:0in;
+	margin-bottom:8.0pt;
+	margin-left:0in;
+	text-align:center;
+	mso-pagination:widow-orphan;
+	page-break-after:avoid;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:24.0pt;
+	mso-bidi-font-size:10.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Times New Roman";
+	mso-bidi-font-family:"Times New Roman";
+	mso-font-kerning:14.0pt;
+	font-weight:bold;
+	mso-bidi-font-weight:normal;}
+p.TOCBase, li.TOCBase, div.TOCBase
+	{mso-style-name:"TOC Base";
+	margin:0in;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	tab-stops:right dotted 6.0in;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+p.DeltaList, li.DeltaList, div.DeltaList
+	{mso-style-name:"Delta List";
+	mso-style-parent:"Body Text";
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:0in;
+	margin-left:2.5in;
+	margin-bottom:.0001pt;
+	text-indent:-2.0in;
+	mso-pagination:widow-orphan;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	font-size:8.0pt;
+	mso-bidi-font-size:10.0pt;
+	font-family:"Courier New";
+	mso-fareast-font-family:"Times New Roman";
+	mso-bidi-font-family:"Times New Roman";}
+p.Coding, li.Coding, div.Coding
+	{mso-style-name:Coding;
+	margin-top:0in;
+	margin-right:.5in;
+	margin-bottom:0in;
+	margin-left:1.0in;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	mso-layout-grid-align:none;
+	punctuation-wrap:simple;
+	text-autospace:none;
+	border:none;
+	mso-border-alt:solid silver .75pt;
+	padding:0in;
+	mso-padding-alt:1.0pt 1.0pt 1.0pt 1.0pt;
+	font-size:10.0pt;
+	font-family:"Courier New";
+	mso-fareast-font-family:"Times New Roman";
+	mso-bidi-font-family:"Times New Roman";}
+span.Lead-inEmphasis
+	{mso-style-name:"Lead-in Emphasis";
+	mso-style-parent:"";
+	font-weight:bold;
+	mso-bidi-font-weight:normal;
+	font-style:italic;
+	mso-bidi-font-style:normal;}
+span.Superscript
+	{mso-style-name:Superscript;
+	mso-style-parent:"";
+	position:relative;
+	top:0pt;
+	mso-text-raise:0pt;
+	vertical-align:super;}
+span.Char1
+	{mso-style-name:" Char1";
+	mso-style-noshow:yes;
+	mso-style-link:"Balloon Text";
+	mso-ansi-font-size:8.0pt;
+	mso-bidi-font-size:8.0pt;
+	font-family:Tahoma;
+	mso-ascii-font-family:Tahoma;
+	mso-hansi-font-family:Tahoma;
+	mso-bidi-font-family:Tahoma;}
+span.Char3
+	{mso-style-name:" Char3";
+	mso-style-link:"Heading 3";
+	mso-ansi-font-size:12.0pt;
+	mso-font-kerning:14.0pt;
+	font-weight:bold;
+	mso-bidi-font-weight:normal;}
+span.Char2
+	{mso-style-name:" Char2";
+	mso-style-link:"Body Text";}
+span.Char
+	{mso-style-name:" Char";
+	mso-style-link:"Plain Text";
+	mso-ansi-font-size:10.5pt;
+	mso-bidi-font-size:10.5pt;
+	font-family:Consolas;
+	mso-ascii-font-family:Consolas;
+	mso-fareast-font-family:Calibri;
+	mso-hansi-font-family:Consolas;}
+p.TableContents, li.TableContents, div.TableContents
+	{mso-style-name:"Table Contents";
+	mso-style-parent:"Body Text";
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:6.0pt;
+	margin-left:0in;
+	mso-pagination:widow-orphan no-line-numbers;
+	mso-hyphenate:none;
+	font-size:12.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Times New Roman";
+	mso-bidi-font-family:"Times New Roman";
+	mso-fareast-language:AR-SA;}
+p.TableHeading, li.TableHeading, div.TableHeading
+	{mso-style-name:"Table Heading";
+	mso-style-parent:"Table Contents";
+	margin-top:0in;
+	margin-right:0in;
+	margin-bottom:6.0pt;
+	margin-left:0in;
+	text-align:center;
+	mso-pagination:widow-orphan no-line-numbers;
+	mso-hyphenate:none;
+	font-size:12.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Times New Roman";
+	mso-bidi-font-family:"Times New Roman";
+	mso-fareast-language:AR-SA;
+	font-weight:bold;
+	font-style:italic;}
+ /* Page Definitions */
+ @page
+	{mso-footnote-separator:url("ColorForth_Tutorial_files/header.htm") fs;
+	mso-footnote-continuation-separator:url("ColorForth_Tutorial_files/header.htm") fcs;
+	mso-endnote-separator:url("ColorForth_Tutorial_files/header.htm") es;
+	mso-endnote-continuation-separator:url("ColorForth_Tutorial_files/header.htm") ecs;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in .5in 1.0in .75in;
+	mso-header-margin:.5in;
+	mso-footer-margin:.5in;
+	mso-header:url("ColorForth_Tutorial_files/header.htm") h1;
+	mso-even-footer:url("ColorForth_Tutorial_files/header.htm") ef1;
+	mso-footer:url("ColorForth_Tutorial_files/header.htm") f1;
+	mso-paper-source:0;}
+div.Section1
+	{page:Section1;}
+ /* List Definitions */
+ @list l0
+	{mso-list-id:-5;
+	mso-list-template-ids:90598510;}
+@list l0:level1
+	{mso-level-style-link:"Heading 1";
+	mso-level-tab-stop:none;
+	mso-level-number-position:left;
+	mso-level-legacy:yes;
+	mso-level-legacy-indent:0in;
+	mso-level-legacy-space:.1in;
+	margin-left:0in;
+	text-indent:0in;}
+@list l0:level2
+	{mso-level-style-link:"Heading 2";
+	mso-level-text:"%1\.%2";
+	mso-level-tab-stop:none;
+	mso-level-number-position:left;
+	mso-level-legacy:yes;
+	mso-level-legacy-indent:0in;
+	mso-level-legacy-space:.1in;
+	margin-left:9.0pt;
+	text-indent:0in;}
+@list l0:level3
+	{mso-level-style-link:"Heading 3";
+	mso-level-text:"%1\.%2\.%3";
+	mso-level-tab-stop:none;
+	mso-level-number-position:left;
+	mso-level-legacy:yes;
+	mso-level-legacy-indent:0in;
+	mso-level-legacy-space:.1in;
+	margin-left:40.5pt;
+	text-indent:0in;}
+@list l0:level4
+	{mso-level-style-link:"Heading 4";
+	mso-level-text:"%1\.%2\.%3\.%4";
+	mso-level-tab-stop:none;
+	mso-level-number-position:left;
+	mso-level-legacy:yes;
+	mso-level-legacy-indent:0in;
+	mso-level-legacy-space:.1in;
+	margin-left:0in;
+	text-indent:0in;}
+@list l0:level5
+	{mso-level-style-link:"Heading 5";
+	mso-level-text:"%1\.%2\.%3\.%4\.%5";
+	mso-level-tab-stop:none;
+	mso-level-number-position:left;
+	mso-level-legacy:yes;
+	mso-level-legacy-indent:0in;
+	mso-level-legacy-space:.1in;
+	margin-left:0in;
+	text-indent:0in;
+	font-family:"Times New Roman";}
+@list l0:level6
+	{mso-level-style-link:"Heading 6";
+	mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6";
+	mso-level-tab-stop:none;
+	mso-level-number-position:left;
+	mso-level-legacy:yes;
+	mso-level-legacy-indent:0in;
+	mso-level-legacy-space:.1in;
+	margin-left:0in;
+	text-indent:0in;}
+@list l0:level7
+	{mso-level-style-link:"Heading 7";
+	mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6\.%7";
+	mso-level-tab-stop:none;
+	mso-level-number-position:left;
+	mso-level-legacy:yes;
+	mso-level-legacy-indent:0in;
+	mso-level-legacy-space:.1in;
+	margin-left:0in;
+	text-indent:0in;}
+@list l0:level8
+	{mso-level-style-link:"Heading 8";
+	mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6\.%7\.%8";
+	mso-level-tab-stop:none;
+	mso-level-number-position:left;
+	mso-level-legacy:yes;
+	mso-level-legacy-indent:0in;
+	mso-level-legacy-space:.1in;
+	margin-left:0in;
+	text-indent:0in;}
+@list l0:level9
+	{mso-level-style-link:"Heading 9";
+	mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6\.%7\.%8\.%9";
+	mso-level-tab-stop:none;
+	mso-level-number-position:left;
+	mso-level-legacy:yes;
+	mso-level-legacy-indent:0in;
+	mso-level-legacy-space:.1in;
+	margin-left:0in;
+	text-indent:0in;}
+@list l1
+	{mso-list-id:436826253;
+	mso-list-type:hybrid;
+	mso-list-template-ids:1278917358 2137917900 67698713 67698715 67698703 67698713 67698715 67698703 67698713 67698715;}
+@list l1:level1
+	{mso-level-start-at:3;
+	mso-level-text:%1;
+	mso-level-tab-stop:none;
+	mso-level-number-position:left;
+	text-indent:-.25in;
+	mso-ansi-font-weight:bold;}
+@list l2
+	{mso-list-id:987438150;
+	mso-list-type:hybrid;
+	mso-list-template-ids:823718680 -70194218 67698713 67698715 67698703 67698713 67698715 67698703 67698713 67698715;}
+@list l2:level1
+	{mso-level-start-at:3;
+	mso-level-text:%1;
+	mso-level-tab-stop:none;
+	mso-level-number-position:left;
+	text-indent:-.25in;
+	mso-ansi-font-weight:bold;}
+@list l3
+	{mso-list-id:1034190112;
+	mso-list-type:hybrid;
+	mso-list-template-ids:1750242088 -194452446 67698713 67698715 67698703 67698713 67698715 67698703 67698713 67698715;}
+@list l3:level1
+	{mso-level-tab-stop:.75in;
+	mso-level-number-position:left;
+	margin-left:.75in;
+	text-indent:-.25in;}
+@list l3:level2
+	{mso-level-tab-stop:1.0in;
+	mso-level-number-position:left;
+	text-indent:-.25in;}
+@list l3:level3
+	{mso-level-tab-stop:1.5in;
+	mso-level-number-position:left;
+	text-indent:-.25in;}
+@list l3:level4
+	{mso-level-tab-stop:2.0in;
+	mso-level-number-position:left;
+	text-indent:-.25in;}
+@list l3:level5
+	{mso-level-tab-stop:2.5in;
+	mso-level-number-position:left;
+	text-indent:-.25in;}
+@list l3:level6
+	{mso-level-tab-stop:3.0in;
+	mso-level-number-position:left;
+	text-indent:-.25in;}
+@list l3:level7
+	{mso-level-tab-stop:3.5in;
+	mso-level-number-position:left;
+	text-indent:-.25in;}
+@list l3:level8
+	{mso-level-tab-stop:4.0in;
+	mso-level-number-position:left;
+	text-indent:-.25in;}
+@list l3:level9
+	{mso-level-tab-stop:4.5in;
+	mso-level-number-position:left;
+	text-indent:-.25in;}
+@list l4
+	{mso-list-id:1390768066;
+	mso-list-template-ids:1466619876;}
+@list l4:level1
+	{mso-level-tab-stop:.25in;
+	mso-level-number-position:left;
+	margin-left:.25in;
+	text-indent:-.25in;}
+@list l4:level2
+	{mso-level-text:"%1\.%2\.";
+	mso-level-tab-stop:.55in;
+	mso-level-number-position:left;
+	margin-left:.55in;
+	text-indent:-.3in;}
+@list l4:level3
+	{mso-level-text:"%1\.%2\.%3\.";
+	mso-level-tab-stop:.85in;
+	mso-level-number-position:left;
+	margin-left:.85in;
+	text-indent:-.35in;}
+@list l4:level4
+	{mso-level-text:"%1\.%2\.%3\.%4\.";
+	mso-level-tab-stop:1.2in;
+	mso-level-number-position:left;
+	margin-left:1.2in;
+	text-indent:-.45in;}
+@list l4:level5
+	{mso-level-text:"%1\.%2\.%3\.%4\.%5\.";
+	mso-level-tab-stop:1.55in;
+	mso-level-number-position:left;
+	margin-left:1.55in;
+	text-indent:-.55in;}
+@list l4:level6
+	{mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6\.";
+	mso-level-tab-stop:1.9in;
+	mso-level-number-position:left;
+	margin-left:1.9in;
+	text-indent:-.65in;}
+@list l4:level7
+	{mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6\.%7\.";
+	mso-level-tab-stop:2.25in;
+	mso-level-number-position:left;
+	margin-left:2.25in;
+	text-indent:-.75in;}
+@list l4:level8
+	{mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6\.%7\.%8\.";
+	mso-level-tab-stop:2.6in;
+	mso-level-number-position:left;
+	margin-left:2.6in;
+	text-indent:-.85in;}
+@list l4:level9
+	{mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6\.%7\.%8\.%9\.";
+	mso-level-tab-stop:3.0in;
+	mso-level-number-position:left;
+	margin-left:3.0in;
+	text-indent:-1.0in;}
+@list l5
+	{mso-list-id:1672291913;
+	mso-list-type:hybrid;
+	mso-list-template-ids:-2109865194 -1059538990 67698713 67698715 67698703 67698713 67698715 67698703 67698713 67698715;}
+@list l5:level1
+	{mso-level-start-at:3;
+	mso-level-text:%1;
+	mso-level-tab-stop:none;
+	mso-level-number-position:left;
+	text-indent:-.25in;
+	mso-ansi-font-weight:bold;}
+@list l6
+	{mso-list-id:1707483238;
+	mso-list-type:hybrid;
+	mso-list-template-ids:-1502722086 589217460 67698713 67698715 67698703 67698713 67698715 67698703 67698713 67698715;}
+@list l6:level1
+	{mso-level-tab-stop:.75in;
+	mso-level-number-position:left;
+	margin-left:.75in;
+	text-indent:-.25in;}
+@list l6:level2
+	{mso-level-tab-stop:1.0in;
+	mso-level-number-position:left;
+	text-indent:-.25in;}
+@list l6:level3
+	{mso-level-tab-stop:1.5in;
+	mso-level-number-position:left;
+	text-indent:-.25in;}
+@list l6:level4
+	{mso-level-tab-stop:2.0in;
+	mso-level-number-position:left;
+	text-indent:-.25in;}
+@list l6:level5
+	{mso-level-tab-stop:2.5in;
+	mso-level-number-position:left;
+	text-indent:-.25in;}
+@list l6:level6
+	{mso-level-tab-stop:3.0in;
+	mso-level-number-position:left;
+	text-indent:-.25in;}
+@list l6:level7
+	{mso-level-tab-stop:3.5in;
+	mso-level-number-position:left;
+	text-indent:-.25in;}
+@list l6:level8
+	{mso-level-tab-stop:4.0in;
+	mso-level-number-position:left;
+	text-indent:-.25in;}
+@list l6:level9
+	{mso-level-tab-stop:4.5in;
+	mso-level-number-position:left;
+	text-indent:-.25in;}
+@list l7
+	{mso-list-id:1720469492;
+	mso-list-type:hybrid;
+	mso-list-template-ids:-674715982 -200629036 67698713 67698715 67698703 67698713 67698715 67698703 67698713 67698715;}
+@list l7:level1
+	{mso-level-start-at:6;
+	mso-level-text:%1;
+	mso-level-tab-stop:none;
+	mso-level-number-position:left;
+	margin-left:31.5pt;
+	text-indent:-.25in;}
+@list l8
+	{mso-list-id:1759204737;
+	mso-list-type:hybrid;
+	mso-list-template-ids:842141874 -1105803418 67698713 67698715 67698703 67698713 67698715 67698703 67698713 67698715;}
+@list l8:level1
+	{mso-level-start-at:3;
+	mso-level-text:%1;
+	mso-level-tab-stop:none;
+	mso-level-number-position:left;
+	text-indent:-.25in;
+	mso-ansi-font-weight:bold;}
+@list l9
+	{mso-list-id:1923172375;
+	mso-list-type:hybrid;
+	mso-list-template-ids:-1554211778 -105247444 67698713 67698715 67698703 67698713 67698715 67698703 67698713 67698715;}
+@list l9:level1
+	{mso-level-tab-stop:.75in;
+	mso-level-number-position:left;
+	margin-left:.75in;
+	text-indent:-.25in;}
+@list l10
+	{mso-list-id:1964386974;
+	mso-list-template-ids:1466619876;}
+@list l10:level1
+	{mso-level-tab-stop:.25in;
+	mso-level-number-position:left;
+	margin-left:.25in;
+	text-indent:-.25in;}
+@list l10:level2
+	{mso-level-text:"%1\.%2\.";
+	mso-level-tab-stop:.55in;
+	mso-level-number-position:left;
+	margin-left:.55in;
+	text-indent:-.3in;}
+@list l10:level3
+	{mso-level-text:"%1\.%2\.%3\.";
+	mso-level-tab-stop:.85in;
+	mso-level-number-position:left;
+	margin-left:.85in;
+	text-indent:-.35in;}
+@list l10:level4
+	{mso-level-text:"%1\.%2\.%3\.%4\.";
+	mso-level-tab-stop:1.2in;
+	mso-level-number-position:left;
+	margin-left:1.2in;
+	text-indent:-.45in;}
+@list l10:level5
+	{mso-level-text:"%1\.%2\.%3\.%4\.%5\.";
+	mso-level-tab-stop:1.55in;
+	mso-level-number-position:left;
+	margin-left:1.55in;
+	text-indent:-.55in;}
+@list l10:level6
+	{mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6\.";
+	mso-level-tab-stop:1.9in;
+	mso-level-number-position:left;
+	margin-left:1.9in;
+	text-indent:-.65in;}
+@list l10:level7
+	{mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6\.%7\.";
+	mso-level-tab-stop:2.25in;
+	mso-level-number-position:left;
+	margin-left:2.25in;
+	text-indent:-.75in;}
+@list l10:level8
+	{mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6\.%7\.%8\.";
+	mso-level-tab-stop:2.6in;
+	mso-level-number-position:left;
+	margin-left:2.6in;
+	text-indent:-.85in;}
+@list l10:level9
+	{mso-level-text:"%1\.%2\.%3\.%4\.%5\.%6\.%7\.%8\.%9\.";
+	mso-level-tab-stop:3.0in;
+	mso-level-number-position:left;
+	margin-left:3.0in;
+	text-indent:-1.0in;}
+ol
+	{margin-bottom:0in;}
+ul
+	{margin-bottom:0in;}
+-->
+</style>
+<!--[if gte mso 10]>
+<style>
+ /* Style Definitions */
+ table.MsoNormalTable
+	{mso-style-name:"Table Normal";
+	mso-tstyle-rowband-size:0;
+	mso-tstyle-colband-size:0;
+	mso-style-noshow:yes;
+	mso-style-parent:"";
+	mso-padding-alt:0in 5.4pt 0in 5.4pt;
+	mso-para-margin:0in;
+	mso-para-margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:10.0pt;
+	font-family:"Times New Roman";}
+table.MsoTableGrid
+	{mso-style-name:"Table Grid";
+	mso-tstyle-rowband-size:0;
+	mso-tstyle-colband-size:0;
+	border:solid black 1.0pt;
+	mso-border-alt:solid black .5pt;
+	mso-padding-alt:0in 5.4pt 0in 5.4pt;
+	mso-border-insideh:.5pt solid black;
+	mso-border-insidev:.5pt solid black;
+	mso-para-margin:0in;
+	mso-para-margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:10.0pt;
+	font-family:"Times New Roman";}
+</style>
+<![endif]--><!--[if gte mso 9]><xml>
+ <o:shapedefaults v:ext="edit" spidmax="7170"/>
+</xml><![endif]--><!--[if gte mso 9]><xml>
+ <o:shapelayout v:ext="edit">
+  <o:idmap v:ext="edit" data="1"/>
+ </o:shapelayout></xml><![endif]-->
+</head>
+
+<body lang=EN-US link=blue vlink=purple style='tab-interval:.5in'>
+
+<div class=Section1>
+
+<h1 style='margin-left:2.0in;text-indent:4.5pt;mso-list:none'>ColorForth 2.0a TUTORIAL</h1>
+
+<p class=MsoNormal align=center style='text-align:center'><b><span
+style='font-size:18.0pt;mso-fareast-language:AR-SA'><o:p>&nbsp;</o:p></span></b></p>
+
+<p class=MsoNormal align=center style='text-align:center'><b><span
+style='font-size:18.0pt;mso-fareast-language:AR-SA'>Revision 1.0<o:p></o:p></span></b></p>
+
+<p class=MsoNormal align=center style='text-align:center'><b><span
+style='font-size:18.0pt;mso-fareast-language:AR-SA'><o:p>&nbsp;</o:p></span></b></p>
+
+<p class=MsoNormal align=center style='text-align:center'><st1:date Year="2008"
+Day="2" Month="8"><b><span style='font-size:18.0pt;mso-fareast-language:AR-SA'>02/08/08</span></b></st1:date><b><span
+style='font-size:18.0pt;mso-fareast-language:AR-SA'><o:p></o:p></span></b></p>
+
+<p class=MsoNormal align=center style='text-align:center'><b><span
+style='font-size:18.0pt;mso-fareast-language:AR-SA'><o:p>&nbsp;</o:p></span></b></p>
+
+<p class=MsoNormal align=center style='text-align:center'><b><span
+style='font-size:16.0pt;mso-fareast-language:AR-SA'><o:p>&nbsp;</o:p></span></b></p>
+
+<p class=MsoBodyText><span style='font-size:16.0pt'><o:p>&nbsp;</o:p></span></p>
+
+<p class=MsoBodyText><span style='font-size:16.0pt'>This tutorial is designed
+for users with little or no experience with ColorForth and very limited
+experience with </span><st1:place><span style='font-size:16.0pt'>Forth</span></st1:place><span
+style='font-size:16.0pt'>.<span style='mso-spacerun:yes'>  </span>It describes how
+to launch and use some of the tools available by walking through examples.<span
+style='mso-spacerun:yes'>  </span>It may be helpful to learn some basic editor
+commands before beginning the tutorial (refer to section 3 of Users’ Guide for
+ColorForth2 <i style='mso-bidi-font-style:normal'>colorForth Human Interface</i>).
+<span style='mso-spacerun:yes'> </span>In the following examples, commands and
+editor control panel keys are shown in <b style='mso-bidi-font-weight:normal'>bold</b>
+while qwerty keys are shown in <b style='mso-bidi-font-weight:normal'><u>bold
+underline</u></b>.<span style='mso-spacerun:yes'>  </span><o:p></o:p></span></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>Warning</span></b><span style='font-size:16.0pt'>: While
+referring to the examples while in the editor command mode, if a single
+character is in bold it will sometimes represent a control panel command and
+typing the qwerty character will not produce the expected result.<span
+style='mso-spacerun:yes'>  </span>For example the editor command <b
+style='mso-bidi-font-weight:normal'>l</b></span><span style='font-size:16.0pt;
+font-family:Courier'> </span><span style='font-size:16.0pt'>(left ) is mapped
+to the qwerty key <b style='mso-bidi-font-weight:normal'><u>j</u></b>.<span
+style='mso-spacerun:yes'>  </span>This may sound a little confusing but will
+become clear after doing a few examples.<o:p></o:p></span></p>
+
+<p class=MsoBodyText><span style='font-size:16.0pt'>Below is a copy of the
+editor command mode key mapping taken from the Users’ Guide for ColorForth2.<span
+style='mso-spacerun:yes'>  </span>The commands appear in the lower right corner
+of the screen while in editor command mode.<o:p></o:p></span></p>
+
+<table class=MsoNormalTable border=1 cellspacing=0 cellpadding=0
+ style='margin-left:57.9pt;border-collapse:collapse;border:none;mso-border-alt:
+ solid windowtext .5pt;mso-yfti-tbllook:480;mso-padding-alt:0in 5.4pt 0in 5.4pt;
+ mso-border-insideh:.5pt solid windowtext;mso-border-insidev:.5pt solid windowtext'>
+ <tr style='mso-yfti-irow:0;page-break-inside:avoid;height:.5in'>
+  <td width=58 valign=top style='width:.6in;border:solid windowtext 1.0pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt;height:.5in'>
+  <p class=MsoBodyText style='margin-bottom:0in;margin-bottom:.0001pt'><b><u><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'>Q<o:p></o:p></span></u></b></p>
+  <p class=MsoBodyText align=center style='margin-bottom:0in;margin-bottom:
+  .0001pt;text-align:center'><b style='mso-bidi-font-weight:normal'><span
+  style='font-size:8.0pt;mso-bidi-font-size:10.0pt;font-family:"Andale Mono"'><o:p>&nbsp;</o:p></span></b></p>
+  <p class=MsoBodyText align=center style='margin-bottom:0in;margin-bottom:
+  .0001pt;text-align:center'><b style='mso-bidi-font-weight:normal'><span
+  style='font-size:8.0pt;mso-bidi-font-size:10.0pt;font-family:"Andale Mono"'><o:p>&nbsp;</o:p></span></b></p>
+  </td>
+  <td width=58 valign=top style='width:.6in;border:solid windowtext 1.0pt;
+  border-left:none;mso-border-left-alt:solid windowtext .5pt;mso-border-alt:
+  solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt;height:.5in'>
+  <p class=MsoBodyText style='margin-bottom:0in;margin-bottom:.0001pt'><b><u><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'>W<o:p></o:p></span></u></b></p>
+  <p class=MsoBodyText align=center style='margin-bottom:0in;margin-bottom:
+  .0001pt;text-align:center'><span style='font-size:8.0pt;mso-bidi-font-size:
+  10.0pt;font-family:"Andale Mono"'><o:p>&nbsp;</o:p></span></p>
+  <p class=MsoBodyText align=center style='margin-bottom:0in;margin-bottom:
+  .0001pt;text-align:center'><b style='mso-bidi-font-weight:normal'><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'>S<o:p></o:p></span></b></p>
+  </td>
+  <td width=58 valign=top style='width:.6in;border:solid windowtext 1.0pt;
+  border-left:none;mso-border-left-alt:solid windowtext .5pt;mso-border-alt:
+  solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt;height:.5in'>
+  <p class=MsoBodyText style='margin-bottom:0in;margin-bottom:.0001pt'><b><u><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'>E<o:p></o:p></span></u></b></p>
+  <p class=MsoBodyText style='margin-bottom:0in;margin-bottom:.0001pt'><span
+  style='font-size:8.0pt;mso-bidi-font-size:10.0pt;font-family:"Andale Mono"'><o:p>&nbsp;</o:p></span></p>
+  <p class=MsoBodyText align=center style='margin-bottom:0in;margin-bottom:
+  .0001pt;text-align:center'><b style='mso-bidi-font-weight:normal'><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'>C<o:p></o:p></span></b></p>
+  </td>
+  <td width=58 valign=top style='width:.6in;border:solid windowtext 1.0pt;
+  border-left:none;mso-border-left-alt:solid windowtext .5pt;mso-border-alt:
+  solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt;height:.5in'>
+  <p class=MsoBodyText style='margin-bottom:0in;margin-bottom:.0001pt'><b><u><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'>R<o:p></o:p></span></u></b></p>
+  <p class=MsoBodyText style='margin-bottom:0in;margin-bottom:.0001pt'><span
+  style='font-size:8.0pt;mso-bidi-font-size:10.0pt;font-family:"Andale Mono"'><o:p>&nbsp;</o:p></span></p>
+  <p class=MsoBodyText align=center style='margin-bottom:0in;margin-bottom:
+  .0001pt;text-align:center'><b style='mso-bidi-font-weight:normal'><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'>t<o:p></o:p></span></b></p>
+  </td>
+  <td width=58 valign=top style='width:.6in;border:none;border-right:solid windowtext 1.0pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-right-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt;
+  height:.5in'>
+  <p class=MsoBodyText style='margin-bottom:0in;margin-bottom:.0001pt'><span
+  style='font-size:8.0pt;font-family:"Andale Mono"'><o:p>&nbsp;</o:p></span></p>
+  </td>
+  <td width=58 valign=top style='width:.6in;border:solid windowtext 1.0pt;
+  border-left:none;mso-border-left-alt:solid windowtext .5pt;mso-border-alt:
+  solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt;height:.5in'>
+  <p class=MsoBodyText style='margin-bottom:0in;margin-bottom:.0001pt'><b><u><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'>U<o:p></o:p></span></u></b></p>
+  <p class=MsoBodyText style='margin-bottom:0in;margin-bottom:.0001pt'><span
+  style='font-size:8.0pt;mso-bidi-font-size:10.0pt;font-family:"Andale Mono"'><o:p>&nbsp;</o:p></span></p>
+  <p class=MsoBodyText align=center style='margin-bottom:0in;margin-bottom:
+  .0001pt;text-align:center'><b style='mso-bidi-font-weight:normal'><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'>y<o:p></o:p></span></b></p>
+  </td>
+  <td width=58 valign=top style='width:.6in;border:solid windowtext 1.0pt;
+  border-left:none;mso-border-left-alt:solid windowtext .5pt;mso-border-alt:
+  solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt;height:.5in'>
+  <p class=MsoBodyText style='margin-bottom:0in;margin-bottom:.0001pt'><b><u><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'>I<o:p></o:p></span></u></b></p>
+  <p class=MsoBodyText style='margin-bottom:0in;margin-bottom:.0001pt'><span
+  style='font-size:8.0pt;mso-bidi-font-size:10.0pt;font-family:"Andale Mono"'><o:p>&nbsp;</o:p></span></p>
+  <p class=MsoBodyText align=center style='margin-bottom:0in;margin-bottom:
+  .0001pt;text-align:center'><b style='mso-bidi-font-weight:normal'><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'>r<o:p></o:p></span></b></p>
+  </td>
+  <td width=58 valign=top style='width:.6in;border:solid windowtext 1.0pt;
+  border-left:none;mso-border-left-alt:solid windowtext .5pt;mso-border-alt:
+  solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt;height:.5in'>
+  <p class=MsoBodyText style='margin-bottom:0in;margin-bottom:.0001pt'><b><u><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'>O<o:p></o:p></span></u></b></p>
+  <p class=MsoBodyText style='margin-bottom:0in;margin-bottom:.0001pt'><span
+  style='font-size:8.0pt;mso-bidi-font-size:10.0pt;font-family:"Andale Mono"'><o:p>&nbsp;</o:p></span></p>
+  <p class=MsoBodyText align=center style='margin-bottom:0in;margin-bottom:
+  .0001pt;text-align:center'><b style='mso-bidi-font-weight:normal'><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'>g<o:p></o:p></span></b></p>
+  </td>
+  <td width=58 valign=top style='width:.6in;border:solid windowtext 1.0pt;
+  border-left:none;mso-border-left-alt:solid windowtext .5pt;mso-border-alt:
+  solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt;height:.5in'>
+  <p class=MsoBodyText style='margin-bottom:0in;margin-bottom:.0001pt'><b><u><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'>P<o:p></o:p></span></u></b></p>
+  <p class=MsoBodyText style='margin-bottom:0in;margin-bottom:.0001pt'><span
+  style='font-size:8.0pt;mso-bidi-font-size:10.0pt;font-family:"Andale Mono"'><o:p>&nbsp;</o:p></span></p>
+  <p class=MsoBodyText align=center style='margin-bottom:0in;margin-bottom:
+  .0001pt;text-align:center'><b style='mso-bidi-font-weight:normal'><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'>*<o:p></o:p></span></b></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:1;page-break-inside:avoid;height:.5in'>
+  <td width=58 valign=top style='width:.6in;border:solid windowtext 1.0pt;
+  border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt;height:.5in'>
+  <p class=MsoBodyText style='margin-bottom:0in;margin-bottom:.0001pt'><b><u><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'>A<o:p></o:p></span></u></b></p>
+  <p class=MsoBodyText style='margin-bottom:0in;margin-bottom:.0001pt'><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'><o:p>&nbsp;</o:p></span></p>
+  <p class=MsoBodyText align=center style='margin-bottom:0in;margin-bottom:
+  .0001pt;text-align:center'><b style='mso-bidi-font-weight:normal'><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'><o:p>&nbsp;</o:p></span></b></p>
+  </td>
+  <td width=58 valign=top style='width:.6in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt;height:.5in'>
+  <p class=MsoBodyText style='margin-bottom:0in;margin-bottom:.0001pt'><b><u><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'>S<o:p></o:p></span></u></b></p>
+  <p class=MsoBodyText style='margin-bottom:0in;margin-bottom:.0001pt'><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'><o:p>&nbsp;</o:p></span></p>
+  <p class=MsoBodyText align=center style='margin-bottom:0in;margin-bottom:
+  .0001pt;text-align:center'><b style='mso-bidi-font-weight:normal'><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'>d<o:p></o:p></span></b></p>
+  </td>
+  <td width=58 valign=top style='width:.6in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt;height:.5in'>
+  <p class=MsoBodyText style='margin-bottom:0in;margin-bottom:.0001pt'><b><u><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'>D<o:p></o:p></span></u></b></p>
+  <p class=MsoBodyText style='margin-bottom:0in;margin-bottom:.0001pt'><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'><o:p>&nbsp;</o:p></span></p>
+  <p class=MsoBodyText align=center style='margin-bottom:0in;margin-bottom:
+  .0001pt;text-align:center'><b style='mso-bidi-font-weight:normal'><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'>f<o:p></o:p></span></b></p>
+  </td>
+  <td width=58 valign=top style='width:.6in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt;height:.5in'>
+  <p class=MsoBodyText style='margin-bottom:0in;margin-bottom:.0001pt'><b><u><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'>F<o:p></o:p></span></u></b></p>
+  <p class=MsoBodyText style='margin-bottom:0in;margin-bottom:.0001pt'><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'><o:p>&nbsp;</o:p></span></p>
+  <p class=MsoBodyText align=center style='margin-bottom:0in;margin-bottom:
+  .0001pt;text-align:center'><b style='mso-bidi-font-weight:normal'><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'>j<o:p></o:p></span></b></p>
+  </td>
+  <td width=58 valign=top style='width:.6in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-left-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-bottom-alt:solid windowtext .5pt;mso-border-right-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt;height:.5in'>
+  <p class=MsoBodyText style='margin-bottom:0in;margin-bottom:.0001pt'><span
+  style='font-size:8.0pt;mso-bidi-font-size:10.0pt;font-family:"Andale Mono"'><o:p>&nbsp;</o:p></span></p>
+  </td>
+  <td width=58 valign=top style='width:.6in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt;height:.5in'>
+  <p class=MsoBodyText style='margin-bottom:0in;margin-bottom:.0001pt'><b><u><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'>J<o:p></o:p></span></u></b></p>
+  <p class=MsoBodyText style='margin-bottom:0in;margin-bottom:.0001pt'><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'><o:p>&nbsp;</o:p></span></p>
+  <p class=MsoBodyText align=center style='margin-bottom:0in;margin-bottom:
+  .0001pt;text-align:center'><b style='mso-bidi-font-weight:normal'><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'>l<o:p></o:p></span></b></p>
+  </td>
+  <td width=58 valign=top style='width:.6in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt;height:.5in'>
+  <p class=MsoBodyText style='margin-bottom:0in;margin-bottom:.0001pt'><b><u><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'>K<o:p></o:p></span></u></b></p>
+  <p class=MsoBodyText style='margin-bottom:0in;margin-bottom:.0001pt'><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'><o:p>&nbsp;</o:p></span></p>
+  <p class=MsoBodyText align=center style='margin-bottom:0in;margin-bottom:
+  .0001pt;text-align:center'><b style='mso-bidi-font-weight:normal'><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'>u<o:p></o:p></span></b></p>
+  </td>
+  <td width=58 valign=top style='width:.6in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt;height:.5in'>
+  <p class=MsoBodyText style='margin-bottom:0in;margin-bottom:.0001pt'><b><u><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'>L<o:p></o:p></span></u></b></p>
+  <p class=MsoBodyText style='margin-bottom:0in;margin-bottom:.0001pt'><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'><o:p>&nbsp;</o:p></span></p>
+  <p class=MsoBodyText align=center style='margin-bottom:0in;margin-bottom:
+  .0001pt;text-align:center'><b style='mso-bidi-font-weight:normal'><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'>d<o:p></o:p></span></b></p>
+  </td>
+  <td width=58 valign=top style='width:.6in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt;height:.5in'>
+  <p class=MsoBodyText style='margin-bottom:0in;margin-bottom:.0001pt'><b><u><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'>;<o:p></o:p></span></u></b></p>
+  <p class=MsoBodyText style='margin-bottom:0in;margin-bottom:.0001pt'><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'><o:p>&nbsp;</o:p></span></p>
+  <p class=MsoBodyText align=center style='margin-bottom:0in;margin-bottom:
+  .0001pt;text-align:center'><b style='mso-bidi-font-weight:normal'><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'>r<o:p></o:p></span></b></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:2;page-break-inside:avoid;height:.5in'>
+  <td width=58 valign=top style='width:.6in;border:solid windowtext 1.0pt;
+  border-top:none;mso-border-top-alt:solid windowtext .5pt;mso-border-alt:solid windowtext .5pt;
+  padding:0in 5.4pt 0in 5.4pt;height:.5in'>
+  <p class=MsoBodyText style='margin-bottom:0in;margin-bottom:.0001pt'><b><u><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'>Z<o:p></o:p></span></u></b></p>
+  <p class=MsoBodyText style='margin-bottom:0in;margin-bottom:.0001pt'><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'><o:p>&nbsp;</o:p></span></p>
+  <p class=MsoBodyText align=center style='margin-bottom:0in;margin-bottom:
+  .0001pt;text-align:center'><b style='mso-bidi-font-weight:normal'><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'><o:p>&nbsp;</o:p></span></b></p>
+  </td>
+  <td width=58 valign=top style='width:.6in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt;height:.5in'>
+  <p class=MsoBodyText style='margin-bottom:0in;margin-bottom:.0001pt'><b><u><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'>X<o:p></o:p></span></u></b></p>
+  <p class=MsoBodyText style='margin-bottom:0in;margin-bottom:.0001pt'><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'><o:p>&nbsp;</o:p></span></p>
+  <p class=MsoBodyText align=center style='margin-bottom:0in;margin-bottom:
+  .0001pt;text-align:center'><b style='mso-bidi-font-weight:normal'><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'><o:p>&nbsp;</o:p></span></b></p>
+  </td>
+  <td width=58 valign=top style='width:.6in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt;height:.5in'>
+  <p class=MsoBodyText style='margin-bottom:0in;margin-bottom:.0001pt'><b><u><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'>C<o:p></o:p></span></u></b></p>
+  <p class=MsoBodyText style='margin-bottom:0in;margin-bottom:.0001pt'><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'><o:p>&nbsp;</o:p></span></p>
+  <p class=MsoBodyText align=center style='margin-bottom:0in;margin-bottom:
+  .0001pt;text-align:center'><b style='mso-bidi-font-weight:normal'><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'><o:p>&nbsp;</o:p></span></b></p>
+  </td>
+  <td width=58 valign=top style='width:.6in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt;height:.5in'>
+  <p class=MsoBodyText style='margin-bottom:0in;margin-bottom:.0001pt'><b><u><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'>V<o:p></o:p></span></u></b></p>
+  <p class=MsoBodyText style='margin-bottom:0in;margin-bottom:.0001pt'><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'><o:p>&nbsp;</o:p></span></p>
+  <p class=MsoBodyText align=center style='margin-bottom:0in;margin-bottom:
+  .0001pt;text-align:center'><b style='mso-bidi-font-weight:normal'><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'><o:p>&nbsp;</o:p></span></b></p>
+  </td>
+  <td width=58 valign=top style='width:.6in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt;height:.5in'>
+  <p class=MsoBodyText style='margin-bottom:0in;margin-bottom:.0001pt'><b><u><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'>N<o:p></o:p></span></u></b></p>
+  <p class=MsoBodyText style='margin-bottom:0in;margin-bottom:.0001pt'><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'><o:p>&nbsp;</o:p></span></p>
+  <p class=MsoBodyText align=center style='margin-bottom:0in;margin-bottom:
+  .0001pt;text-align:center'><b style='mso-bidi-font-weight:normal'><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'>x<o:p></o:p></span></b></p>
+  </td>
+  <td width=58 valign=top style='width:.6in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt;height:.5in'>
+  <p class=MsoBodyText style='margin-bottom:0in;margin-bottom:.0001pt'><b><u><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'>M<o:p></o:p></span></u></b></p>
+  <p class=MsoBodyText style='margin-bottom:0in;margin-bottom:.0001pt'><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'><o:p>&nbsp;</o:p></span></p>
+  <p class=MsoBodyText align=center style='margin-bottom:0in;margin-bottom:
+  .0001pt;text-align:center'><b style='mso-bidi-font-weight:normal'><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'>-<o:p></o:p></span></b></p>
+  </td>
+  <td width=58 valign=top style='width:.6in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt;height:.5in'>
+  <p class=MsoBodyText style='margin-bottom:0in;margin-bottom:.0001pt'><b><u><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'>,<o:p></o:p></span></u></b></p>
+  <p class=MsoBodyText style='margin-bottom:0in;margin-bottom:.0001pt'><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'><o:p>&nbsp;</o:p></span></p>
+  <p class=MsoBodyText align=center style='margin-bottom:0in;margin-bottom:
+  .0001pt;text-align:center'><b style='mso-bidi-font-weight:normal'><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'>m<o:p></o:p></span></b></p>
+  </td>
+  <td width=58 valign=top style='width:.6in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt;height:.5in'>
+  <p class=MsoBodyText style='margin-bottom:0in;margin-bottom:.0001pt'><b><u><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'>.<o:p></o:p></span></u></b></p>
+  <p class=MsoBodyText style='margin-bottom:0in;margin-bottom:.0001pt'><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'><o:p>&nbsp;</o:p></span></p>
+  <p class=MsoBodyText align=center style='margin-bottom:0in;margin-bottom:
+  .0001pt;text-align:center'><b style='mso-bidi-font-weight:normal'><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'>c<o:p></o:p></span></b></p>
+  </td>
+  <td width=58 valign=top style='width:.6in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt;height:.5in'>
+  <p class=MsoBodyText style='margin-bottom:0in;margin-bottom:.0001pt'><b><u><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'>/<o:p></o:p></span></u></b></p>
+  <p class=MsoBodyText style='margin-bottom:0in;margin-bottom:.0001pt'><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'><o:p>&nbsp;</o:p></span></p>
+  <p class=MsoBodyText align=center style='margin-bottom:0in;margin-bottom:
+  .0001pt;text-align:center'><b style='mso-bidi-font-weight:normal'><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'>+<o:p></o:p></span></b></p>
+  </td>
+ </tr>
+ <tr style='mso-yfti-irow:3;mso-yfti-lastrow:yes;page-break-inside:avoid;
+  height:.5in'>
+  <td width=58 valign=top style='width:.6in;border:none;mso-border-top-alt:
+  solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt;height:.5in'>
+  <p class=MsoBodyText align=center style='margin-bottom:0in;margin-bottom:
+  .0001pt;text-align:center'><span style='font-size:8.0pt;mso-bidi-font-size:
+  10.0pt;font-family:"Andale Mono"'><o:p>&nbsp;</o:p></span></p>
+  </td>
+  <td width=58 valign=top style='width:.6in;border:none;mso-border-top-alt:
+  solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt;height:.5in'>
+  <p class=MsoBodyText align=center style='margin-bottom:0in;margin-bottom:
+  .0001pt;text-align:center'><span style='font-size:8.0pt;mso-bidi-font-size:
+  10.0pt;font-family:"Andale Mono"'><o:p>&nbsp;</o:p></span></p>
+  </td>
+  <td width=58 valign=top style='width:.6in;border:none;mso-border-top-alt:
+  solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt;height:.5in'>
+  <p class=MsoBodyText align=center style='margin-bottom:0in;margin-bottom:
+  .0001pt;text-align:center'><span style='font-size:8.0pt;mso-bidi-font-size:
+  10.0pt;font-family:"Andale Mono"'><o:p>&nbsp;</o:p></span></p>
+  </td>
+  <td width=58 valign=top style='width:.6in;border:none;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-top-alt:solid windowtext .5pt;
+  mso-border-right-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt;
+  height:.5in'>
+  <p class=MsoBodyText align=center style='margin-bottom:0in;margin-bottom:
+  .0001pt;text-align:center'><span style='font-size:8.0pt;mso-bidi-font-size:
+  10.0pt;font-family:"Andale Mono"'><o:p>&nbsp;</o:p></span></p>
+  </td>
+  <td width=115 colspan=2 valign=top style='width:1.2in;border-top:none;
+  border-left:none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt;height:.5in'>
+  <p class=MsoBodyText style='margin-bottom:0in;margin-bottom:.0001pt'><b><u><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'>space<o:p></o:p></span></u></b></p>
+  <p class=MsoBodyText style='margin-bottom:0in;margin-bottom:.0001pt'><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'><o:p>&nbsp;</o:p></span></p>
+  <p class=MsoBodyText align=center style='margin-bottom:0in;margin-bottom:
+  .0001pt;text-align:center'><b style='mso-bidi-font-weight:normal'><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'>.<o:p></o:p></span></b></p>
+  </td>
+  <td width=58 valign=top style='width:.6in;border-top:none;border-left:none;
+  border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;
+  mso-border-top-alt:solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;
+  mso-border-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt;height:.5in'>
+  <p class=MsoBodyText style='margin-bottom:0in;margin-bottom:.0001pt'><b><u><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'>alt<o:p></o:p></span></u></b></p>
+  <p class=MsoBodyText style='margin-bottom:0in;margin-bottom:.0001pt'><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'><o:p>&nbsp;</o:p></span></p>
+  <p class=MsoBodyText align=center style='margin-bottom:0in;margin-bottom:
+  .0001pt;text-align:center'><b style='mso-bidi-font-weight:normal'><span
+  style='font-size:12.0pt;font-family:"Andale Mono"'>i<o:p></o:p></span></b></p>
+  </td>
+  <td width=58 valign=top style='width:.6in;border:none;mso-border-top-alt:
+  solid windowtext .5pt;mso-border-left-alt:solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt;
+  height:.5in'>
+  <p class=MsoBodyText align=center style='margin-bottom:0in;margin-bottom:
+  .0001pt;text-align:center'><span style='font-size:12.0pt;font-family:"Andale Mono"'><o:p>&nbsp;</o:p></span></p>
+  </td>
+  <td width=58 valign=top style='width:.6in;border:none;mso-border-top-alt:
+  solid windowtext .5pt;padding:0in 5.4pt 0in 5.4pt;height:.5in'>
+  <p class=MsoBodyText align=center style='margin-bottom:0in;margin-bottom:
+  .0001pt;text-align:center'><span style='font-size:12.0pt;font-family:"Andale Mono"'><o:p>&nbsp;</o:p></span></p>
+  </td>
+ </tr>
+</table>
+
+<p class=MsoBodyText><o:p>&nbsp;</o:p></p>
+
+<p class=MsoBodyText><o:p>&nbsp;</o:p></p>
+
+<h1 style='margin-left:0in;text-indent:0in'><![if !supportLists]><span
+style='mso-fareast-font-family:Arial;mso-bidi-font-family:Arial'><span
+style='mso-list:Ignore'>1.<span style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span></span><![endif]>ColorForth configuration</h1>
+
+<p class=MsoBodyText><span style='font-size:16.0pt'>The following examples show
+how to use the interpreter, editor, and some configuration utilities. <span
+style='mso-spacerun:yes'> </span>The colorForth editor is a modal edtitor
+consisting of a command mode and text entry modes for several colors of text.<o:p></o:p></span></p>
+
+<h2 style='text-indent:0in'><![if !supportLists]><span style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'><span style='mso-list:Ignore'>1.1<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]>First
+ColorForth function</h2>
+
+<p class=MsoBodyText><span style='font-size:16.0pt'>In </span><st1:place><span
+ style='font-size:16.0pt'>Forth</span></st1:place><span style='font-size:16.0pt'>,
+functions are referred to as words.<span style='mso-spacerun:yes'>   </span>For
+the first example, the word “2 <span style='mso-spacerun:yes'> </span>3 <span
+style='mso-spacerun:yes'> </span>+” will be entered. <span
+style='mso-spacerun:yes'> </span>If a typing mistake is made while in the
+editor, backspace will remove the text currently being typed.<span
+style='mso-spacerun:yes'>  </span>To remove text that has already been entered into
+a block the editor command, <b style='mso-bidi-font-weight:normal'>x</b>
+(mapped to <b style='mso-bidi-font-weight:normal'><u>n</u></b>), is used. For
+more editor commands refer to section 3 of the Users’ Guide for ColorForth2.<span
+style='mso-spacerun:yes'>   </span>While in the interpreter, backspace will
+remove the current text and <b style='mso-bidi-font-weight:normal'>c</b> can be
+used to clear the stack if too much debris collects at the bottom of the
+screen.<o:p></o:p></span></p>
+
+<p class=MsoBodyText><span style='font-size:16.0pt'>Enter the editor.<o:p></o:p></span></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>e<o:p></o:p></span></b></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'><o:p>&nbsp;</o:p></span></b></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><!--[if gte vml 1]><v:shapetype
+ id="_x0000_t75" coordsize="21600,21600" o:spt="75" o:preferrelative="t"
+ path="m@4@5l@4@11@9@11@9@5xe" filled="f" stroked="f">
+ <v:stroke joinstyle="miter"/>
+ <v:formulas>
+  <v:f eqn="if lineDrawn pixelLineWidth 0"/>
+  <v:f eqn="sum @0 1 0"/>
+  <v:f eqn="sum 0 0 @1"/>
+  <v:f eqn="prod @2 1 2"/>
+  <v:f eqn="prod @3 21600 pixelWidth"/>
+  <v:f eqn="prod @3 21600 pixelHeight"/>
+  <v:f eqn="sum @0 0 1"/>
+  <v:f eqn="prod @6 1 2"/>
+  <v:f eqn="prod @7 21600 pixelWidth"/>
+  <v:f eqn="sum @8 21600 0"/>
+  <v:f eqn="prod @7 21600 pixelHeight"/>
+  <v:f eqn="sum @10 21600 0"/>
+ </v:formulas>
+ <v:path o:extrusionok="f" gradientshapeok="t" o:connecttype="rect"/>
+ <o:lock v:ext="edit" aspectratio="t"/>
+</v:shapetype><v:shape id="_x0000_i1027" type="#_x0000_t75" style='width:8in;
+ height:6in'>
+ <v:imagedata src="ColorForth_Tutorial_files/image001.png" o:title=""/>
+ <o:lock v:ext="edit" aspectratio="f"/>
+</v:shape><![endif]--><![if !vml]><img width=768 height=576
+src="ColorForth_Tutorial_files/image049.jpg" v:shapes="_x0000_i1027"><![endif]><o:p></o:p></b></p>
+
+<p class=MsoBodyText><span style='font-size:16.0pt'>Block 18 is the first block
+loaded when OKAD is launched.<span style='mso-spacerun:yes'>  </span>It is also
+the block that comes up in the editor when no block number is specified. <span
+style='mso-spacerun:yes'> </span><span style='mso-spacerun:yes'> </span>The 18 in
+the lower left hand corner of the display indicates that the editor is in block
+18.<span style='mso-spacerun:yes'>   </span>The editor control panel map is in
+the lower right corner and the last word typed, <b style='mso-bidi-font-weight:
+normal'>e</b>, is displayed just to the left of the control panel map.<span
+style='mso-spacerun:yes'>  </span>The last text entered in interpretive mode
+will be displayed in the same location.<o:p></o:p></span></p>
+
+<p class=MsoBodyText><span style='font-size:16.0pt'>To search for an empty
+block, use the forward block command </span><b style='mso-bidi-font-weight:
+normal'><span style='font-size:16.0pt;font-family:Courier'>+</span></b><span
+style='font-size:16.0pt;font-family:Courier'>(</span><span style='font-size:
+16.0pt'> mapped to <b style='mso-bidi-font-weight:normal'><u>?</u></b>).<span
+style='mso-spacerun:yes'>  </span>This command is the first character from the
+right in the third line of the control panel map. <o:p></o:p></span></p>
+
+<p class=MsoBodyText><span style='font-size:16.0pt'>After an empty block is
+located, select the <b style='mso-bidi-font-weight:normal'>r </b>(mapped to the
+<b style='mso-bidi-font-weight:normal'><u>i</u></b> )on the top of the editor
+control panel to enter a red word.<span style='mso-spacerun:yes'>  </span>Red
+is the color used for word names in colorForth.<span style='mso-spacerun:yes'> 
+</span>Enter the name of the word. <o:p></o:p></span></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>add</span></b><span style='font-size:16.0pt'><o:p></o:p></span></p>
+
+<p class=MsoBodyText><!--[if gte vml 1]><v:shape id="_x0000_i1026" type="#_x0000_t75"
+ style='width:8in;height:6in'>
+ <v:imagedata src="ColorForth_Tutorial_files/image003.png" o:title=""/>
+ <o:lock v:ext="edit" aspectratio="f"/>
+</v:shape><![endif]--><![if !vml]><img width=768 height=576
+src="ColorForth_Tutorial_files/image050.jpg" v:shapes="_x0000_i1026"><![endif]></p>
+
+<p class=MsoBodyText><span style='font-size:16.0pt'>Notice that after the red
+word is entered the font changes to green.<span style='mso-spacerun:yes'> 
+</span>Green is used to call colorForth words and macros.<span
+style='mso-spacerun:yes'>  </span><o:p></o:p></span></p>
+
+<p class=MsoBodyText><span style='font-size:16.0pt'>Enter the equation to be
+executed when the word is called.<o:p></o:p></span></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>2 <span style='mso-spacerun:yes'> </span><span
+style='mso-spacerun:yes'> </span>3 <span style='mso-spacerun:yes'> </span><span
+style='mso-spacerun:yes'> </span>+ <span style='mso-spacerun:yes'> </span><span
+style='mso-spacerun:yes'> </span>;<o:p></o:p></span></b></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><!--[if gte vml 1]><v:shape
+ id="_x0000_i1028" type="#_x0000_t75" style='width:8in;height:6in'>
+ <v:imagedata src="ColorForth_Tutorial_files/image005.png" o:title=""/>
+ <o:lock v:ext="edit" aspectratio="f"/>
+</v:shape><![endif]--><![if !vml]><img width=768 height=576
+src="ColorForth_Tutorial_files/image051.jpg" v:shapes="_x0000_i1028"><![endif]><o:p></o:p></b></p>
+
+<p class=MsoBodyText><span style='font-size:16.0pt'>The semicolon is used to
+end a word.<span style='mso-spacerun:yes'>  </span>If one is not placed at the
+end of a word and code exists below, the word will continue to run until a
+semicolon is reached. <span style='mso-spacerun:yes'> </span>If a word has no
+semicolon at all it will not run.<span style='mso-spacerun:yes'>  </span>Exit
+green text entry and return to the editor controls by hitting the escape key.<o:p></o:p></span></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><u><span
+style='font-size:16.0pt'>esc</span><o:p></o:p></u></b></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><u><!--[if gte vml 1]><v:shape
+ id="_x0000_i1025" type="#_x0000_t75" style='width:8in;height:6in'>
+ <v:imagedata src="ColorForth_Tutorial_files/image007.png" o:title=""/>
+ <o:lock v:ext="edit" aspectratio="f"/>
+</v:shape><![endif]--><![if !vml]><img width=768 height=576
+src="ColorForth_Tutorial_files/image052.jpg" v:shapes="_x0000_i1025"><![endif]><o:p></o:p></u></b></p>
+
+<p class=MsoBodyText><span style='font-size:16.0pt'>In order to run this word
+the block that contains the definition must be loaded.<span
+style='mso-spacerun:yes'>  </span>Only </span><st1:place><span
+ style='font-size:16.0pt'>Forth</span></st1:place><span style='font-size:16.0pt'>
+words from blocks that have been loaded can be run. <span
+style='mso-spacerun:yes'>  </span>In this example the word was placed in block
+88.<span style='mso-spacerun:yes'>  </span>Exit the editor and load the block
+that contains <b style='mso-bidi-font-weight:normal'>add</b>.<o:p></o:p></span></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>.<span style='mso-spacerun:yes'>  </span><o:p></o:p></span></b></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>88 <span style='mso-spacerun:yes'> </span>load<o:p></o:p></span></b></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><!--[if gte vml 1]><v:shape
+ id="_x0000_i1029" type="#_x0000_t75" style='width:8in;height:6in'>
+ <v:imagedata src="ColorForth_Tutorial_files/image009.png" o:title=""/>
+ <o:lock v:ext="edit" aspectratio="f"/>
+</v:shape><![endif]--><![if !vml]><img width=768 height=576
+src="ColorForth_Tutorial_files/image053.jpg" v:shapes="_x0000_i1029"><![endif]><o:p></o:p></b></p>
+
+<p class=MsoBodyText><span style='font-size:16.0pt'>Execute the word.<o:p></o:p></span></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>add<o:p></o:p></span></b></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><!--[if gte vml 1]><v:shape
+ id="_x0000_i1030" type="#_x0000_t75" style='width:8in;height:6in'>
+ <v:imagedata src="ColorForth_Tutorial_files/image011.png" o:title=""/>
+ <o:lock v:ext="edit" aspectratio="f"/>
+</v:shape><![endif]--><![if !vml]><img width=768 height=576
+src="ColorForth_Tutorial_files/image054.jpg" v:shapes="_x0000_i1030"><![endif]></b><o:p></o:p></p>
+
+<p class=MsoBodyText><span style='font-size:16.0pt'>Five appears on the top of
+the stack in the lower left hand corner. <o:p></o:p></span></p>
+
+<span style='font-size:10.0pt;font-family:"Times New Roman";mso-fareast-font-family:
+"Times New Roman";mso-ansi-language:EN-US;mso-fareast-language:EN-US;
+mso-bidi-language:AR-SA'><br clear=all style='mso-special-character:line-break;
+page-break-before:always'>
+</span>
+
+<p class=MsoBodyText><o:p>&nbsp;</o:p></p>
+
+<h2 style='text-indent:0in'><![if !supportLists]><span style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'><span style='mso-list:Ignore'>1.2<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]>Accessing
+memory.</h2>
+
+<p class=MsoBodyText><span style='font-size:16.0pt'>This example shows how to
+store and retrieve data from memory.<span style='mso-spacerun:yes'>  </span>In
+colorForth memory can be accessed by numeric addresses or variable names.<span
+style='mso-spacerun:yes'>  </span><span
+style='mso-spacerun:yes'> </span>ColorForth commands are available to convert
+blocks and words into cell addresses.<span style='mso-spacerun:yes'>  </span>A
+cell is 32 bits long.<span style='mso-spacerun:yes'>  </span>Variables are
+displayed as cell addresses as soon as their names are entered on the stack.<span
+style='mso-spacerun:yes'>  </span>Magenta is the color used for variable names
+in colorForth.<o:p></o:p></span></p>
+
+<p class=MsoBodyText><span style='font-size:16.0pt'>An empty block is needed
+for this example.<span style='mso-spacerun:yes'>  </span>Use the block from example
+1.1 or enter the editor and use </span><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt;font-family:Courier'>+</span></b><span
+style='font-size:16.0pt'> to search for another empty block.<o:p></o:p></span></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>e<o:p></o:p></span></b></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>+ </span></b><span style='font-size:16.0pt'><span
+style='mso-tab-count:1'>      </span>(until empty block is located.)<o:p></o:p></span></p>
+
+<p class=MsoBodyText><span style='font-size:16.0pt'>Once a block is located
+select text “<b style='mso-bidi-font-weight:normal'>t</b>” (mapped to <b
+style='mso-bidi-font-weight:normal'><u>e</u></b>) from the editor control
+map.<span style='mso-spacerun:yes'>  </span>The editor command <b
+style='mso-bidi-font-weight:normal'>t</b> will place the editor in white text
+entry mode.<span style='mso-spacerun:yes'>  </span>In colorForth white words
+are comments. <o:p></o:p></span></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>t<o:p></o:p></span></b></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>vtest<o:p></o:p></span></b></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>esc<o:p></o:p></span></b></p>
+
+<p class=MsoBodyText><span style='font-size:16.0pt'>Select magenta and enter 2
+variables, var1 and var2.<o:p></o:p></span></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>m<o:p></o:p></span></b></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>var1<o:p></o:p></span></b></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>var2<o:p></o:p></span></b></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><!--[if gte vml 1]><v:shape
+ id="_x0000_i1031" type="#_x0000_t75" style='width:573pt;height:363.75pt'>
+ <v:imagedata src="ColorForth_Tutorial_files/image013.png" o:title=""/>
+ <o:lock v:ext="edit" aspectratio="f"/>
+</v:shape><![endif]--><![if !vml]><img width=764 height=485
+src="ColorForth_Tutorial_files/image055.jpg" v:shapes="_x0000_i1031"><![endif]><o:p></o:p></b></p>
+
+<p class=MsoBodyText><span style='font-size:16.0pt'>As mentioned in the
+previous example, the block containing a command or variable must be loaded
+before the command or variable can be used.<span style='mso-spacerun:yes'> 
+</span>If we try to access var1 or var2 without loading the block in which it
+resides, the variable will not be available.<span style='mso-spacerun:yes'> 
+</span>Exit the editor and try to store 28 in var1.<o:p></o:p></span></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>esc<o:p></o:p></span></b></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>. <span style='mso-spacerun:yes'> </span><o:p></o:p></span></b></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>28 <span style='mso-spacerun:yes'> </span><span
+style='mso-spacerun:yes'> </span>var1 <span style='mso-spacerun:yes'> </span><span
+style='mso-spacerun:yes'> </span>!<o:p></o:p></span></b></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><!--[if gte vml 1]><v:shape
+ id="_x0000_i1032" type="#_x0000_t75" style='width:8in;height:6in'>
+ <v:imagedata src="ColorForth_Tutorial_files/image015.png" o:title=""/>
+ <o:lock v:ext="edit" aspectratio="f"/>
+</v:shape><![endif]--><![if !vml]><img width=768 height=576
+src="ColorForth_Tutorial_files/image002.jpg" v:shapes="_x0000_i1032"><![endif]><o:p></o:p></b></p>
+
+<p class=MsoBodyText><span style='font-size:16.0pt'>The interpreter will only
+push valid data onto the stack.<span style='mso-spacerun:yes'>  </span>“28” is
+pushed on the stack but “var”1 is not.<span style='mso-spacerun:yes'> 
+</span>The question mark following “var1” indicates that it has not been found
+by the interpreter. <span style='mso-spacerun:yes'> </span><span
+style='mso-spacerun:yes'> </span>This is because block 96 has not been loaded.<span
+style='mso-spacerun:yes'>  </span>When “</span><b style='mso-bidi-font-weight:
+normal'><span style='font-size:16.0pt;font-family:Courier'>!</span></b><span
+style='font-size:16.0pt'>” is entered a question mark will appear next to it
+because there is no place to store “28”.<o:p></o:p></span></p>
+
+<p class=MsoBodyText><span style='font-size:16.0pt'>Load the block that
+contains var1 and var2 and try again. <span
+style='mso-spacerun:yes'>  </span>When the name var1 is pushed on the stack, it
+is converted to a cell address.<o:p></o:p></span></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>96 <span style='mso-spacerun:yes'>  </span>load<o:p></o:p></span></b></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>28 <span style='mso-spacerun:yes'> </span><span
+style='mso-spacerun:yes'> </span>var1 <span style='mso-spacerun:yes'> </span>!<o:p></o:p></span></b></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><!--[if gte vml 1]><v:shape
+ id="_x0000_i1033" type="#_x0000_t75" style='width:8in;height:6in'>
+ <v:imagedata src="ColorForth_Tutorial_files/image017.png" o:title=""/>
+ <o:lock v:ext="edit" aspectratio="f"/>
+</v:shape><![endif]--><![if !vml]><img width=768 height=576
+src="ColorForth_Tutorial_files/image004.jpg" v:shapes="_x0000_i1033"><![endif]><o:p></o:p></b></p>
+
+<p class=MsoBodyText><span style='font-size:16.0pt'>As can be seen on the
+display var1 now contains the value 28.<o:p></o:p></span></p>
+
+<p class=MsoBodyText><span style='font-size:16.0pt'>The address can be fetched
+from var1 by accessing the variable directly or using cell offsets.<span
+style='mso-spacerun:yes'>  </span><o:p></o:p></span></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>var1 <span style='mso-spacerun:yes'> </span>@ <o:p></o:p></span></b></p>
+
+<p class=MsoBodyText><span style='font-size:16.0pt'>or<b style='mso-bidi-font-weight:
+normal'> <o:p></o:p></b></span></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>96 <span style='mso-spacerun:yes'> </span>block <span
+style='mso-spacerun:yes'> </span>2 <span style='mso-spacerun:yes'> </span>+ <span
+style='mso-spacerun:yes'> </span>@<o:p></o:p></span></b></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><!--[if gte vml 1]><v:shape
+ id="_x0000_i1034" type="#_x0000_t75" style='width:8in;height:6in'>
+ <v:imagedata src="ColorForth_Tutorial_files/image019.png" o:title=""/>
+ <o:lock v:ext="edit" aspectratio="f"/>
+</v:shape><![endif]--><![if !vml]><img width=768 height=576
+src="ColorForth_Tutorial_files/image006.jpg" v:shapes="_x0000_i1034"><![endif]><o:p></o:p></b></p>
+
+<p class=MsoBodyText><span style='font-size:16.0pt'>“<b style='mso-bidi-font-weight:
+normal'>28</b>” is displayed on the stack in the lower left of the display.<b
+style='mso-bidi-font-weight:normal'><o:p></o:p></b></span></p>
+
+<p class=MsoBodyText><span style='font-size:16.0pt'>The colorForth command, <b
+style='mso-bidi-font-weight:normal'>block</b> converts the block number to a
+cell address.<span style='mso-spacerun:yes'>  </span>Two is then added to this
+memory location and <b style='mso-bidi-font-weight:normal'>@</b> fetches the
+contents of this address.<span style='mso-spacerun:yes'>  </span>This shows
+that the value of var1 is stored in the second cell address from the start of
+the block.<o:p></o:p></span></p>
+
+<p class=MsoBodyText><span style='font-size:16.0pt'>To verify that “<b
+style='mso-bidi-font-weight:normal'>96 <span
+style='mso-spacerun:yes'> </span>block <span style='mso-spacerun:yes'> </span>2
+<span style='mso-spacerun:yes'> </span>+”</b> is <b style='mso-bidi-font-weight:
+normal'>var1, </b><span style='mso-spacerun:yes'> </span>both numbers can be
+displayed on the stack.<o:p></o:p></span></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>96 <span style='mso-spacerun:yes'> </span>block <span
+style='mso-spacerun:yes'> </span>2 <span style='mso-spacerun:yes'> </span>+ <span
+style='mso-spacerun:yes'> </span>var1<o:p></o:p></span></b></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><!--[if gte vml 1]><v:shape
+ id="_x0000_i1035" type="#_x0000_t75" style='width:8in;height:6in'>
+ <v:imagedata src="ColorForth_Tutorial_files/image021.png" o:title=""/>
+ <o:lock v:ext="edit" aspectratio="f"/>
+</v:shape><![endif]--><![if !vml]><img width=768 height=576
+src="ColorForth_Tutorial_files/image008.jpg" v:shapes="_x0000_i1035"><![endif]><o:p></o:p></b></p>
+
+<p class=MsoBodyText><span style='font-size:16.0pt'>The stack representation in
+the lower left shows that these locations are identical.<span
+style='mso-spacerun:yes'>  </span>You can use similar commands to verify that
+var2 is two cells past var1.<o:p></o:p></span></p>
+
+<h2 style='text-indent:0in'><![if !supportLists]><span style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'><span style='mso-list:Ignore'>1.3<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]>Loop
+example<span style='mso-spacerun:yes'>  </span>(WIP)</h2>
+
+<p class=MsoBodyText><!--[if gte vml 1]><v:shape id="_x0000_i1036" type="#_x0000_t75"
+ style='width:8in;height:6in'>
+ <v:imagedata src="ColorForth_Tutorial_files/image023.png" o:title=""/>
+ <o:lock v:ext="edit" aspectratio="f"/>
+</v:shape><![endif]--><![if !vml]><img width=768 height=576
+src="ColorForth_Tutorial_files/image010.jpg" v:shapes="_x0000_i1036"><![endif]></p>
+
+<p class=MsoBodyText><!--[if gte vml 1]><v:shape id="_x0000_i1037" type="#_x0000_t75"
+ style='width:8in;height:6in'>
+ <v:imagedata src="ColorForth_Tutorial_files/image025.png" o:title=""/>
+ <o:lock v:ext="edit" aspectratio="f"/>
+</v:shape><![endif]--><![if !vml]><img width=768 height=576
+src="ColorForth_Tutorial_files/image012.jpg" v:shapes="_x0000_i1037"><![endif]></p>
+
+<p class=MsoBodyText><o:p>&nbsp;</o:p></p>
+
+<h2 style='text-indent:0in'><![if !supportLists]><span style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'><span style='mso-list:Ignore'>1.4<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]>How
+to modify ColorForth and save the result.</h2>
+
+<p class=MsoBodyText><span style='font-size:16.0pt'>In this example a
+subtraction word will be written and saved in ColorForth.<span
+style='mso-spacerun:yes'>   </span>A load instruction will be placed in block
+18 so that the word can be executed whenever ColorForth is launched.<o:p></o:p></span></p>
+
+<p class=MsoBodyText><span style='font-size:16.0pt'>Search for an empty block
+and enter the following subtraction equation.<o:p></o:p></span></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>sub<span style='mso-spacerun:yes'>  </span><span
+style='mso-spacerun:yes'> </span>- <span style='mso-spacerun:yes'> </span>1 <span
+style='mso-spacerun:yes'> </span>+ <span style='mso-spacerun:yes'> </span>+ ;<o:p></o:p></span></b></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><!--[if gte vml 1]><v:shape
+ id="_x0000_i1038" type="#_x0000_t75" style='width:8in;height:6in'>
+ <v:imagedata src="ColorForth_Tutorial_files/image027.png" o:title=""/>
+ <o:lock v:ext="edit" aspectratio="f"/>
+</v:shape><![endif]--><![if !vml]><img width=768 height=576
+src="ColorForth_Tutorial_files/image014.jpg" v:shapes="_x0000_i1038"><![endif]><o:p></o:p></b></p>
+
+<p class=MsoBodyText><span style='font-size:16.0pt'>Load the block and test the
+function.<o:p></o:p></span></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>88 <span style='mso-spacerun:yes'> </span><span
+style='mso-spacerun:yes'> </span>load <o:p></o:p></span></b></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>4 <span style='mso-spacerun:yes'> </span><span
+style='mso-spacerun:yes'>  </span>3 <span style='mso-spacerun:yes'> </span><span
+style='mso-spacerun:yes'> </span>sub<o:p></o:p></span></b></p>
+
+<p class=MsoBodyText><!--[if gte vml 1]><v:shape id="_x0000_i1039" type="#_x0000_t75"
+ style='width:8in;height:6in'>
+ <v:imagedata src="ColorForth_Tutorial_files/image029.png" o:title=""/>
+ <o:lock v:ext="edit" aspectratio="f"/>
+</v:shape><![endif]--><![if !vml]><img width=768 height=576
+src="ColorForth_Tutorial_files/image016.jpg" v:shapes="_x0000_i1039"><![endif]></p>
+
+<p class=MsoBodyText><span style='font-size:16.0pt'>Once you are convinced that
+the function works save it.<span style='mso-spacerun:yes'>  </span>If the save
+command is not executed before closing a ColorForth session, all changes will
+be lost.<o:p></o:p></span></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>save<o:p></o:p></span></b></p>
+
+<p class=MsoBodyText><!--[if gte vml 1]><v:shape id="_x0000_i1040" type="#_x0000_t75"
+ style='width:8in;height:6in'>
+ <v:imagedata src="ColorForth_Tutorial_files/image031.png" o:title=""/>
+ <o:lock v:ext="edit" aspectratio="f"/>
+</v:shape><![endif]--><![if !vml]><img width=768 height=576
+src="ColorForth_Tutorial_files/image018.jpg" v:shapes="_x0000_i1040"><![endif]><o:p></o:p></p>
+
+<p class=MsoBodyText><span style='font-size:16.0pt'>As mentioned in example
+1.1, block 18 is the first block that is loaded when ColorForth is
+launched.<span style='mso-spacerun:yes'>  </span>To make <b style='mso-bidi-font-weight:
+normal'>sub</b> available the next time ColorForth is launched, a load command
+will be placed in block 18.<span style='mso-spacerun:yes'>  </span><o:p></o:p></span></p>
+
+<p class=MsoBodyText><span style='font-size:16.0pt'>Use <b style='mso-bidi-font-weight:
+normal'>d</b> and <span style='mso-spacerun:yes'> </span><b style='mso-bidi-font-weight:
+normal'>r</b> from the second row of the editor control panel to position the
+cursor at the end of the block.<o:p></o:p></span></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>18 <span style='mso-spacerun:yes'> </span>edit<o:p></o:p></span></b></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>d<span style='mso-tab-count:1'>       </span></span></b><span
+style='font-size:16.0pt'>(until bottom is reached)<b style='mso-bidi-font-weight:
+normal'><o:p></o:p></b></span></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>r<span style='mso-tab-count:1'>        </span></span></b><span
+style='font-size:16.0pt'>(until end of line is reached)<o:p></o:p></span></p>
+
+<p class=MsoBodyText><!--[if gte vml 1]><v:shape id="_x0000_i1041" type="#_x0000_t75"
+ style='width:8in;height:6in'>
+ <v:imagedata src="ColorForth_Tutorial_files/image033.png" o:title=""/>
+ <o:lock v:ext="edit" aspectratio="f"/>
+</v:shape><![endif]--><![if !vml]><img width=768 height=576
+src="ColorForth_Tutorial_files/image020.jpg" v:shapes="_x0000_i1041"><![endif]></p>
+
+<p class=MsoBodyText><span style='font-size:16.0pt'>Select <b style='mso-bidi-font-weight:
+normal'>y</b>, yellow, from the editor control panel and load the block
+containing <b style='mso-bidi-font-weight:normal'>sub</b>.<o:p></o:p></span></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>88 <span style='mso-spacerun:yes'> </span>load <o:p></o:p></span></b></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><!--[if gte vml 1]><v:shape
+ id="_x0000_i1042" type="#_x0000_t75" style='width:8in;height:6in'>
+ <v:imagedata src="ColorForth_Tutorial_files/image035.png" o:title=""/>
+ <o:lock v:ext="edit" aspectratio="f"/>
+</v:shape><![endif]--><![if !vml]><img width=768 height=576
+src="ColorForth_Tutorial_files/image022.jpg" v:shapes="_x0000_i1042"><![endif]><o:p></o:p></b></p>
+
+<p class=MsoBodyText><span style='font-size:16.0pt'>Exit the editor and type <b
+style='mso-bidi-font-weight:normal'>save</b>.<span style='mso-spacerun:yes'> 
+</span>Exit ColorForth by executing <b style='mso-bidi-font-weight:normal'>bye</b>.<span
+style='mso-spacerun:yes'>  </span><span style='mso-spacerun:yes'> </span>When
+ColorForth is restarted the sub word will be available.<o:p></o:p></span></p>
+
+<h2 style='text-indent:0in'><![if !supportLists]><span style='mso-fareast-font-family:
+Arial;mso-bidi-font-family:Arial'><span style='mso-list:Ignore'>1.5<span
+style='font:7.0pt "Times New Roman"'>&nbsp;&nbsp;&nbsp;&nbsp; </span></span></span><![endif]>Verifying
+changes in source code.</h2>
+
+<p class=MsoBodyText><span style='font-size:16.0pt'>Changes in source code can
+be verified before they are saved to OkadWork.cf.<span
+style='mso-spacerun:yes'>  </span>This is done by comparing code in the current
+ColorForth session to OkadBack.cf.<span style='mso-spacerun:yes'>  </span>For
+this example, begin by backing up the current source.<o:p></o:p></span></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>0 !back<o:p></o:p></span></b></p>
+
+<p class=MsoBodyText><span style='font-size:16.0pt'>Add comments to three
+blocks of your choice.<span style='mso-spacerun:yes'>  </span>22, 24, and 26
+will be used in the example.<o:p></o:p></span></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>edit <span style='mso-spacerun:yes'>  </span>22<o:p></o:p></span></b></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>d<span style='mso-spacerun:yes'>  </span></span></b><span
+style='font-size:16.0pt'>and<span style='mso-spacerun:yes'>  </span><b
+style='mso-bidi-font-weight:normal'>l<span style='mso-spacerun:yes'>   </span></b>(until
+end of block)<b style='mso-bidi-font-weight:normal'><o:p></o:p></b></span></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>C<o:p></o:p></span></b></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>change1<o:p></o:p></span></b></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><!--[if gte vml 1]><v:shape
+ id="_x0000_i1043" type="#_x0000_t75" style='width:8in;height:6in'>
+ <v:imagedata src="ColorForth_Tutorial_files/image037.png" o:title=""/>
+ <o:lock v:ext="edit" aspectratio="f"/>
+</v:shape><![endif]--><![if !vml]><img width=768 height=576
+src="ColorForth_Tutorial_files/image024.jpg" v:shapes="_x0000_i1043"><![endif]><o:p></o:p></b></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>esc<o:p></o:p></span></b></p>
+
+<p class=MsoBodyText><span style='font-size:16.0pt'>Continue to make similar
+changes to the next two blocks.<o:p></o:p></span></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>+<o:p></o:p></span></b></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>d<span style='mso-spacerun:yes'>  </span></span></b><span
+style='font-size:16.0pt'>and<span style='mso-spacerun:yes'>  </span><b
+style='mso-bidi-font-weight:normal'>l<span style='mso-spacerun:yes'>   </span></b>(until
+end of block)<b style='mso-bidi-font-weight:normal'><o:p></o:p></b></span></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>C<o:p></o:p></span></b></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>change2<o:p></o:p></span></b></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>esc<o:p></o:p></span></b></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>+<o:p></o:p></span></b></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>d<span style='mso-spacerun:yes'>  </span></span></b><span
+style='font-size:16.0pt'>and<span style='mso-spacerun:yes'>  </span><b
+style='mso-bidi-font-weight:normal'>l<span style='mso-spacerun:yes'>   </span></b>(until
+end of block)<b style='mso-bidi-font-weight:normal'><o:p></o:p></b></span></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>C<o:p></o:p></span></b></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>Change3<o:p></o:p></span></b></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>esc<o:p></o:p></span></b></p>
+
+<p class=MsoBodyText><span style='font-size:16.0pt'>.<span
+style='mso-spacerun:yes'>          </span>(exit the editor)<o:p></o:p></span></p>
+
+<p class=MsoBodyText><span style='font-size:16.0pt'>The changes made to
+ColorForth can now be compared to the backup.<span style='mso-spacerun:yes'> 
+</span>Load the disking utility at block 120 and use the <b style='mso-bidi-font-weight:
+normal'>check</b></span><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt;font-family:Courier'> </span></b><span
+style='font-size:16.0pt'>function to find changes.<o:p></o:p></span></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>120 <span style='mso-spacerun:yes'> </span>load<o:p></o:p></span></b></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>check<o:p></o:p></span></b></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>all<o:p></o:p></span></b></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><!--[if gte vml 1]><v:shape
+ id="_x0000_i1044" type="#_x0000_t75" style='width:8in;height:6in'>
+ <v:imagedata src="ColorForth_Tutorial_files/image039.png" o:title=""/>
+ <o:lock v:ext="edit" aspectratio="f"/>
+</v:shape><![endif]--><![if !vml]><img width=768 height=576
+src="ColorForth_Tutorial_files/image026.jpg" v:shapes="_x0000_i1044"><![endif]><o:p></o:p></b></p>
+
+<p class=MsoBodyText><span style='font-size:16.0pt'>To compare differences,
+select <b style='mso-bidi-font-weight:normal'>j</b></span><b style='mso-bidi-font-weight:
+normal'><span style='font-size:16.0pt;font-family:Courier'> </span></b><span
+style='font-size:16.0pt'>from the control panel.<span
+style='mso-spacerun:yes'>  </span>This will toggle between the current block
+and the current block + 3000 where the backed up version of the current block
+is stored.<span style='mso-spacerun:yes'>   </span>Exit the editor and proceed
+to the next change by using the <b style='mso-bidi-font-weight:normal'>g</b>
+command.<span style='mso-spacerun:yes'>  </span>This command will bring up the
+editor again.<span style='mso-spacerun:yes'>  </span>To view the change, select
+<b style='mso-bidi-font-weight:normal'>j</b></span><b style='mso-bidi-font-weight:
+normal'><span style='font-size:16.0pt;font-family:Courier'> </span></b><span
+style='font-size:16.0pt'>from the editor control panel.<span
+style='mso-spacerun:yes'>  </span>When the last change is reached the <b
+style='mso-bidi-font-weight:normal'>g</b></span><b style='mso-bidi-font-weight:
+normal'><span style='font-size:16.0pt;font-family:Courier'> </span></b><span
+style='font-size:16.0pt'>command will not advance or enter the editor.<o:p></o:p></span></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>j<o:p></o:p></span></b></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><!--[if gte vml 1]><v:shape
+ id="_x0000_i1045" type="#_x0000_t75" style='width:8in;height:6in'>
+ <v:imagedata src="ColorForth_Tutorial_files/image041.png" o:title=""/>
+ <o:lock v:ext="edit" aspectratio="f"/>
+</v:shape><![endif]--><![if !vml]><img width=768 height=576
+src="ColorForth_Tutorial_files/image028.jpg" v:shapes="_x0000_i1045"><![endif]><o:p></o:p></b></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>. <o:p></o:p></span></b></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>g<o:p></o:p></span></b></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><!--[if gte vml 1]><v:shape
+ id="_x0000_i1046" type="#_x0000_t75" style='width:8in;height:6in'>
+ <v:imagedata src="ColorForth_Tutorial_files/image043.png" o:title=""/>
+ <o:lock v:ext="edit" aspectratio="f"/>
+</v:shape><![endif]--><![if !vml]><img width=768 height=576
+src="ColorForth_Tutorial_files/image030.jpg" v:shapes="_x0000_i1046"><![endif]><o:p></o:p></b></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>j<o:p></o:p></span></b></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><!--[if gte vml 1]><v:shape
+ id="_x0000_i1047" type="#_x0000_t75" style='width:8in;height:6in'>
+ <v:imagedata src="ColorForth_Tutorial_files/image045.png" o:title=""/>
+ <o:lock v:ext="edit" aspectratio="f"/>
+</v:shape><![endif]--><![if !vml]><img width=768 height=576
+src="ColorForth_Tutorial_files/image032.jpg" v:shapes="_x0000_i1047"><![endif]><o:p></o:p></b></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>.<o:p></o:p></span></b></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>g<o:p></o:p></span></b></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>j<o:p></o:p></span></b></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>.<o:p></o:p></span></b></p>
+
+<p class=MsoBodyText><b style='mso-bidi-font-weight:normal'><span
+style='font-size:16.0pt'>g<o:p></o:p></span></b></p>
+
+<p class=MsoBodyText><!--[if gte vml 1]><v:shape id="_x0000_i1048" type="#_x0000_t75"
+ style='width:8in;height:6in'>
+ <v:imagedata src="ColorForth_Tutorial_files/image047.png" o:title=""/>
+ <o:lock v:ext="edit" aspectratio="f"/>
+</v:shape><![endif]--><![if !vml]><img width=768 height=576
+src="ColorForth_Tutorial_files/image034.jpg" v:shapes="_x0000_i1048"><![endif]><o:p></o:p></p>
+
+<p class=MsoBodyText><span style='font-size:16.0pt'>The changes have all been
+verified.<o:p></o:p></span></p>
+
+</div>
+
+</body>
+
+</html>

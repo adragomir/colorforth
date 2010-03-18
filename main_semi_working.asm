@@ -1,4 +1,4 @@
-%include "macros.inc"
+ %include "macros.inc"
 %include "posix.inc"
 %include "SDL.inc"
 
@@ -744,6 +744,7 @@ ffind:
   ret
 
 ; execute word (full name on top of stack).
+
 exword:
   dec dword [words]
   jz execute.0
@@ -1371,7 +1372,7 @@ align 4
 spaces:
   dd qignore, execute, num        ; colors 0..2
 adefine:
-  dd forthd          ; color 3 ; TODO is forthd + 5
+  dd forthd          ; color 3 
     ; This is altered by sdefine, which stores the
     ; address of either macrod (to define a MACRO
     ; word) or forthd (to define a FORTH word) here.
@@ -1683,36 +1684,23 @@ copy:
 ;  block the current block.
   cmp eax, byte 12
   jc abort1
-  ;push edi; TODO
+  push edi
   mov edi, eax
-  sub edi, 18; TODO
+
+  sub    edi, 18; TODO
   shl edi, 2 + 8
   push esi
   mov esi, [blk]
-  sub esi, 18; TODO
+  sub    esi, 18; TODO
   shl esi, 2 + 8
   mov ecx, 512
-  add esi, [blocks_address]; TODO
-  add edi, [blocks_address]; TODO
+  add    esi, [blocks_address]; TODO
+  add    edi, [blocks_address]; TODO
   rep movsd
   pop esi
   pop edi
   mov [blk], eax
   DROP
-  ret
-
-; move dwords
-; ( sa da n -- )    
-move:
-  mov ecx, eax
-  DROP
-  mov edi, eax
-  shl edi, 2
-  DROP
-  mov esi, eax
-  shl esi, 2
-  DROP
-  rep movsd
   ret
 
 ;(?)Print four numbers --
@@ -1764,56 +1752,47 @@ nc: dd 9
 xy: dd char_padding * 0x10000 + char_padding
 lm: dd char_padding
 rm: dd horizontal_chars * char_width; screen_width + char_padding
-xycr: dd 0
 fov:  dd 10 * (2 * screen_height + screen_height / 2) ;512
 
 ; Getting variable addresses
 nc_:
   DUP_
-  mov eax, nc
-  shr eax, 2
+  mov eax, (nc - start1) / 4
   ret
 
 xy_:
   DUP_
-  mov eax, xy
-  shr eax, 2
+  mov eax, (xy - start1) / 4
   ret
 
 fov_:
   DUP_
-  mov eax, fov
-  shr eax, 2
+  mov eax, (fov - start1) / 4
   ret
 
 sps:
   DUP_
-  mov eax, spaces
-  shr eax, 2
+  mov eax, (spaces - start1) / 4
   ret
 
 last_:
   DUP_
-  mov eax, last
-  shr eax, 2
+  mov eax, (last - start1) / 4
   ret
 
 blk_:
   DUP_
-  mov eax, blk
-  shr eax, 2
+  mov eax, (blk - start1) / 4
   ret
 
 curs_:
   DUP_
-  mov eax, curs
-  shr eax, 2
+  mov eax, (curs - start1) / 4
   ret
 
 ekeys_:
   DUP_
-  mov eax, curs
-  shr eax, 2
+  mov eax, (curs - start1) / 4
   ret
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; include 'gen.asm'
@@ -1825,21 +1804,11 @@ fore: dd _yellow
 xc: dd 0
 yc: dd 0
 
-rgb:
-  ror eax, 8
-  shr ax, 2
-  ror eax, 6
-  shr al, 3
-  rol eax, 6+5
-  and eax, 0f7deh
-  ret
-
 white:
   DUP_
   mov eax, _white
 
 color:
-  ;call rgb
   mov [fore], eax
   DROP
   ret
@@ -1958,8 +1927,7 @@ emit:
 bl_:  
   DROP
 
-space: 
-  add dword [xy], char_width * 0x10000
+space:  add dword [xy], char_width * 0x10000
   ret
 
 ; display a double - size character.
@@ -2003,7 +1971,7 @@ line:
   sub edi, ecx
   mov ecx, eax
   mov eax, [fore]
-  rep stosd ; store ecx doublewords from eax to edi
+	rep stosd ; store ecx doublewords from eax to edi
   inc dword [xy]
   DROP
   DROP
@@ -2118,8 +2086,7 @@ zero:
   mov eax, 0
   jnz .9
   inc eax
-  .9:
-    ret
+.9: ret
 
 ;Blanks the screen (draws a black box over the whole screen).
 blank:
@@ -2140,7 +2107,6 @@ top:
   shl ecx, 16 ; Make offset from video-memory start to scanline.
   add ecx, byte 3 ; Add padding between left margin and first icon
   mov [xy], ecx
-  mov [xycr], ecx
   ret
 
 qcr:
@@ -2214,11 +2180,11 @@ eight:
   call space
   sub edi, byte 16
 
-fkeys:
-  call four
-  call space
-  call four
-  call space
+;fkeys:
+  ;call four
+  ;call space
+  ;call four
+  ;call space
 
 four:
   mov ecx, 4
@@ -2229,7 +2195,7 @@ nchars:
   push ecx
   DUP_
   xor eax, eax
-  mov al, [edi] ; QWERTY [edi]
+  mov al, [edi + 4] ; QWERTY [edi]
   inc edi
   call emit
   pop ecx
@@ -2243,7 +2209,7 @@ stack:
     mov edx, [main]
     cmp [edx], edi
     ;jae .9; TODO is jnc in others
-    jae .9
+    jnc .9
     DUP_
     mov eax, [edi]
     sub edi, byte 4
@@ -2255,25 +2221,31 @@ stack:
 ; display the current keyboard layout
 keyboard:
   ; color = keyboard color
-  call text1
   DUP_
   mov eax, [keyc]
   call color
   ; left margin = keyboard_hud_x
-  mov dword [rm], horizontal_chars * char_width
-  mov dword [lm], screen_width - 30 * char_width - 3
-  mov dword [xy], (screen_width - 30 * char_width - 3) * 0x1000 + screen_height - 2 * char_height - 3
+  mov eax, [keyboard_hud_x]
+  add eax, byte 0
+  mov [lm], eax
+  ; right margin is 9 icons over from left margin
+  mov edx, eax
+  add edx, 9 * char_width
+  mov [rm], edx
+  ; xy = (keyboard_hud_x, keyboard_hud_y)
+  shl eax, 16
+  add eax, [keyboard_hud_y]
+  mov [xy], eax
   ; display finger keys
   mov edi, [board]
-  test   edi,edi		; QWERTY
-  jz     .0			; QWERTY
-  call   fkeys		; QWERTY
-.0:
+  call eight
+  call eight
+  call eight
   ; display thumb keys (leave a blank line, move 4 chars in).
   call cr
-  add dword [xy], 25 * char_width * 0x10000
+  add dword [xy], 4 * char_width * 0x10000
   mov edi, [shift]
-  add edi, byte 16
+  add edi, byte 12
   mov ecx, 3
   call nchars
   ; display top element of stack (if any), at left.
@@ -2281,10 +2253,37 @@ keyboard:
   mov word [xy + 2], char_padding
   call stack
   ; display input history just to the left of keyboard display
-  mov word [xy + 2], screen_width - char_padding - (history_size + keyboard_hud_width) * char_width
-  lea edi, [history]
+  mov word [xy + 2], screen_width + char_padding - (history_size + keyboard_hud_width) * char_width
+  lea edi, [history - 4]
   mov ecx, history_size
   jmp nchars
+
+;keyboard:
+  ;call text1
+  ;DUP_
+  ;mov eax, [keyc]
+  ;call color
+  ;mov dword [rm], char_height * icon_width
+  ;mov dword [lm], screen_width - 30 * char_width - char_padding; QWERTY (30 instead of 9)
+  ;mov dword [xy], (screen_width - 30 * char_width - char_padding) * 10000h + screen_height - 2 * icon_height - char_padding; QWERTY
+  ;mov edi, [board]
+  ;test edi,edi		; QWERTY
+  ;jz .0			; QWERTY
+  ;call fkeys		; QWERTY
+;.0:
+  ;call cr; QWERTY (label)
+  ;add dword [xy], 25 * char_width * 10000h	; QWERTY (25 instead of 4)
+  ;mov edi, [shift]
+  ;add edi, 4*4		; QWERTY -4
+  ;mov ecx, 3
+  ;call nchars
+  ;mov dword [lm], char_padding
+  ;mov word [xy + 2], char_padding
+  ;call stack
+  ;mov word [xy + 2], screen_width - (history_size + keyboard_hud_width) * char_width - char_padding
+  ;lea edi, [history]		; QWERTY -4
+  ;mov ecx, history_size
+  ;jmp nchars
 
 
 ; Editor
@@ -2310,7 +2309,7 @@ keyboard_layout_alpha:
   ; right hand
   db Ig, Ic, Ir, Il         ; top
   db Ih, It, In, Is         ; center
-  db Ib, Im, Iw, Iv ; bottom
+  db Ib, Im, icon_width, Iv ; bottom
   ; left hand
   db Ip, Iy, If, Ii ; top
   db Ia, Io, Ie, Iu ; center
@@ -2351,20 +2350,20 @@ keyboard_layout_octals:
 ; foo0 is for the first character of a word
 ; foo1 is used for the rest
 alpha0:
-  dd nul0, nul0, number, nul0  ; handler routines
+  dd nul0, nul0, number, star0  ; handler routines
   db 0, I9, Itimes, 0   ; and icons for display
 
 alpha1:
-  dd word0, x, lj, nul0
+  dd word0,   x,  lj, graph
   db Ix, Idot, Itimes, 0
 
-;graph0:
-;  dd nul0, nul0, nul0, alph0
-;  db 0, 0, Ia, 0
-;
-;graph1:
-;  dd word0,   x, lj, alph
-;  db Ix, Idot, Ia, 0
+graph0:
+  dd nul0, nul0, nul0, alph0
+  db 0, 0, Ia, 0
+
+graph1:
+  dd word0,   x, lj, alph
+  db Ix, Idot, Ia, 0
 
 numb0:
   dd nul0, minus, alphn, octal
@@ -2630,9 +2629,7 @@ keys
 ; scan code is acceptable, key uses it to grab the ColorForth key code from the keys
 ; table.
 
-; returns huffman coded chars or -1 (Esc), -2 (spacebar or Enter) or -3 (Alt)
-; zero is filtered
-; sets flags according to al
+; TODO: fixme
 key:
   DUP_
   push esi
@@ -2699,10 +2696,10 @@ keyboard_hud_y: dd screen_height - keyboard_hud_height * char_height + char_padd
 ; followed by four bytes: the characters to print as the keyboard
 ; guide in the lower-right corner of the screen.
 ; [Refs: keyboard, letter, accept1, decimal, hex, graph, e, pad]
-board:  dd 0;keyboard_layout_alpha - 4  ; current keyboard (finger keys)
+board:  dd keyboard_layout_alpha - 4  ; current keyboard (finger keys)
 ; Shift generally points to one of the following tables:
 ; alpha0, alpha1, graph0, graph1, numb0, numb1.
-shift:  dd alpha0;alpha1 ; current shift (thumb) keys
+shift:  dd alpha1 ; current shift (thumb) keys
 ; ColorForth displays numbers in one of two formats â decimal and hexadecimal. 
 ; Decimal stores 10 here; hex stores 16 here. 
 ; Therefore routines with "cmp base, 10 : jz base10" fall into handling hexadecimal. 
@@ -2711,13 +2708,13 @@ base: dd 10
 current: dd decimal
 ; current key color?
 keyc: dd _yellow
-chars:  dd 1
+chars:  dd 7
 ; "after word" - when you finish entering a word, this is called.
 aword:  dd exword
 ; after number
 anumber: dd nul
 ; how many cells on top of the stack hold huffman - encoded characters?
-words:  dd 1
+words:  dd 0
 shifted:   dd 0			; QWERTY
 
 nul0:
@@ -2726,8 +2723,8 @@ nul0:
 
 accept:
   mov dword [shift], alpha0
-  ;lea edi, [keyboard_layout_alpha - 4]; TODO NONQWERTY
-  xor edi, edi		; QWERTY skip display of command key map
+  lea edi, [keyboard_layout_alpha - 4]; TODO NONQWERTY
+  ;xor edi, edi		; QWERTY skip display of command key map
 
 ; "Key" returns in AL a number 0..27. If number is 4..27, jump to first -- otherwise
 ; convert AL into an offset into whichever of the six tables [each with four DD's]
@@ -2845,25 +2842,24 @@ word1:
 
 word0:
   DROP
-  call key
+  call key ;TODOKEY
   jmp word1
 
 decimal:
   mov dword [base], 10
   mov dword [shift], numb0
-  ;mov dword [board], keyboard_layout_numbers - 4
+  mov dword [board], keyboard_layout_numbers - 4
   ret
 
 hex:
   mov dword [base], 16
   mov dword [shift], numb0
-  ;mov dword [board], keyboard_layout_octals - 4
+  mov dword [board], keyboard_layout_octals - 4
   ret
 
 octal:
-  xor dword [current], decimal;(decimal - start1) ^ (hex - start1)
-  xor dword [current], hex;(decimal - start1) ^ (hex - start1)
-  xor byte [numb0 + 18], 41q ^ 16q ; '9' xor 'f'
+  xor dword [current], (decimal - start1) ^ (hex - start1)
+  xor byte [numb0 + 18], 41q ^ 16q
   call [current]
   jmp short number0
 
@@ -2926,37 +2922,30 @@ endn:
 
 alphn:
   DROP
-  DROP
-  jmp accept
+
+alph0:
+  mov dword [shift], alpha0
+  lea edi, [keyboard_layout_alpha - 4]
+  jmp short star1
+
+star0:
+  mov dword [shift], graph0
+  lea edi, [keyboard_layout_graphics - 4]
+
+star1:  DROP
+  jmp accept1
 
 alph:
   mov dword [shift], alpha1
-  jmp word0
+  lea edi, [keyboard_layout_alpha - 4]
+  jmp short graphb
 
-;alph0:
-;  mov dword [shift], alpha0
-;  lea edi, [keyboard_layout_alpha - 4]
-;  jmp short star1
-;
-;star0:
-;  mov dword [shift], graph0
-;  lea edi, [keyboard_layout_graphics - 4]
-;
-;star1:
-;  DROP
-;  jmp accept1
-;
-;alph:
-;  mov dword [shift], alpha1
-;  lea edi, [keyboard_layout_alpha - 4]
-;  jmp short graphb
-;
-;graph:
-;  mov dword [shift], graph1
-;  lea edi, [keyboard_layout_graphics - 4]
-;
-;graphb: mov dword [board], edi
-;  jmp word0
+graph:
+  mov dword [shift], graph1
+  lea edi, [keyboard_layout_graphics - 4]
+
+graphb: mov dword [board], edi
+  jmp word0
 
 first:
   add dword [shift], byte 4 * 4 + 4   ; move to next shift table
@@ -2995,6 +2984,7 @@ odig:
 
 ; Print 32-bit number onto screen as eight-digit hexadecimal number (pad with
 ; leading zeroes if necessary).
+
 hdotn:
   mov edx, eax
   neg eax
@@ -3007,10 +2997,10 @@ hdotn:
 hdot:
   mov ecx, 8
 
-hdot1:
-  call odig
+hdot1:  call odig
   call edig
-  NEXT hdot1
+  dec ecx
+  jnz hdot1
   DROP
   ret
 
@@ -3246,13 +3236,11 @@ type_:
   DUP_
   mov eax, [ - 4 + edi * 4]
   and eax, byte -0x10
-type2:
-  call unpack
+type2:  call unpack
   jz type3
   call emit
   jmp type2
-type3:
-  call space
+type3:  call space
   DROP
   DROP
   ret
@@ -3276,8 +3264,7 @@ gnw:
   mov edx, [edi * 4]
   inc edi
 
-gnw1:
-  DUP_
+gnw1: DUP_
   mov eax, _green
   cmp dword [bas], dot10
   jz nw2
@@ -3322,9 +3309,9 @@ refresh:
   mov    ebx, [blocks_address]
   shr    ebx, 2
   add    eax, ebx
-  mov    edi, eax
-
+  mov    edi, eax 
   xor eax, eax
+
   mov [pcad], edi       ; for curs=0
 
 ref1:
@@ -3376,7 +3363,7 @@ actc: dd _yellow, _black, _red, _dkgrn
   dd _white, _white, _white, _blue
 
 vector: dd 0
-action: db 1
+action: db 9
 
 ; These "actxxx" routines and variables wouldn't be connected with act, would they?
 
@@ -3409,9 +3396,8 @@ act7:
 
 actt: 
   mov [action], al
+  mov dword [aword], insert    ; TODO flipped ?
   mov eax, [actc - 4 + eax * 4]
-  mov dword [aword], insert
-
 actn: 
   mov dword [keyc], eax
   pop eax      ; RST
@@ -3443,8 +3429,7 @@ pcr1:
 
 mmcur:  
   sub dword [curs], byte 8
-  jns hcur.9
-hcur:
+  jns .9
   mov dword [curs], 0
   .9:
     ret
@@ -3470,8 +3455,7 @@ mblk:
     ret
 
 popblk: ; ??
-; Jump to previous block edited with 'edit'
-; [blk], N <= [blk+4] <= N
+  ; [blk], N <= [blk + 4] <= N
   mov ecx, [esi]
   xchg ecx, [blk + 4]
   mov [blk], ecx
@@ -3486,25 +3470,24 @@ shadow:
   ret
 
 ; (27 keys in keyboard; 28 offsets in "ekeys" table)
-; initial key functions in editor
 ekeys:
-  dd nul, eout, shadow, act3; 0-3
-  dd act4, act1, actv, act7; 4-7
-  dd act9, act10, act11, popblk; 8-11		; F8 should now be 'jump'
-  dd nul, nul, nul, hcur; 12-15
-  dd mmcur, mblk, nul, mcur; 16-19
-  dd nul, pcur, nul, shadow; 20-23
+  dd nul, del, eout, destack
+  dd act1, act3, act4, shadow
+  dd mcur, mmcur, ppcur, pcur
+  dd mblk, actv, act7, pblk
+  dd nul, act11, act10, act9
+  dd nul, nul, nul, popblk
 
 ekbd0:
-  dd ppcur, pblk, destack, del; 24-28 ; used as dummy execution vectors for ekbd
-  db 0, cap_E,  Is ,  0 ; initial control key map in editor (shift)
+  dd nul, nul, nul, nul
+  db Ix, Idot,  7 ,  0
 
-; note that there are 4 db per line, so it stays word aligned
-
-; characters to display in the key map (keyboard only displays the 12 function keys) (board)
 ekbd:
-  db Ir, Ig, Iy, Im
-  db Ic, It, cap_C, cap_S
+  db Iy, Ir, Ig, Itimes
+  db Il, Iu, Id, Ir
+  db Iminus, Im, Ic, Iplus
+  db 0, cap_S, cap_C, It
+  db 0, 0, If, Ij
   db 0, 0, 0, 0
 
 e0:
@@ -3513,8 +3496,8 @@ e0:
 
 edit: 
 ; Start editor at block given in TOS.
-  ;mov ecx, [blk]
-  ;mov [blk + 4], ecx
+  mov ecx, [blk]
+  mov [blk + 4], ecx
   mov [blk], eax
   DROP
 
@@ -3528,7 +3511,7 @@ e:
   call refresh
 e_1: 
   mov dword [shift], ekbd0
-  mov dword [board], ekbd; QWERTY - 4
+  mov dword [board], ekbd - 4; QWERTY - 4
   mov dword [keyc], _yellow
   .0:
     call pkey ; TODO pkey
@@ -3607,7 +3590,12 @@ insert:
   call insert0
   mov cl, [action]
   xor [edi * 4], cl
-  jmp accept
+  cmp cl, 3
+  jnz .9
+  mov byte [action], 4
+  mov dword [keyc], _dkgrn
+  .9:
+    jmp accept
 
 ; read in a word and leave it on the stack
 _word:
@@ -3700,9 +3688,9 @@ enstack:
 pad:
   pop edx
   mov [vector], edx
-  add edx, 28 * 5 + 4 ; + 4 QWERTY
+  add edx, 28 * 5 ; + 4 QWERTY
   mov [board], edx
-  sub edx, byte 4 * 4 + 4 ; +4 QWERTY
+  sub edx, byte 4 * 4 ; +4 QWERTY
   mov [shift], edx
   .0:
     call pkey      ; pkey, QWERTY ; TODOKEY

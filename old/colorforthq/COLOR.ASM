@@ -129,6 +129,7 @@ ENDM
 
 hp     equ 1024    ; horizontal size
 vp     equ 768     ; vertical size
+;;! buffer equ 604*256
 bpc    equ 2       ; bytes per color (16 bit)
 
 ;   100000 dictionary
@@ -159,6 +160,7 @@ blk0:
     shr    eax, 2
     sub    eax, 18 shl 10
     ret
+
 
 ; in:  edx - file name
 ; out: eax - memory address
@@ -589,7 +591,6 @@ draw_display:
     push   offset paintstruc
     push   [hwndmain]
     call   BeginPaint
-
     or     eax, eax
     jz     fail_process
     mov    [hdcpaint], eax
@@ -607,7 +608,7 @@ draw_display:
     push   [wndwidth]
     push   ebx
     push   ebx
-    push   [hdcpaint]    ; hdc
+    push   [hdcpaint]    
     call   StretchDIBits
     
     push   offset paintstruc
@@ -678,7 +679,6 @@ stack2     dd  0
 
 warm: 
     DUP_
-
 _start:
 start: 
 ; initialize stacks
@@ -694,7 +694,6 @@ start:
     sub    eax, 24*1024
     mov    [stack2], eax
     mov    esi, Godd
-    
     call   map_work_files
     call   alloc_buffers
     call   alloc_signal_char
@@ -702,14 +701,12 @@ start:
     call   alloc_display
 
     call   show0
-
     mov    forths, (forth1-forth0)/4
     mov    macros, (macro1-macro0)/4
     
 ; load block 0
     mov    eax, 18
     call   LOAD
-
     jmp    ACCEPT
 
 ALIGN 4
@@ -823,7 +820,6 @@ execute:
     mov    lit, offset alit
     DUP_
     mov    eax, [-4+edi*4]
-
 ex2: 
     and    eax, -20o
     call   FIND
@@ -1398,7 +1394,6 @@ rgb:
 white: 
     DUP_
     mov    eax, 0ffffffh
-
 color: 
     call   rgb
     mov    fore, eax
@@ -1407,7 +1402,6 @@ color:
 
 fifof: 
     DROP
-
 graphic: 
     ret
 
@@ -1418,7 +1412,7 @@ switch:
 clip: 
     mov    edi, xy
     mov    ecx, edi
-    test   cx, cx
+    test   CX, CX
     jns    @f
     xor    ecx, ecx
 @@: and    ecx, 0ffffh
@@ -1436,7 +1430,6 @@ bit16:
     lodsw
     xchg   AL, AH
     mov    ecx, 16
-
 b16: 
     shl    AX, 1
     jnc    @f
@@ -1480,10 +1473,8 @@ emit:
     pop    edx
     pop    edi
     pop    esi
-
 BL_: 
     DROP
-
 SPACE: 
     add    xy, iw*10000h
     ret
@@ -1495,6 +1486,7 @@ emit2:
     imul   eax, 16*24/8
     mov    esi, [icons_adr]
     add    esi, eax
+;;!    lea    esi, 4icons[eax]
     call   clip
     mov    edx, fore
     mov    ecx, 24
@@ -1700,7 +1692,6 @@ fkeys:
     call space
 FOUR: 
     mov    ecx, 4
-
 EmitN:  
     push   ecx
     DUP_
@@ -1815,7 +1806,6 @@ getkey:
     jz     getkey		; skip it if not
     push   0			; uMap=MAPVK_VK_TO_VSC (return scan code)
     push   ecx			; uCode
-    ; map the sdl macbook pro scancode to a ascii scan code
     call   MapVirtualKeyA	; map the virtual-key code to a scan code (ASCII version)
     and    eax, 0ffh
     jz     getkey
@@ -1846,12 +1836,11 @@ gck1:
 ; QWERTY till QWERTY end
 	align 2
 	; scan code to colorforth char conversion.
-    ; the codes are huffman compressed etc... (the huffman index not the actual value !!!!!!!!!)
+	; the codes are huffman compressed etc...
 	; -1 for backspace/esc, -2 for return/space
 	; and -3 for alt.
 
-keys
-    db 00,00
+keys	db 00,00
 	dw 0ffffh, 2a19h, 2c1ah, 001bh	;  1  esc !1 @2 #3
 	dw 001ch, 001dh, 001eh, 001fh	;  5  $4 %5 ^6 &7
 	dw 2d20h, 0021h, 0018h, 0023h	;  9  *8 (9 )0 _-
@@ -2681,7 +2670,6 @@ enstack:
     stosd
     mov    trash, edi
     pop    esi
-
 ens: 
     DROP
     ret
