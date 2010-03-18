@@ -1370,7 +1370,7 @@ vc         equ vp/ih ; 25
 ALIGN 4
 xy         dd 3*10000h+3
 lm         dd 3
-rm         dd hc*iw ; 1012
+rm         dd horizontal_chars * char_width ; 1012
 xycr       dd 0
 fov        dd 10*(2*vp+vp/2)
 
@@ -2506,13 +2506,16 @@ lcad       dd 0
 trash      dd offset trash_adr ;;! buffer*4
 
 ; initial key functions in editor
-ekeys	dd offset nul, offset eout, offset shadow, offset act3		; 0-3
-    dd offset act4, offset act1, offset actv, offset act7		; 4-7
+ekeys
+    dd offset nul, offset eout, offset shadow, offset act3		; 0-3
+    dd offset act4, offset act1, offset actv, offset act7		  ; 4-7
     dd offset act9, offset act10, offset act11, offset edjmp	; 8-11		; F8 should now be 'jump'
-    dd offset nul, offset nul, offset nul, offset hcur		; 12-15
-    dd offset mmcur, offset mblk, offset nul, offset mcur		; 16-19
-    dd offset nul, offset pcur, offset nul, offset shadow		; 20-23
-ekbd0	dd offset ppcur, offset pblk, offset destack, offset del	; 24-28 ; used as dummy execution vectors for ekbd
+    dd offset nul, offset nul, offset nul, offset hcur		    ; 12-15
+    dd offset mmcur, offset mblk, offset nul, offset mcur		  ; 16-19
+    dd offset nul, offset pcur, offset nul, offset shadow		  ; 20-23
+
+ekbd0	
+    dd offset ppcur, offset pblk, offset destack, offset del	; 24-28 ; used as dummy execution vectors for ekbd
     db  0 , 64o, 10o,  0						; initial control key map in editor (shift)
 ; note that there are 4 db per line, so it stays word aligned
 

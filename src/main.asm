@@ -776,6 +776,7 @@ abort:
   add    edi, 18
 
   mov [blk], edi
+  call debug_dumpregs
 
 abort1: 
   mov esp, top_main_return_stack ; [RST]
@@ -1750,8 +1751,8 @@ align 4; TODO ? is this needed ?
 nc: dd 9
 xy: dd char_padding * 0x10000 + char_padding
 lm: dd char_padding
-rm: dd screen_width + char_padding
-fov:  dd 512
+rm: dd horizontal_chars * char_width; screen_width + char_padding
+fov:  dd 10 * (2 * screen_height + screen_height / 2) ;512
 
 ; Getting variable addresses
 nc_:
@@ -2179,6 +2180,12 @@ eight:
   call space
   sub edi, byte 16
 
+;fkeys:
+  ;call four
+  ;call space
+  ;call four
+  ;call space
+
 four:
   mov ecx, 4
 
@@ -2201,7 +2208,8 @@ stack:
   .0:
     mov edx, [main]
     cmp [edx], edi
-    jae .9; TODO is jnc in others
+    ;jae .9; TODO is jnc in others
+    jnc .9
     DUP_
     mov eax, [edi]
     sub edi, byte 4
@@ -2249,6 +2257,34 @@ keyboard:
   lea edi, [history - 4]
   mov ecx, history_size
   jmp nchars
+
+;keyboard:
+  ;call text1
+  ;DUP_
+  ;mov eax, [keyc]
+  ;call color
+  ;mov dword [rm], char_height * icon_width
+  ;mov dword [lm], screen_width - 30 * char_width - char_padding; QWERTY (30 instead of 9)
+  ;mov dword [xy], (screen_width - 30 * char_width - char_padding) * 10000h + screen_height - 2 * icon_height - char_padding; QWERTY
+  ;mov edi, [board]
+  ;test edi,edi		; QWERTY
+  ;jz .0			; QWERTY
+  ;call fkeys		; QWERTY
+;.0:
+  ;call cr; QWERTY (label)
+  ;add dword [xy], 25 * char_width * 10000h	; QWERTY (25 instead of 4)
+  ;mov edi, [shift]
+  ;add edi, 4*4		; QWERTY -4
+  ;mov ecx, 3
+  ;call nchars
+  ;mov dword [lm], char_padding
+  ;mov word [xy + 2], char_padding
+  ;call stack
+  ;mov word [xy + 2], screen_width - (history_size + keyboard_hud_width) * char_width - char_padding
+  ;lea edi, [history]		; QWERTY -4
+  ;mov ecx, history_size
+  ;jmp nchars
+
 
 ; Editor
 ;
@@ -2613,19 +2649,20 @@ key0:
     pop esi
     ret
 
+; programmable keys. Scan code to colorforth character codes
 pkeys
-  db 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 	;  0..7
-  db 0 , 0 , 0 , 0 , 0 , 0 , 1 , 0	;  8..f
-  db 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 	; 10..17
-  db 0 , 0 , 0 , 0 , 2 , 0 , 0 , 0	; 18..1f
-  db 0 , 0 , 0 , 0 , 20, 17, 25, 22	; 20..27
-  db 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0	; 28..2f
-  db 0 , 0 , 18, 0 , 0 , 26, 0 , 0 	; 30..37
-  db 3 , 2 , 0 , 4 , 5 , 6 , 7 , 8	; 38..3f
-  db 9 , 10, 11, 12, 13, 0 , 0 , 16	; 40..47
-  db 17, 18, 19, 20, 21, 22, 23, 24	; 48..4f
-  db 25, 26, 27, 28, 0 , 0 , 0 , 14	; 50..57
-  db 15								; 58
+  db 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 	;  0..7     . esc 1 2 3 4 5 6
+  db 0 , 0 , 0 , 0 , 0 , 0 , 1 , 0	;  8..f     7 8 9 0 - = bs tab
+  db 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 	; 10..17    Q W E R T Y U I
+  db 0 , 0 , 0 , 0 , 2 , 0 , 0 , 0	; 18..1f    O P [ ] ret Lctrl A S
+  db 0 , 0 , 0 , 0 , 20, 17, 25, 22	; 20..27    D F G H J K L ;
+  db 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0	; 28..2f    ' ` Lshift \ Z X C V
+  db 0 , 0 , 18, 0 , 0 , 26, 0 , 0 	; 30..37    B N M , . / Rshift *
+  db 3 , 2 , 0 , 4 , 5 , 6 , 7 , 8	; 38..3f    Lalt space.F1|F2|F3|F4|F5
+  db 9 , 10, 11, 12, 13, 0 , 0 , 16	; 40..47    F6|F7|F8|F9|F10..KP7
+  db 17, 18, 19, 20, 21, 22, 23, 24	; 48..4f    KP8|KP9|KP-|KP4|KP5|KP6|KP+|KP1
+  db 25, 26, 27, 28, 0 , 0 , 0 , 14	; 50..57    KP2|KP3|KP0|KP.|...F11
+  db 15								; 58                      F12
 
 ; key handler for pad. Returns 0..27 for
 ; the 28 programmable keys.
@@ -2686,7 +2723,8 @@ nul0:
 
 accept:
   mov dword [shift], alpha0
-  lea edi, [keyboard_layout_alpha - 4]
+  lea edi, [keyboard_layout_alpha - 4]; TODO NONQWERTY
+  ;xor edi, edi		; QWERTY skip display of command key map
 
 ; "Key" returns in AL a number 0..27. If number is 4..27, jump to first -- otherwise
 ; convert AL into an offset into whichever of the six tables [each with four DD's]
@@ -3319,28 +3357,6 @@ pcad: dd 0
 lcad: dd 0
 trash:  dd buffer
 
-; (27 keys in keyboard; 28 offsets in "ekeys" table)
-
-ekeys:
-  dd nul, del, eout, destack
-  dd act1, act3, act4, shadow
-  dd mcur, mmcur, ppcur, pcur
-  dd mblk, actv, act7, pblk
-  dd nul, act11, act10, act9
-  dd nul, nul, nul, popblk
-
-ekbd0:
-  dd nul, nul, nul, nul
-  db Ix, Idot,  7 ,  0
-
-ekbd:
-  db Iy, Ir, Ig, Itimes
-  db Il, Iu, Id, Ir
-  db Iminus, Im, Ic, Iplus
-  db 0, cap_S, cap_C, It
-  db 0, 0, If, Ij
-  db 0, 0, 0, 0
-
 ; Action colors.
 actc: dd _yellow, _black, _red, _dkgrn
   dd _black, _black, _cyan, _black
@@ -3452,6 +3468,27 @@ shadow:
   xor dword [blk], byte 1
   xor dword [esi], byte 1
   ret
+
+; (27 keys in keyboard; 28 offsets in "ekeys" table)
+ekeys:
+  dd nul, del, eout, destack
+  dd act1, act3, act4, shadow
+  dd mcur, mmcur, ppcur, pcur
+  dd mblk, actv, act7, pblk
+  dd nul, act11, act10, act9
+  dd nul, nul, nul, popblk
+
+ekbd0:
+  dd nul, nul, nul, nul
+  db Ix, Idot,  7 ,  0
+
+ekbd:
+  db Iy, Ir, Ig, Itimes
+  db Il, Iu, Id, Ir
+  db Iminus, Im, Ic, Iplus
+  db 0, cap_S, cap_C, It
+  db 0, 0, If, Ij
+  db 0, 0, 0, 0
 
 e0:
   DROP
@@ -3571,7 +3608,7 @@ _word:
     ret
 
 format:
-  test byte [action], 10
+  test byte [action], 10 ; ignore 3 and 9
   jz .0
   DROP
   ret
@@ -3583,10 +3620,10 @@ format:
     jne format2
   .1:
     shl eax, 5
-    xor al, 2
+    xor al, 2 ; 6
     cmp byte [action], 4
     je .2
-    xor al, 13q
+    xor al, 13q ; 8
   .2:
     cmp dword [base], byte 10
     je .3
@@ -3597,10 +3634,10 @@ format:
 
 format2:
   DUP_
-  mov eax, 1
+  mov eax, 1 ; 5
   cmp byte [action], 4
   jz .0
-  mov al, 3
+  mov al, 3 ; 2
   .0:
     cmp dword [base], byte 10
     jz .1
@@ -3656,7 +3693,7 @@ pad:
   sub edx, byte 4 * 4 ; +4 QWERTY
   mov [shift], edx
   .0:
-    call key      ; pkey, QWERTY ; TODOKEY
+    call pkey      ; pkey, QWERTY ; TODOKEY
     mov edx, [vector]
     add edx, eax
     lea edx, [5 + eax * 4 + edx]

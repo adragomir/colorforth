@@ -177,17 +177,17 @@ dword_1000304C dd 288h   ; DATA XREF: sub_100049A9+6w
      ; sub_10004CDF+6w
 dword_10003050 dd 0   ; DATA XREF: sub_1000466D+7r
      ; sub_1000466D+Fw ...
-dword_10003054 dd 0   ; DATA XREF: sub_1000466D:loc_10004693w
+cad dd 0   ; DATA XREF: sub_1000466D:loc_10004693w
      ; sub_100048A4+Fw ...
-dword_10003058 dd 0   ; DATA XREF: sub_1000466D+1Ew
+pcad dd 0   ; DATA XREF: sub_1000466D+1Ew
      ; sub_100048A4+25w ...
-dword_1000305C dd 0   ; DATA XREF: sub_10004787+1Cw
+lcad dd 0   ; DATA XREF: sub_10004787+1Cw
      ; sub_100048A4+Ar ...
-dword_10003060 dd 1000B000h  ; DATA XREF: sub_10004B05+23r
-     ; sub_10004B05+32w ...
+trash dd buffer  ; DATA XREF: enstack+23r
+     ; enstack+32w ...
 dword_10003064 dd 0   ; DATA XREF: loadr
      ; sub_100048A4+1Cr ...
-  dd 50h, 1000459Dh ; DATA XREF: sub_1000443F+Er
+  dd 50h, 1000459Dh ; DATA XREF: x+Er
      ; .data:10004532r ...
 dword_10003070 dd 0   ; DATA XREF: sub_10004A65:loc_100045B3r
      ; sub_10004A65-4A6r ...
@@ -197,58 +197,58 @@ dword_10003078 dd 0   ; DATA XREF: sub_10006A5F+2Br
 dword_1000307C dd 33Dh, 28Bh  ; DATA XREF: sub_10004238+1Ar
      ; sub_10004238+38r
 off_10003084 dd offset loc_100042D8+1 ; DATA XREF: sub_10004238+5r
-     ; sub_1000433D+4r ...
-off_10003088 dd offset off_10004388 ; DATA XREF: sub_10004238+61r
-     ; sub_10004453+32r ...
+     ; letter+4r ...
+shift dd offset off_10004388 ; DATA XREF: sub_10004238+61r
+     ; word_+32r ...
 dword_1000308C dd 0Ah, 10004538h, 0FFFF00h ; DATA XREF: sub_10004192r
      ; .data:10004513r ...
-dword_10003098 dd 1   ; DATA XREF: sub_10004453+Fw
-     ; sub_10004453+4Ew
-off_1000309C dd offset sub_10003BB9 ; DATA XREF: sub_10004A65-482r
+chars dd 1   ; DATA XREF: word_+Fw
+     ; word_+4Ew
+aword dd offset sub_10003BB9 ; DATA XREF: sub_10004A65-482r
      ; sub_10004A54w ...
-off_100030A0 dd offset nullsub_1 ; DATA XREF: .data:1000452Cr
-     ; sub_10004BE0+Cw ...
-dword_100030A4 dd 1   ; DATA XREF: sub_10003BB9:loc_10003BBBw
-     ; sub_10004413-22w ...
+anumber dd offset nullsub_1 ; DATA XREF: .data:1000452Cr
+     ; eout+Cw ...
+words dd 1   ; DATA XREF: sub_10003BB9:exwordw
+     ; pack-22w ...
 dword_100030A8 dd 0   ; DATA XREF: .data:100065AAw
      ; .data:100065BBr ...
 dword_100030AC dd 0   ; DATA XREF: sub_1000680A+49w
      ; .data:10006A2Ar
-[lit] dd offset sub_10003AA6 ; DATA XREF: sub_10003AD8+41w
+[lit] dd offset adup ; DATA XREF: forthd+41w
      ; alitw ...
-dword_100030B4 dd 6, 71h, 100000h ; DATA XREF: sub_100039DF+6w
-     ; sub_10003A04+18r ...
-[H] dd 100000h  ; DATA XREF: sub_100039DF+18r
-     ; sub_10003A04+6w ...
-dword_100030C4 dd 0   ; DATA XREF: sub_10003AD8+34w
-dword_100030C8 dd 0   ; DATA XREF: sub_10003A04+24w
-     ; sub_10003AD8+4Br ...
+mk dd 6, 71h, 100000h ; DATA XREF: mark+6w
+     ; empty+18r ...
+[H] dd 100000h  ; DATA XREF: mark+18r
+     ; empty+6w ...
+dword_100030C4 dd 0   ; DATA XREF: forthd+34w
+class dd 0   ; DATA XREF: empty+24w
+     ; forthd+4Br ...
 [list] dd 0   ; DATA XREF: cdrop+6w
-     ; sub_10003A73+7r ...
-[list + 4] dd 0   ; DATA XREF: sub_10003B67+Bw
+     ; qdup+7r ...
+[list + 4] dd 0   ; DATA XREF: literal+Bw
      ; qlit+1Br
-[forths] dd 71h   ; DATA XREF: sub_100039DF+Cr
-     ; sub_10003A04+12w ...
-[macros] dd 6   ; DATA XREF: sub_100039DFr
-     ; sub_10003A04+1Ew ...
+[forths] dd 71h   ; DATA XREF: mark+Cr
+     ; empty+12w ...
+[macros] dd 6   ; DATA XREF: markr
+     ; empty+1Ew ...
 off_100030DC dd offset qignore ; DATA XREF: load+18r
-  dd offset sub_10003BC6
+  dd offset execute
   dd offset num
-off_100030E8 dd offset sub_10003AD8 ; DATA XREF: sub_10003AACw
+adefine dd offset forthd ; DATA XREF: sdefinew
      ; sub_10006A5F:loc_10006AA6w
 off_100030EC dd offset sub_10003BF2 ; DATA XREF: sub_10006A5F+51w
-off_100030F0 dd offset sub_10003B92 ; DATA XREF: sub_10006A5F+5Bw
-off_100030F4 dd offset sub_10003BA2 ; DATA XREF: sub_10006A5F+65w
+off_100030F0 dd offset cnum ; DATA XREF: sub_10006A5F+5Bw
+off_100030F4 dd offset cshort ; DATA XREF: sub_10006A5F+65w
   dd offset compile
   dd offset short_
 off_10003100 dd offset nullsub_1 ; DATA XREF: .text:10001010w
   dd offset nullsub_1
   dd offset nullsub_1
-  dd offset sub_10003B43
+  dd offset variable
   dd offset nullsub_1
   dd offset nullsub_1
   dd offset nullsub_1
-off_1000311C dd offset loc_10003936 ; DATA XREF: sub_10003914+6r
+off_1000311C dd offset loc_10003936 ; DATA XREF: dopause+6r
      ; sub_10003926+3w
 off_10003120 dd offset nullsub_1 ; DATA XREF: sub_10003983w
      ; sub_10003983+11r ...
@@ -256,23 +256,23 @@ off_10003124 dd offset nullsub_1 ; DATA XREF: sub_100039BBw
      ; sub_100039BB+10r
 off_10003128 dd offset nullsub_2 ; DATA XREF: sub_10003983:loc_1000398Er
 off_1000312C dd offset sub_10006665 ; DATA XREF: sub_10003983+17r
-dword [xy] dd 30003h, 3, 3F4h, 0 ; DATA XREF: sub_10003D98+Cw
-     ; sub_10003DB1+19r ...
-  dd 4B00h, 2 dup(11D20000h), 0 ; DATA XREF: sub_10003E68+31r
+dword [xy] dd 30003h, 3, 3F4h, 0 ; DATA XREF: top+Cw
+     ; qcr+19r ...
+  dd 4B00h, 2 dup(11D20000h), 0 ; DATA XREF: pen_addr+31r
      ; .data:100064B0r ...
-dword_10003150 dd 0F7DEh, 2 dup(0) ; DATA XREF: sub_10003DDB:loc_10003DE5w
-     ; sub_10003EDC+16r ...
+dword_10003150 dd 0F7DEh, 2 dup(0) ; DATA XREF: white:colorw
+     ; emit+16r ...
   dd 0F0000000h, 0C19B1000h, 0FF833620h, 0C0278800h, 2C88C000h
   dd 0C6957600h, 80h dup(0)
 macro_addresses dd offset semi ; DATA XREF: sub_10003BF2+18r
      ; compile+15r
-  dd offset loc_10003A8E
-  dd offset sub_10003A73
+  dd offset cdup
+  dd offset qdup
   dd offset cdrop
   dd offset then
   dd offset begin
   dd 80h dup(0)
-dword_1000358C dd 0C6664000h, 0BA8C4000h, 0C4B9A080h, 8AC84C00h, 0B1896400h
+forth_words_names dd 0C6664000h, 0BA8C4000h, 0C4B9A080h, 8AC84C00h, 0B1896400h
      ; DATA XREF: .data:10006D02o
   dd 90000000h, 811E2000h, 145C0000h, 0B8B92000h, 69000000h
   dd 0B18C5480h, 8643B800h, 820E1400h, 0A1AE0000h, 0C8828000h
@@ -296,12 +296,12 @@ dword_1000358C dd 0C6664000h, 0BA8C4000h, 0C4B9A080h, 8AC84C00h, 0B1896400h
   dd 950EA000h, 0C7340000h, 1C6B2E80h, 0BE359740h, 0B4851490h
   dd 0B4A87040h, 0B39C8A80h, 0B0A2E000h, 0B5C5C900h, 0B2424000h
   dd 1B98F400h, 0BDCC7A00h, 0
-off_10003750 dd offset byte_10004D79 ; DATA XREF: .data:10006D15o
+forth_words_addresses dd offset byte_10004D79 ; DATA XREF: .data:10006D15o
   dd offset loc_10006CD4
-  dd offset sub_10003914
-  dd offset sub_10003AB3
-  dd offset sub_10003AD3
-  dd offset sub_100039D9
+  dd offset dopause
+  dd offset macro
+  dd offset forth
+  dd offset c_
   dd offset nullsub_3
 ; ---------------------------------------------------------------------------
   retf 6Ch
@@ -326,19 +326,19 @@ off_10003750 dd offset byte_10004D79 ; DATA XREF: .data:10006D15o
   dd offset jump
   dd offset dword_10003DEC
   dd offset byte_10003DF7
-  dd offset loc_1000459D
+  dd offset accept
   dd offset loc_10004D44
   dd offset erase
   dd offset loc_10004D92
-  dd offset sub_100039DF
-  dd offset sub_10003A04
-  dd offset sub_10003EDC
+  dd offset mark
+  dd offset empty
+  dd offset emit
   dd offset sub_1000412A
-  dd offset sub_10003F1C
+  dd offset emit2
   dd offset sub_1000419B
   dd offset sub_10004156
   dd offset sub_10004144
-  dd offset loc_10003DC1
+  dd offset cr
   dd offset loc_10003F11
   dd offset sub_10004077
   dd offset sub_10004CDF
@@ -348,8 +348,8 @@ off_10003750 dd offset byte_10004D79 ; DATA XREF: .data:10006D15o
   dd offset nullsub_2
   dd offset sub_1000665F
   dd offset sub_100039A8
-  dd offset sub_10003F57
-  dd offset sub_10003D98
+  dd offset text1
+  dd offset top
   dd offset sub_10004238
   dd offset sub_10004DBB
   dd offset sub_100040D6
@@ -357,9 +357,9 @@ off_10003750 dd offset byte_10004D79 ; DATA XREF: .data:10006D15o
   dd offset sub_10006EF7
   dd offset sub_10006F02
   dd offset sub_10003E66
-  dd offset sub_10003F94
-  dd offset sub_10003F75
-  dd offset loc_10003DE5
+  dd offset box
+  dd offset line
+  dd offset color
   dd offset word_100040F6
   dd offset sub_10006F0D
   dd offset sub_10006F18
@@ -422,7 +422,7 @@ off_10003750 dd offset byte_10004D79 ; DATA XREF: .data:10006D15o
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_10003914:  ; CODE XREF: sub_100039BB:loc_100039C6p
+dopause:  ; CODE XREF: sub_100039BB:loc_100039C6p
      ; sub_10006665+5j ...
   DUP_
   push esi
@@ -502,7 +502,7 @@ sub_10003968 endp ; sp-analysis failed
 
 ; Attributes: noreturn
 
-sub_10003983:  ; CODE XREF: sub_100039A2p
+sub_10003983:  ; CODE XREF: noshowp
      ; sub_1000490Ep
      ; DATA XREF: ...
   pop off_10003120
@@ -520,7 +520,7 @@ sub_10003983 endp ; sp-analysis failed
 
 ; Attributes: noreturn
 
-sub_100039A2:  ; CODE XREF: sub_10006D81:loc_10006CD9p
+noshow:  ; CODE XREF: sub_10006D81:loc_10006CD9p
   call sub_10003983
 
 
@@ -545,13 +545,13 @@ sub_100039A8 endp ; sp-analysis failed
 
 ; Attributes: noreturn
 
-sub_100039BB:  ; CODE XREF: sub_100039D3p
+sub_100039BB:  ; CODE XREF: noservep
      ; DATA XREF: .data:10003780o
   pop off_10003124
   call sub_10003968
 
 loc_100039C6:    ; CODE XREF: sub_100039BB+16j
-  call sub_10003914
+  call dopause
   call off_10003124
   jmp short loc_100039C6
 sub_100039BB endp ; sp-analysis failed
@@ -561,7 +561,7 @@ sub_100039BB endp ; sp-analysis failed
 
 ; Attributes: noreturn
 
-sub_100039D3:  ; CODE XREF: .data:10006CDEp
+noserve:  ; CODE XREF: .data:10006CDEp
   call sub_100039BB
 
 
@@ -571,7 +571,7 @@ sub_100039D3:  ; CODE XREF: .data:10006CDEp
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_100039D9:  ; DATA XREF: .data:10003764o
+c_:  ; DATA XREF: .data:10003764o
   mov esi, 10015804h
   retn
 
@@ -580,13 +580,13 @@ sub_100039D9:  ; DATA XREF: .data:10003764o
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_100039DF:  ; DATA XREF: .data:100037C0o
+mark:  ; DATA XREF: .data:100037C0o
   mov ecx, [macros]
-  mov dword_100030B4, ecx
+  mov mk, ecx
   mov ecx, [forths]
-  mov dword_100030B4+4, ecx
+  mov mk+4, ecx
   mov ecx, [H]
-  mov dword_100030B4+8, ecx
+  mov mk+8, ecx
   retn
 
 
@@ -594,14 +594,14 @@ sub_100039DF:  ; DATA XREF: .data:100037C0o
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_10003A04:  ; DATA XREF: .data:100037C4o
-  mov ecx, dword_100030B4+8
+empty:  ; DATA XREF: .data:100037C4o
+  mov ecx, mk+8
   mov [H], ecx
-  mov ecx, dword_100030B4+4
+  mov ecx, mk+4
   mov [forths], ecx
-  mov ecx, dword_100030B4
+  mov ecx, mk
   mov [macros], ecx
-  mov dword_100030C8, 0
+  mov class, 0
   retn
 
 
@@ -621,7 +621,7 @@ mfind:  ; CODE XREF: sub_10003BF2+10p
 ; =============== S U B R O U T I N E =======================================
 
 
-find:  ; CODE XREF: sub_10003BC6:loc_10003BDFp
+find:  ; CODE XREF: execute:loc_10003BDFp
      ; sub_10003BF2:loc_10003C11p ...
   mov ecx, [forths]
   push edi
@@ -640,7 +640,7 @@ ffind:    ; CODE XREF: mfind+Ej
 
 ; Attributes: thunk
 
-abort:  ; CODE XREF: sub_10003BC6+1Ej
+abort:  ; CODE XREF: execute+1Ej
      ; sub_10003BF2:qcom1j ...
   jmp off_10003074
 
@@ -663,21 +663,21 @@ cdrop:  ; CODE XREF: sub_10003BF2+18j
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_10003A73:  ; CODE XREF: sub_10003B67p
+qdup:  ; CODE XREF: literalp
      ; sub_10003BF2+18j
      ; DATA XREF: ...
   mov edx, [H]
   dec edx
   cmp [list], edx
-  jnz short loc_10003A8E
+  jnz short cdup
   cmp byte ptr [edx], 0ADh
-  jnz short loc_10003A8E
+  jnz short cdup
   mov [H], edx
   retn
 ; ---------------------------------------------------------------------------
 
-loc_10003A8E:    ; CODE XREF: sub_10003A73+Dj
-     ; sub_10003A73+12j ...
+cdup:    ; CODE XREF: qdup+Dj
+     ; qdup+12j ...
   mov edx, [H]
   mov dword ptr [edx], op03_dup
   mov byte ptr [edx+4], 6
@@ -689,8 +689,8 @@ loc_10003A8E:    ; CODE XREF: sub_10003A73+Dj
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_10003AA6:  ; CODE XREF: sub_10003B92p
-     ; sub_10003BA2p ...
+adup:  ; CODE XREF: cnump
+     ; cshortp ...
   DUP_
   retn
 
@@ -699,48 +699,47 @@ sub_10003AA6:  ; CODE XREF: sub_10003B92p
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_10003AAC:  ; CODE XREF: sub_10003AB3p
-     ; sub_10003AD3p
-  pop off_100030E8
+sdefine:  ; CODE XREF: macrop
+     ; forthp
+  pop adefine
   retn
-sub_10003AAC endp ; sp-analysis failed
+sdefine endp ; sp-analysis failed
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_10003AB3:  ; DATA XREF: .data:1000375Co
-  call sub_10003AAC
+macro:  ; DATA XREF: .data:1000375Co
+  call sdefine
   push eax
   mov ecx, [macros]
   inc [macros]
   lea ecx, ds:1000315Ch[ecx*4]
   mov eax, 218h
-  jmp short loc_10003AF1
+  jmp short forthdd
 
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_10003AD3:  ; DATA XREF: .data:10003760o
-  call sub_10003AAC
-sub_10003AD3 endp ; sp-analysis failed
+forth:  ; DATA XREF: .data:10003760o
+  call sdefine
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_10003AD8:  ; CODE XREF: sub_10003B43p
+forthd:  ; CODE XREF: variablep
      ; load+18p
      ; DATA XREF: ...
   push eax
   mov ecx, [forths]
   inc [forths]
-  lea ecx, ds:10188000h[ecx*4]
+  lea ecx, ds:forth_dictionary_names[ecx*4]
   mov eax, 2800h
 
-loc_10003AF1:    ; CODE XREF: sub_10003AB3+1Ej
+forthdd:    ; CODE XREF: macro+1Ej
   mov edx, ds:0FFFFFFFCh[edi*4]
   and edx, 0FFFFFFF0h
   mov [ecx], edx
@@ -751,13 +750,13 @@ loc_10003AF1:    ; CODE XREF: sub_10003AB3+1Ej
   mov dword_100030C4, edx
   pop eax
   mov [list], esp
-  mov [lit], offset sub_10003AA6
-  test dword_100030C8, 0FFFFFFFFh
-  jz short locret_10003B35
-  jmp dword_100030C8
+  mov [lit], offset adup
+  test class, 0FFFFFFFFh
+  jz short .9
+  jmp class
 ; ---------------------------------------------------------------------------
 
-locret_10003B35:   ; CODE XREF: sub_10003AD8+55j
+.9:   ; CODE XREF: forthd+55j
   retn
 
 
@@ -765,7 +764,7 @@ locret_10003B35:   ; CODE XREF: sub_10003AD8+55j
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_10003B36:  ; DATA XREF: sub_10003B43+5o
+var1:  ; DATA XREF: variable+5o
   DUP_
   mov eax, ds:10188004h[ecx*4]
   retn
@@ -775,10 +774,10 @@ sub_10003B36:  ; DATA XREF: sub_10003B43+5o
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_10003B43:  ; CODE XREF: load+18p
+variable:  ; CODE XREF: load+18p
      ; DATA XREF: .data:1000310Co
-  call sub_10003AD8
-  mov dword ptr [ecx+2800h], offset sub_10003B36
+  call forthd
+  mov dword ptr [ecx+2800h], offset var1
   inc [forths]
   mov [ecx+4], edi
   inc edi
@@ -789,17 +788,16 @@ sub_10003B43:  ; CODE XREF: load+18p
 ; =============== S U B R O U T I N E =======================================
 
 
-alit:  ; DATA XREF: sub_10003BC6o
+alit:  ; DATA XREF: executeo
      ; short_o ...
-  mov [lit], offset sub_10003AA6
-alit endp ; sp-analysis failed
+  mov [lit], offset adup
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_10003B67:  ; CODE XREF: sub_10003BA2:loc_10003BB2p
-  call sub_10003A73
+literal:  ; CODE XREF: cshort:cshort_p
+  call qdup
   mov edx, [list]
   mov [list + 4], edx
   mov edx, [H]
@@ -814,26 +812,26 @@ sub_10003B67:  ; CODE XREF: sub_10003BA2:loc_10003BB2p
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_10003B92:  ; CODE XREF: load+18p
+cnum:  ; CODE XREF: load+18p
      ; DATA XREF: .data:off_100030F0o ...
   call [lit]
   mov eax, ds:0[edi*4]
   inc edi
-  jmp short loc_10003BB2
+  jmp short cshort_
 
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_10003BA2:  ; CODE XREF: load+18p
+cshort:  ; CODE XREF: load+18p
      ; DATA XREF: .data:off_100030F4o ...
   call [lit]
   mov eax, ds:0FFFFFFFCh[edi*4]
   sar eax, 5
 
-loc_10003BB2:    ; CODE XREF: sub_10003B92+Ej
-  call sub_10003B67
+cshort_:    ; CODE XREF: cnum+Ej
+  call literal
   DROP
   retn
 
@@ -847,29 +845,29 @@ sub_10003BB9:  ; CODE XREF: sub_10004A65-482p
      ; DATA XREF: ...
   xor edi, edi
 
-loc_10003BBB:    ; CODE XREF: sub_10003BB9+Bj
-  dec dword_100030A4
-  jz short loc_10003BDF
+exword:    ; CODE XREF: sub_10003BB9+Bj
+  dec words
+  jz short execute.0
   DROP
-  jmp short loc_10003BBB
+  jmp short exword
 
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_10003BC6:  ; CODE XREF: load+18p
+execute:  ; CODE XREF: load+18p
      ; DATA XREF: .data:100030E0o
   mov [lit], alit
   DUP_
   mov eax, ds:0FFFFFFFCh[edi*4]
   and eax, 0FFFFFFF0h
 
-loc_10003BDF:    ; CODE XREF: sub_10003BB9+8j
+.0:    ; CODE XREF: sub_10003BB9+8j
   call find
   jnz abort
   DROP
-  jmp dword ptr ds:1018A800h[ecx*4]
+  jmp dword ptr ds:forth_dictionary_addresses[ecx*4]
 
 
 
@@ -892,7 +890,7 @@ sub_10003BF2:  ; CODE XREF: load+18p
 
 loc_10003C11:    ; CODE XREF: sub_10003BF2+15j
   call find
-  mov eax, ds:1018A800h[ecx*4]
+  mov eax, ds:forth_dictionary_addresses[ecx*4]
 
 qcom1:    ; CODE XREF: compile+1Cj
   jnz abort
@@ -965,7 +963,6 @@ dcomma:    ; CODE XREF: comma1+5j
   lea esi, [esi+4]
   mov [H], edx
   retn
-; END OF FUNCTION CHUNK FOR comma3
 
 ; =============== S U B R O U T I N E =======================================
 
@@ -1016,7 +1013,6 @@ semi:    ; CODE XREF: sub_10003BF2+18j
   mov byte ptr [edx+5], op_ret
   inc [H]
   retn
-; END OF FUNCTION CHUNK FOR sub_10003BF2
 
 ; =============== S U B R O U T I N E =======================================
 
@@ -1137,12 +1133,12 @@ inter:    ; CODE XREF: load+1Fj
 
 
 ; ---------------------------------------------------------------------------
-  align 4
+align 4
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_10003D98:  ; CODE XREF: sub_10003F57+19j
+top:  ; CODE XREF: text1+19j
      ; DATA XREF: .data:1000380Co
   mov ecx, dword [xy]+4
   shl ecx, 10h
@@ -1156,12 +1152,12 @@ sub_10003D98:  ; CODE XREF: sub_10003F57+19j
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_10003DB1:  ; CODE XREF: sub_10003EDCp
+qcr:  ; CODE XREF: emitp
   mov cx, word ptr dword [xy]+2
   cmp cx, word ptr dword [xy]+8
-  js short locret_10003DDA
+  js short cr.9
 
-loc_10003DC1:    ; CODE XREF: sub_10004238+52p
+cr:    ; CODE XREF: sub_10004238+52p
      ; sub_10004706+10p
      ; DATA XREF: ...
   mov ecx, dword [xy]+4
@@ -1170,7 +1166,7 @@ loc_10003DC1:    ; CODE XREF: sub_10004238+52p
   add ecx, 1Eh
   mov dword [xy], ecx
 
-locret_10003DDA:   ; CODE XREF: sub_10003DB1+Ej
+  .9:   ; CODE XREF: qcr+Ej
   retn
 
 
@@ -1178,13 +1174,13 @@ locret_10003DDA:   ; CODE XREF: sub_10003DB1+Ej
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_10003DDB:  ; CODE XREF: sub_10003F57p
+white:  ; CODE XREF: text1p
      ; sub_100046DCp ...
   DUP_
   mov eax, 0FFFFFFh
 
-loc_10003DE5:    ; CODE XREF: sub_10003FE3+Aj
-     ; sub_10003FF2+Aj ...
+color:    ; CODE XREF: cyan+Aj
+     ; magenta+Aj ...
   mov dword_10003150, eax
   DROP
   retn
@@ -1219,23 +1215,23 @@ sub_10003E66 endp ; sp-analysis failed
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_10003E68:  ; CODE XREF: sub_10003EDC+11p
-     ; sub_10003F1C+Cp ...
+pen_addr:  ; CODE XREF: emit+11p
+     ; emit2+Cp ...
   mov edi, dword [xy]
   mov ecx, edi
   test cx, cx
-  jns short loc_10003E77
+  jns short .0
   xor ecx, ecx
 
-loc_10003E77:    ; CODE XREF: sub_10003E68+Bj
+.0:    ; CODE XREF: pen_addr+Bj
   and ecx, 0FFFFh
   mov dword_10003150+8, ecx
   imul ecx, 1000h
   sar edi, 10h
-  jns short loc_10003E90
+  jns short .1
   xor edi, edi
 
-loc_10003E90:    ; CODE XREF: sub_10003E68+24j
+.1:    ; CODE XREF: pen_addr+24j
   mov dword_10003150+4, edi
   lea edi, [ecx+edi*4]
   add edi, dword_10003140+4
@@ -1246,20 +1242,20 @@ loc_10003E90:    ; CODE XREF: sub_10003E68+24j
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_10003EA0:  ; CODE XREF: sub_10003EDC+22p
+bit16:  ; CODE XREF: emit+22p
   lodsw
   xchg al, ah
   mov ecx, 10h
 
-loc_10003EA9:    ; CODE XREF: sub_10003EA0+14j
+.0:    ; CODE XREF: bit16+14j
   shl ax, 1
-  jnb short loc_10003EB0
+  jnb short .1
   mov [edi], edx
 
-loc_10003EB0:    ; CODE XREF: sub_10003EA0+Cj
+.1:    ; CODE XREF: bit16+Cj
   add edi, 4
   dec ecx
-  jnz short loc_10003EA9
+  jnz short .0
   retn
 
 
@@ -1267,23 +1263,23 @@ loc_10003EB0:    ; CODE XREF: sub_10003EA0+Cj
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_10003EB7:  ; CODE XREF: sub_10003F1C+1Dp
+bit32:  ; CODE XREF: emit2+1Dp
   lodsw
   xchg al, ah
   mov ecx, 10h
 
-loc_10003EC0:    ; CODE XREF: sub_10003EB7+22j
+.0:    ; CODE XREF: bit32+22j
   shl eax, 1
-  jnb short loc_10003ED5
+  jnb short .1
   mov [edi], edx
   mov [edi+4], edx
   mov [edi+1000h], edx
   mov [edi+1004h], edx
 
-loc_10003ED5:    ; CODE XREF: sub_10003EB7+Bj
+.1:    ; CODE XREF: bit32+Bj
   add edi, 8
   dec ecx
-  jnz short loc_10003EC0
+  jnz short .0
   retn
 
 
@@ -1291,25 +1287,24 @@ loc_10003ED5:    ; CODE XREF: sub_10003EB7+Bj
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_10003EDC:  ; CODE XREF: sub_1000412A+7p
+emit:  ; CODE XREF: sub_1000412A+7p
      ; sub_1000419B+12p ...
-  call sub_10003DB1
+  call qcr
   push esi
   push edi
   push edx
   imul eax, 30h
   lea esi, [eax+10023000h]
-  call sub_10003E68
+  call pen_addr
   mov edx, dword_10003150
   mov ecx, 18h
 
-loc_10003EFD:    ; CODE XREF: sub_10003EDC+2Fj
+.0:    ; CODE XREF: emit+2Fj
   push ecx
-  call sub_10003EA0
+  call bit16
   add edi, 0FC0h
   pop ecx
-  dec ecx
-  jnz short loc_10003EFD
+  NEXT .0
   pop edx
   pop edi
   pop esi
@@ -1325,23 +1320,22 @@ loc_10003F11:    ; CODE XREF: sub_1000416A+1Ep
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_10003F1C:  ; DATA XREF: .data:100037D0o
+emit2:  ; DATA XREF: .data:100037D0o
   push esi
   push edi
   push edx
   imul eax, 30h
   lea esi, [eax+10023000h]
-  call sub_10003E68
+  call pen_addr
   mov edx, dword_10003150
   mov ecx, 18h
 
-loc_10003F38:    ; CODE XREF: sub_10003F1C+2Aj
+.0:    ; CODE XREF: emit2+2Aj
   push ecx
-  call sub_10003EB7
+  call bit32
   add edi, 1F80h
   pop ecx
-  dec ecx
-  jnz short loc_10003F38
+  NEXT .0
   pop edx
   pop edi
   pop esi
@@ -1354,21 +1348,21 @@ loc_10003F38:    ; CODE XREF: sub_10003F1C+2Aj
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_10003F57:  ; CODE XREF: sub_10004238p
+text1:  ; CODE XREF: sub_10004238p
      ; sub_100048A4p
      ; DATA XREF: ...
-  call sub_10003DDB
+  call white
   mov dword [xy]+4, 3
   mov dword [xy]+8, 3F4h
-  jmp sub_10003D98
+  jmp top
 
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_10003F75:  ; DATA XREF: .data:10003830o
-  call sub_10003E68
+line:  ; DATA XREF: .data:10003830o
+  call pen_addr
   mov ecx, [esi]
   shl ecx, 1
   shl ecx, 1
@@ -1386,41 +1380,40 @@ sub_10003F75:  ; DATA XREF: .data:10003830o
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_10003F94:  ; CODE XREF: sub_1000409E+25j
+box:  ; CODE XREF: sub_1000409E+25j
      ; DATA XREF: .data:1000382Co
-  call sub_10003E68
+  call pen_addr
   cmp eax, 301h
-  js short loc_10003FA5
+  js short .0
   mov eax, 300h
 
-loc_10003FA5:    ; CODE XREF: sub_10003F94+Aj
+.0:    ; CODE XREF: box+Aj
   mov ecx, eax
   sub ecx, dword_10003150+8
-  jle short loc_10003FE0
+  jle short .9
   cmp dword ptr [esi], 401h
-  js short loc_10003FBD
+  js short .1
   mov dword ptr [esi], 400h
 
-loc_10003FBD:    ; CODE XREF: sub_10003F94+21j
+.1:    ; CODE XREF: box+21j
   mov eax, dword_10003150+4
   sub [esi], eax
-  jle short loc_10003FE0
+  jle short .9
   mov edx, 400h
   sub edx, [esi]
   shl edx, 2
   mov eax, dword_10003150
 
-loc_10003FD5:    ; CODE XREF: sub_10003F94+4Aj
+.2:    ; CODE XREF: box+4Aj
   push ecx
   mov ecx, [esi]
   rep stosd
   add edi, edx
   pop ecx
-  dec ecx
-  jnz short loc_10003FD5
+  NEXT .2
 
-loc_10003FE0:    ; CODE XREF: sub_10003F94+19j
-     ; sub_10003F94+30j
+.9:    ; CODE XREF: box+19j
+     ; box+30j
   DROP
   DROP
   retn
@@ -1430,30 +1423,30 @@ loc_10003FE0:    ; CODE XREF: sub_10003F94+19j
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_10003FE3:  ; CODE XREF: sub_10004729p
+cyan:  ; CODE XREF: sub_10004729p
   DUP_
   mov eax, 0FFFFh
-  jmp loc_10003DE5
+  jmp color
 
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_10003FF2:  ; CODE XREF: sub_100047C2+Ap
+magenta:  ; CODE XREF: sub_100047C2+Ap
   DUP_
   mov eax, 0FF00FFh
-  jmp loc_10003DE5
+  jmp color
 
 
 ; ---------------------------------------------------------------------------
   DUP_
   mov eax, 0C0C0C0h
-  jmp loc_10003DE5
+  jmp color
 ; ---------------------------------------------------------------------------
   DUP_
   mov eax, 4040FFh
-  jmp loc_10003DE5
+  jmp color
 
 ; =============== S U B R O U T I N E =======================================
 
@@ -1461,7 +1454,7 @@ sub_10003FF2:  ; CODE XREF: sub_100047C2+Ap
 sub_1000401F:  ; CODE XREF: sub_10004706:loc_1000471Bp
   DUP_
   mov eax, 0FF0000h
-  jmp loc_10003DE5
+  jmp color
 
 
 
@@ -1471,20 +1464,20 @@ sub_1000401F:  ; CODE XREF: sub_10004706:loc_1000471Bp
 sub_1000402E:  ; CODE XREF: sub_10004722p
   DUP_
   mov eax, 8000FF00h
-  jmp loc_10003DE5 ; DATA XREF: sub_10004238+95o
+  jmp color ; DATA XREF: sub_10004238+95o
 
 
 ; ---------------------------------------------------------------------------
-byte_1000403D db 3 dup(0)  ; DATA XREF: sub_10004048+6o
-     ; sub_10004061+Ao
+byte_1000403D db 3 dup(0)  ; DATA XREF: echo+6o
+     ; right+Ao
   dd 0
   db 3 dup(0)
-byte_10004047 db 0   ; DATA XREF: sub_10004048+12w
+byte_10004047 db 0   ; DATA XREF: echo+12w
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_10004048:  ; CODE XREF: sub_10004453+44p
+echo:  ; CODE XREF: word_+44p
      ; sub_10006A5F+74p
   push esi
   mov ecx, 0Ah
@@ -1501,8 +1494,8 @@ sub_10004048:  ; CODE XREF: sub_10004453+44p
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_10004061:  ; CODE XREF: sub_1000443Fp
-     ; sub_10004453p
+right:  ; CODE XREF: xp
+     ; word_p
   DUP_
   mov ecx, 0Bh
   lea edi, byte_1000403D
@@ -1541,12 +1534,12 @@ sub_1000409E:  ; CODE XREF: .data:10004913p
   DUP_
   xor eax, eax
   mov dword [xy], eax
-  call loc_10003DE5
+  call color
   DUP_
   mov eax, 400h
   DUP_
   mov eax, 300h
-  jmp sub_10003F94
+  jmp box
 
 
 ; ---------------------------------------------------------------------------
@@ -1625,7 +1618,7 @@ sub_1000412A:  ; CODE XREF: sub_10004156+Ap
      ; DATA XREF: ...
   push ecx
   mov al, byte_10004115[eax]
-  call sub_10003EDC
+  call emit
   pop ecx
   retn
 
@@ -1727,7 +1720,7 @@ sub_1000419B:  ; DATA XREF: .data:100037D4o
   neg edx
   DUP_
   mov eax, 23h
-  call sub_10003EDC
+  call emit
 
 loc_100041B2:    ; CODE XREF: sub_1000419B+4j
   mov ecx, 8
@@ -1792,7 +1785,7 @@ sub_10004201:  ; CODE XREF: sub_10004201+13j
   xor eax, eax
   mov al, [edi+4]
   inc edi
-  call sub_10003EDC
+  call emit
   pop ecx
   dec ecx
   jnz short sub_10004201
@@ -1826,11 +1819,11 @@ locret_10004237:   ; CODE XREF: sub_10004217+Dj
 
 
 sub_10004238:  ; DATA XREF: .data:10003810o
-  call sub_10003F57
+  call text1
   mov edi, off_10003084
   DUP_
   mov eax, dword_1000308C+8
-  call loc_10003DE5
+  call color
   mov eax, dword_1000307C
   add eax, 0
   mov dword [xy]+4, eax
@@ -1843,9 +1836,9 @@ sub_10004238:  ; DATA XREF: .data:10003810o
   call sub_100041EC
   call sub_100041EC
   call sub_100041EC
-  call loc_10003DC1
+  call cr
   add dword [xy], 580000h
-  mov edi, off_10003088
+  mov edi, shift
   add edi, 0Ch
   mov ecx, 3
   call sub_10004201
@@ -1873,27 +1866,27 @@ loc_100042D8:    ; DATA XREF: .data:off_10003084o
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_1000433D:  ; CODE XREF: sub_10004453:loc_1000447Ep
+letter:  ; CODE XREF: word_:loc_1000447Ep
      ; .data:100044ECp
   cmp al, 4
   js short locret_1000434A
   mov edx, off_10003084
   mov al, [eax+edx]
 
-locret_1000434A:   ; CODE XREF: sub_1000433D+2j
+locret_1000434A:   ; CODE XREF: letter+2j
   retn
 
 
 ; ---------------------------------------------------------------------------
-off_1000434B dd offset sub_1000676F ; DATA XREF: sub_10004353r
+off_1000434B dd offset sub_1000676F ; DATA XREF: keyr
 off_1000434F dd offset sub_1000680A ; DATA XREF: sub_10004359r
 
 ; =============== S U B R O U T I N E =======================================
 
 ; Attributes: thunk
 
-sub_10004353:  ; CODE XREF: sub_10004453+55p
-     ; .data:loc_100044E7p ...
+key:  ; CODE XREF: word_+55p
+     ; .data:number3p ...
   jmp off_1000434B
 
 
@@ -1915,31 +1908,31 @@ off_10004360 dd offset loc_1000459A ; DATA XREF: .data:loc_100045FEo
   dd offset loc_100045EC
   dd 50000h, 100044A7h, 1000443Fh, 100043E5h, 10004611h
   dd 52515h
-off_10004388 dd offset loc_1000459A ; DATA XREF: .data:off_10003088o
-     ; sub_10004A65:loc_1000459Do ...
-off_1000438C dd offset loc_1000459A ; DATA XREF: sub_10004BE0+1Dw
+off_10004388 dd offset loc_1000459A ; DATA XREF: .data:shifto
+     ; sub_10004A65:accepto ...
+off_1000438C dd offset loc_1000459A ; DATA XREF: eout+1Dw
      ; sub_10004CF6+17w
   dd offset loc_100044D8
   dd offset loc_100045FE
-byte_10004398 db 0   ; DATA XREF: sub_10004BE0+16w
+byte_10004398 db 0   ; DATA XREF: eout+16w
      ; sub_10004CF6+10w
   db 21h, 2Dh, 0
 off_1000439C dd offset loc_100044A7 ; DATA XREF: .data:10004611o
-  dd offset sub_1000443F
-  dd offset sub_100043E5
+  dd offset x
+  dd offset lj
   dd offset sub_10004623
   dd 2D2515h, 1000459Ah, 100044CEh, 100045EBh, 10004576h
   dd 0E0523h, 100044D5h, 10004592h, 1000452Bh, 100044D5h
   dd 2515h
-byte_100043D8 db 1Ch   ; DATA XREF: sub_100043D9r
-     ; sub_10004413-1Cw ...
+bits_ db 1Ch   ; DATA XREF: lj0r
+     ; pack-1Cw ...
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_100043D9:  ; CODE XREF: sub_100043E5p
-     ; sub_10004413:loc_100043ECp
-  mov cl, byte_100043D8
+lj0:  ; CODE XREF: ljp
+     ; pack:fullp
+  mov cl, bits_
   add cl, 4
   shl dword ptr [esi], cl
   retn
@@ -1949,64 +1942,64 @@ sub_100043D9:  ; CODE XREF: sub_100043E5p
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_100043E5:  ; DATA XREF: .data:100043A4o
-  call sub_100043D9
+lj:  ; DATA XREF: .data:100043A4o
+  call lj0
   DROP
   retn
 
 
 ; ---------------------------------------------------------------------------
-; START OF FUNCTION CHUNK FOR sub_10004413
+; START OF FUNCTION CHUNK FOR pack
 
-loc_100043EC:    ; CODE XREF: sub_10004413+1Bj
-  call sub_100043D9
-  inc dword_100030A4
-  mov byte_100043D8, 1Ch
-  sub byte_100043D8, ch
+full:    ; CODE XREF: pack+1Bj
+  call lj0
+  inc words
+  mov bits_, 1Ch
+  sub bits_, ch
   mov eax, edx
   DUP_
   retn
 ; ---------------------------------------------------------------------------
 
-loc_1000440C:    ; CODE XREF: sub_10004413+2j
+pack0:    ; CODE XREF: pack+2j
   add eax, 50h
   mov cl, 7
-  jmp short loc_10004420
-; END OF FUNCTION CHUNK FOR sub_10004413
+  jmp short pack1
+; END OF FUNCTION CHUNK FOR pack
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_10004413:  ; CODE XREF: sub_10004453+49p
+pack:  ; CODE XREF: word_+49p
 
 ; FUNCTION CHUNK AT 100043EC SIZE 00000027 BYTES
 
   cmp al, 10h
-  jnb short loc_1000440C
+  jnb short pack0
   mov cl, 4
   test al, 8
-  jz short loc_10004420
+  jz short pack1
   inc ecx
   xor al, 18h
 
-loc_10004420:    ; CODE XREF: sub_10004413-2j
-     ; sub_10004413+8j
+pack1:    ; CODE XREF: pack-2j
+     ; pack+8j
   mov edx, eax
   mov ch, cl
 
-loc_10004424:    ; CODE XREF: sub_10004413+1Fj
-  cmp byte_100043D8, cl
-  jnb short loc_10004434
+.0:    ; CODE XREF: pack+1Fj
+  cmp bits_, cl
+  jnb short .1
   shr al, 1
-  jb short loc_100043EC
+  jb short full
   dec cl
-  jmp short loc_10004424
+  jmp short .0
 ; ---------------------------------------------------------------------------
 
-loc_10004434:    ; CODE XREF: sub_10004413+17j
+.1:    ; CODE XREF: pack+17j
   shl dword ptr [esi], cl
   xor [esi], eax
-  sub byte_100043D8, cl
+  sub bits_, cl
   retn
 
 
@@ -2014,9 +2007,9 @@ loc_10004434:    ; CODE XREF: sub_10004413+17j
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_1000443F:  ; DATA XREF: .data:100043A0o
-  call sub_10004061
-  mov eax, dword_100030A4
+x:  ; DATA XREF: .data:100043A0o
+  call right
+  mov eax, words
   lea esi, [esi+eax*4]
   DROP
   jmp dword_10003068+4
@@ -2026,34 +2019,34 @@ sub_1000443F:  ; DATA XREF: .data:100043A0o
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_10004453:  ; CODE XREF: sub_10004A65-487p
-  call sub_10004061
-  mov dword_100030A4, 1
-  mov dword_10003098, 1
+word_:  ; CODE XREF: sub_10004A65-487p
+  call right
+  mov words, 1
+  mov chars, 1
   DUP_
   mov dword ptr [esi], 0
-  mov byte_100043D8, 1Ch
+  mov bits_, 1Ch
 
-loc_1000447E:    ; CODE XREF: sub_10004453+5Aj
-  call sub_1000433D
-  jns short loc_1000448E
-  mov edx, off_10003088
+word1:    ; CODE XREF: word_+5Aj
+  call letter
+  jns short .0
+  mov edx, shift
   jmp dword ptr [edx+eax*4]
 ; ---------------------------------------------------------------------------
 
-loc_1000448E:    ; CODE XREF: sub_10004453+30j
+.0:    ; CODE XREF: word_+30j
   test al, al
   jz short loc_100044A7
   DUP_
-  call sub_10004048
-  call sub_10004413
-  inc dword_10003098
+  call echo
+  call pack
+  inc chars
 
-loc_100044A7:    ; CODE XREF: sub_10004453+3Dj
+loc_100044A7:    ; CODE XREF: word_+3Dj
      ; sub_10004623+16j
      ; DATA XREF: ...
   DROP
-  call sub_10004353
+  call key
   jmp short loc_1000447E
 
 
@@ -2067,13 +2060,13 @@ loc_100044A7:    ; CODE XREF: sub_10004453+3Dj
 loc_100044CD:    ; DATA XREF: .data:loc_100044CDw
      ; .data:100044DEw ...
   add byte ptr loc_100044CD[edx], ah
-  jmp short loc_1000451E
+  jmp short number2
 ; ---------------------------------------------------------------------------
 
 loc_100044D5:    ; CODE XREF: .data:100044FEj
      ; .data:1000458Dj
   DROP
-  jmp short loc_100044E7
+  jmp short number3
 ; ---------------------------------------------------------------------------
 
 loc_100044D8:    ; DATA XREF: .data:10004390o
@@ -2081,36 +2074,36 @@ loc_100044D8:    ; DATA XREF: .data:10004390o
   mov byte ptr loc_100044CD, 0
   xor eax, eax
 
-loc_100044E7:    ; CODE XREF: .data:100044D6j
+number3:    ; CODE XREF: .data:100044D6j
      ; .data:10004529j
-  call sub_10004353
-  call sub_1000433D
-  jns short loc_100044FC
-  mov edx, off_10003088
+  call key
+  call letter
+  jns short .0
+  mov edx, shift
   jmp dword ptr [edx+eax*4]
 ; ---------------------------------------------------------------------------
 
-loc_100044FC:    ; CODE XREF: .data:100044F1j
+.0:    ; CODE XREF: .data:100044F1j
   test al, al
   jz short loc_100044D5
   mov al, [eax+100044ABh]
   test byte ptr loc_100044CD, 1Fh
-  jz short loc_10004511
+  jz short .1
   neg eax
 
-loc_10004511:    ; CODE XREF: .data:1000450Dj
+.1:    ; CODE XREF: .data:1000450Dj
   mov edx, [esi]
   imul edx, dword_1000308C
   add edx, eax
   mov [esi], edx
 
-loc_1000451E:    ; CODE XREF: .data:100044D3j
+number2:    ; CODE XREF: .data:100044D3j
   DROP
-  mov off_10003088, 100043C4h
-  jmp short loc_100044E7
+  mov shift, 100043C4h
+  jmp short number3
 ; ---------------------------------------------------------------------------
   DROP
-  call off_100030A0
+  call anumber
   jmp dword_10003068+4
 
 ; =============== S U B R O U T I N E =======================================
@@ -2119,14 +2112,14 @@ loc_1000451E:    ; CODE XREF: .data:100044D3j
 sub_10004538:  ; CODE XREF: .data:loc_100044D8p
      ; .data:10004587p
   mov dword_1000308C, 0Ah
-  mov off_10003088, 100043B0h
+  mov shift, 100043B0h
   mov off_10003084, 10004309h
   retn
 
 
 ; ---------------------------------------------------------------------------
   mov dword_1000308C, 10h
-  mov off_10003088, 100043B0h
+  mov shift, 100043B0h
   mov off_10003084, 10004321h
   retn
 ; ---------------------------------------------------------------------------
@@ -2147,9 +2140,9 @@ loc_1000459A:    ; DATA XREF: .data:off_10004360o
 ; ---------------------------------------------------------------------------
 ; START OF FUNCTION CHUNK FOR sub_10004A65
 
-loc_1000459D:    ; CODE XREF: sub_10004A65-47Cj
+accept:    ; CODE XREF: sub_10004A65-47Cj
      ; sub_10004A65+Aj ...
-  mov off_10003088, offset off_10004388
+  mov shift, offset off_10004388
   lea edi, loc_100042D8+1
 
 loc_100045AD:    ; CODE XREF: .data:1000460Fj
@@ -2162,37 +2155,37 @@ loc_100045B3:    ; CODE XREF: .data:1000459Bj
 ; ---------------------------------------------------------------------------
 
 loc_100045C5:    ; CODE XREF: sub_10004A65-4A8j
-  call sub_10004353
+  call key
   cmp al, 4
   jns short loc_100045D7
-  mov edx, off_10003088
+  mov edx, shift
   jmp dword ptr [edx+eax*4]
 ; ---------------------------------------------------------------------------
 
 loc_100045D7:    ; CODE XREF: sub_10004A65-499j
-  add off_10003088, 14h
-  call sub_10004453
-  call off_1000309C
-  jmp short loc_1000459D
+  add shift, 14h
+  call word_
+  call aword
+  jmp short accept
 ; END OF FUNCTION CHUNK FOR sub_10004A65
 ; ---------------------------------------------------------------------------
   DROP
 
 loc_100045EC:    ; DATA XREF: .data:1000436Co
-  mov off_10003088, offset off_10004388
+  mov shift, offset off_10004388
   lea edi, loc_100042D8+1
   jmp short loc_1000460E
 ; ---------------------------------------------------------------------------
 
 loc_100045FE:    ; DATA XREF: .data:10004394o
-  mov off_10003088, offset off_10004360
+  mov shift, offset off_10004360
   lea edi, dword_100042E0+11h
 
 loc_1000460E:    ; CODE XREF: .data:100045FCj
   DROP
   jmp short loc_100045AD
 ; ---------------------------------------------------------------------------
-  mov off_10003088, offset off_1000439C
+  mov shift, offset off_1000439C
   lea edi, loc_100042D8+1
   jmp short loc_10004633
 
@@ -2200,7 +2193,7 @@ loc_1000460E:    ; CODE XREF: .data:100045FCj
 
 
 sub_10004623:  ; DATA XREF: .data:100043A8o
-  mov off_10003088, 10004374h
+  mov shift, 10004374h
   lea edi, dword_100042E0+11h
 
 loc_10004633:    ; CODE XREF: .data:10004621j
@@ -2257,7 +2250,7 @@ loc_10004681:    ; CODE XREF: sub_1000466D+Dj
   cmp eax, dword_10003050
   jz short loc_10004693
   jns short loc_10004691
-  mov dword_10003058, edi
+  mov pcad, edi
 
 loc_10004691:    ; CODE XREF: sub_1000466D+1Cj
   DROP
@@ -2265,22 +2258,22 @@ loc_10004691:    ; CODE XREF: sub_1000466D+1Cj
 ; ---------------------------------------------------------------------------
 
 loc_10004693:    ; CODE XREF: sub_1000466D+1Aj
-  mov dword_10003054, edi
+  mov cad, edi
   sub dword [xy], 160000h
   DUP_
   mov eax, 0E04000h
-  call loc_10003DE5
+  call color
   mov eax, 30h
   mov cx, word ptr dword [xy]+2
   cmp cx, word ptr dword [xy]+8
   js short loc_100046D7
-  call sub_10003EDC
+  call emit
   sub dword [xy], 160000h
   retn
 ; ---------------------------------------------------------------------------
 
 loc_100046D7:    ; CODE XREF: sub_1000466D+58j
-  jmp sub_10003EDC
+  jmp emit
 
 
 
@@ -2289,7 +2282,7 @@ loc_100046D7:    ; CODE XREF: sub_1000466D+58j
 
 sub_100046DC:  ; CODE XREF: sub_100048A4+61p
      ; DATA XREF: .data:10004888o
-  call sub_10003DDB
+  call white
 sub_100046DC endp ; sp-analysis failed
 
 
@@ -2306,7 +2299,7 @@ loc_100046F0:    ; CODE XREF: sub_100046E1+1Bj
      ; sub_10004741+20j
   call sub_1000463E
   jz short loc_100046FE
-  call sub_10003EDC
+  call emit
   jmp short loc_100046F0
 ; ---------------------------------------------------------------------------
 
@@ -2327,7 +2320,7 @@ sub_10004706:  ; CODE XREF: sub_100048A4+61p
   mov cx, word ptr dword [xy]+2
   cmp cx, word ptr dword [xy]+4
   jz short loc_1000471B
-  call loc_10003DC1
+  call cr
 
 loc_1000471B:    ; CODE XREF: sub_10004706+Ej
   call sub_1000401F
@@ -2350,7 +2343,7 @@ sub_10004722:  ; CODE XREF: sub_100048A4+61p
 
 sub_10004729:  ; CODE XREF: sub_100048A4+61p
      ; DATA XREF: .data:10004880o
-  call sub_10003FE3
+  call cyan
   jmp short sub_100046E1
 
 
@@ -2362,7 +2355,7 @@ sub_10004730:  ; CODE XREF: sub_100048A4+61p
      ; DATA XREF: .data:10004868o
   DUP_
   mov eax, 0FFFF00h
-  call loc_10003DE5
+  call color
   jmp short sub_100046E1
 
 
@@ -2372,13 +2365,13 @@ sub_10004730:  ; CODE XREF: sub_100048A4+61p
 
 sub_10004741:  ; CODE XREF: sub_100048A4+61p
      ; DATA XREF: .data:1000488Co
-  call sub_10003DDB
+  call white
   DUP_
   mov eax, ds:0FFFFFFFCh[edi*4]
   and eax, 0FFFFFFF0h
   call sub_1000463E
   add al, 30h
-  call sub_10003EDC
+  call emit
   jmp short loc_100046F0
 
 
@@ -2388,7 +2381,7 @@ sub_10004741:  ; CODE XREF: sub_100048A4+61p
 
 sub_10004763:  ; CODE XREF: sub_100048A4+61p
      ; DATA XREF: .data:10004890o
-  call sub_10003DDB
+  call white
   DUP_
   mov eax, ds:0FFFFFFFCh[edi*4]
   and eax, 0FFFFFFF0h
@@ -2397,7 +2390,7 @@ loc_10004777:    ; CODE XREF: sub_10004763+22j
   call sub_1000463E
   jz short loc_100046FE
   add al, 30h
-  call sub_10003EDC
+  call emit
   jmp short loc_10004777
 
 
@@ -2411,7 +2404,7 @@ sub_10004787:  ; CODE XREF: sub_100048A4+61p
   test dword ptr ds:0FFFFFFFCh[edi*4], 0FFFFFFF0h
   jnz sub_100046E1
   dec edi
-  mov dword_1000305C, edi
+  mov lcad, edi
   call loc_10003F11
   call sub_1000466D
   pop edx
@@ -2437,7 +2430,7 @@ sub_100047B6:  ; CODE XREF: sub_100048A4+61p
 sub_100047C2:  ; CODE XREF: sub_100048A4+61p
      ; DATA XREF: .data:10004894o
   mov dword_10003014+30h, offset sub_1000419B
-  call sub_10003FF2
+  call magenta
   call sub_100046E1
 sub_100047C2 endp ; sp-analysis failed
 
@@ -2488,7 +2481,7 @@ loc_1000480F:    ; CODE XREF: sub_100047FB+Aj
 
 loc_1000482A:    ; CODE XREF: sub_100047D6+1Cj
      ; sub_100047D6+23j ...
-  call loc_10003DE5
+  call color
   DUP_
   mov eax, edx
   jmp dword_10003014+30h
@@ -2537,15 +2530,15 @@ off_10004864 dd offset sub_10004787 ; DATA XREF: sub_100048A4+61r
 
 sub_100048A4:  ; CODE XREF: .data:10004918p
      ; DATA XREF: .data:100038B4o
-  call sub_10003F57
+  call text1
   DUP_
-  mov eax, dword_1000305C
-  mov dword_10003054, eax
+  mov eax, lcad
+  mov cad, eax
   xor eax, eax
   mov edi, dword_10003048
   add edi, dword_10003064
   shl edi, 8
-  mov dword_10003058, edi
+  mov pcad, edi
 
 loc_100048CF:    ; CODE XREF: sub_100048A4+68j
   test dword ptr ds:0[edi*4], 0Fh
@@ -2581,22 +2574,22 @@ sub_1000490E:  ; CODE XREF: sub_10004CDF:loc_10004CF1p
   call sub_100048A4
 ; ---------------------------------------------------------------------------
   db 0E9h, 16h, 0F9h
-dword_10004920 dd 0FFFFh  ; DATA XREF: sub_10004B92+11r
+dword_10004920 dd 0FFFFh  ; DATA XREF: act7+11r
   dd 0FFFF00h, 0
   dd 0FF0000h, 0C000h, 2 dup(0)
   dd 0FFFFh, 0
   dd 3 dup(0FFFFFFh), 8080FFh, 0C0C0C0h, 0FFh, 2 dup(0)
-byte_10004964 db 1   ; DATA XREF: sub_10004BB6-186r
+action db 1   ; DATA XREF: sub_10004BB6-186r
      ; sub_10004BB6-174w ...
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_10004965:  ; CODE XREF: sub_10004B40+23j
+mcur:  ; CODE XREF: del+23j
      ; sub_10004B68+5j ...
   dec dword_10003050
   jns short locret_10004973
-sub_10004965 endp ; sp-analysis failed
+mcur endp ; sp-analysis failed
 
 
 ; =============== S U B R O U T I N E =======================================
@@ -2606,7 +2599,7 @@ sub_1000496D:  ; CODE XREF: sub_10004CF6+44p
      ; DATA XREF: .data:10004C78o
   inc dword_10003050
 
-locret_10004973:   ; CODE XREF: sub_10004965+6j
+locret_10004973:   ; CODE XREF: mcur+6j
   retn
 
 
@@ -2686,12 +2679,12 @@ sub_100049BC:  ; CODE XREF: sub_10004CF6+44p
 
 sub_100049C4:  ; CODE XREF: sub_10004BB6:loc_10004A2Bp
      ; sub_10004C16+31j
-  mov ecx, dword_1000305C
-  add ecx, dword_100030A4
-  xor ecx, dword_1000305C
+  mov ecx, lcad
+  add ecx, words
+  xor ecx, lcad
   and ecx, 0FFFFFF00h
   jz short loc_100049E9
-  mov ecx, dword_100030A4
+  mov ecx, words
 
 loc_100049E4:    ; CODE XREF: sub_100049C4+22j
   DROP
@@ -2702,13 +2695,13 @@ loc_100049E4:    ; CODE XREF: sub_100049C4+22j
 
 loc_100049E9:    ; CODE XREF: sub_100049C4+18j
   push esi
-  mov esi, dword_1000305C
+  mov esi, lcad
   mov ecx, esi
   dec esi
   mov edi, esi
-  add edi, dword_100030A4
+  add edi, words
   shl edi, 2
-  sub ecx, dword_10003054
+  sub ecx, cad
   js short loc_10004A0D
   shl esi, 2
   std
@@ -2720,7 +2713,7 @@ loc_10004A0D:    ; CODE XREF: sub_100049C4+40j
   shr edi, 2
   inc edi
   mov dword_10003050, edi
-  mov ecx, dword_100030A4
+  mov ecx, words
 
 loc_10004A1E:    ; CODE XREF: sub_100049C4+64j
   dec edi
@@ -2737,11 +2730,11 @@ loc_10004A1E:    ; CODE XREF: sub_100049C4+64j
 loc_10004A2B:    ; CODE XREF: .data:10004AA0j
      ; .data:10004AE2j ...
   call sub_100049C4
-  mov cl, byte_10004964
+  mov cl, action
   xor ds:0[edi*4], cl
   cmp cl, 3
   jnz short locret_10004A53
-  mov byte_10004964, 4
+  mov action, 4
   mov dword_1000308C+8, 0C000h
 
 locret_10004A53:   ; CODE XREF: sub_10004BB6-176j
@@ -2752,8 +2745,8 @@ locret_10004A53:   ; CODE XREF: sub_10004BB6-176j
 
 
 sub_10004A54:  ; DATA XREF: sub_10004A65o
-  pop off_1000309C
-  mov off_1000309C, offset sub_10003BB9
+  pop aword
+  mov aword, offset sub_10003BB9
   retn
 sub_10004A54 endp ; sp-analysis failed
 
@@ -2766,8 +2759,8 @@ sub_10004A65:  ; CODE XREF: sub_10004E08p
 
 ; FUNCTION CHUNK AT 1000459D SIZE 0000004E BYTES
 
-  mov off_1000309C, offset sub_10004A54
-  jmp loc_1000459D
+  mov aword, offset sub_10004A54
+  jmp accept
 
 
 ; ---------------------------------------------------------------------------
@@ -2775,7 +2768,7 @@ sub_10004A65:  ; CODE XREF: sub_10004E08p
 loc_10004A74:    ; CODE XREF: .data:10004ABBj
   DUP_
   mov eax, 1
-  cmp byte_10004964, 4
+  cmp action, 4
   jz short loc_10004A89
   mov al, 3
 
@@ -2786,12 +2779,12 @@ loc_10004A89:    ; CODE XREF: .data:10004A85j
 
 loc_10004A94:    ; CODE XREF: .data:10004A90j
   xchg eax, [esi]
-  mov dword_100030A4, 2
+  mov words, 2
   jmp short loc_10004A2B
 ; ---------------------------------------------------------------------------
 
 loc_10004AA2:    ; DATA XREF: sub_10004CF6+6o
-  test byte_10004964, 0Ah
+  test action, 0Ah
   jnz short loc_10004AE7
   mov edx, eax
   and edx, 0FC000000h
@@ -2802,7 +2795,7 @@ loc_10004AA2:    ; DATA XREF: sub_10004CF6+6o
 loc_10004ABD:    ; CODE XREF: .data:10004AB3j
   shl eax, 5
   xor al, 2
-  cmp byte_10004964, 4
+  cmp action, 4
   jz short loc_10004ACD
   xor al, 0Bh
 
@@ -2813,12 +2806,12 @@ loc_10004ACD:    ; CODE XREF: .data:10004AC9j
   xor al, 10h
 
 loc_10004AD8:    ; CODE XREF: .data:10004AD4j
-  mov dword_100030A4, 1
+  mov words, 1
   jmp loc_10004A2B
 ; ---------------------------------------------------------------------------
 
 loc_10004AE7:    ; CODE XREF: .data:10004AA9j
-  cmp byte_10004964, 9
+  cmp action, 9
   jnz short loc_10004AFC
   mov edx, eax
   shl edx, 5
@@ -2839,32 +2832,32 @@ loc_10004AFE:    ; CODE XREF: .data:10004AFAj
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_10004B05:  ; CODE XREF: sub_10004B40p
+enstack:  ; CODE XREF: delp
      ; sub_10004B68p
   DUP_
-  mov eax, dword_10003054
-  sub eax, dword_10003058
-  jz short loc_10004B3E
+  mov eax, cad
+  sub eax, pcad
+  jz short .1
   mov ecx, eax
   xchg eax, edx
   push esi
-  mov esi, dword_10003054
+  mov esi, cad
   lea esi, ds:0FFFFFFFCh[esi*4]
-  mov edi, dword_10003060
+  mov edi, trash
 
-loc_10004B2E:    ; CODE XREF: sub_10004B05+2Ej
+.0:    ; CODE XREF: enstack+2Ej
   std
   DROP
   cld
   stosd
   dec ecx
-  jnz short loc_10004B2E
+  jnz short .0
   xchg eax, edx
   stosd
-  mov dword_10003060, edi
+  mov trash, edi
   pop esi
 
-loc_10004B3E:    ; CODE XREF: sub_10004B05+10j
+.1:    ; CODE XREF: enstack+10j
   DROP
   retn
 
@@ -2873,19 +2866,19 @@ loc_10004B3E:    ; CODE XREF: sub_10004B05+10j
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_10004B40:  ; CODE XREF: sub_10004CF6+44p
+del:  ; CODE XREF: sub_10004CF6+44p
      ; DATA XREF: .data:10004C50o
-  call sub_10004B05
-  mov edi, dword_10003058
-  mov ecx, dword_1000305C
+  call enstack
+  mov edi, pcad
+  mov ecx, lcad
   sub ecx, edi
   shl edi, 2
   push esi
-  mov esi, dword_10003054
+  mov esi, cad
   shl esi, 2
   rep movsd
   pop esi
-  jmp sub_10004965
+  jmp mcur
 
 
 
@@ -2894,110 +2887,110 @@ sub_10004B40:  ; CODE XREF: sub_10004CF6+44p
 
 sub_10004B68:  ; CODE XREF: sub_10004CF6+44p
      ; DATA XREF: .data:10004CB8o
-  call sub_10004B05
-  jmp sub_10004965
+  call enstack
+  jmp mcur
 
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_10004B72:  ; CODE XREF: sub_10004CF6+44p
+act1:  ; CODE XREF: sub_10004CF6+44p
      ; DATA XREF: .data:10004C5Co
   mov al, 1
-  jmp short loc_10004B94
+  jmp short actt
 
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_10004B76:  ; CODE XREF: sub_10004CF6+44p
+act3:  ; CODE XREF: sub_10004CF6+44p
      ; DATA XREF: .data:10004C60o
   mov al, 3
-  jmp short loc_10004B94
+  jmp short actt
 
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_10004B7A:  ; CODE XREF: sub_10004CF6+44p
+act4:  ; CODE XREF: sub_10004CF6+44p
      ; DATA XREF: .data:10004C64o
   mov al, 4
-  jmp short loc_10004B94
+  jmp short actt
 
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_10004B7E:  ; CODE XREF: sub_10004CF6+44p
+act9:  ; CODE XREF: sub_10004CF6+44p
      ; DATA XREF: .data:10004C98o
   mov al, 9
-  jmp short loc_10004B94
+  jmp short actt
 
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_10004B82:  ; CODE XREF: sub_10004CF6+44p
+act10:  ; CODE XREF: sub_10004CF6+44p
      ; DATA XREF: .data:10004C94o
   mov al, 0Ah
-  jmp short loc_10004B94
+  jmp short actt
 
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_10004B86:  ; CODE XREF: sub_10004CF6+44p
+act11:  ; CODE XREF: sub_10004CF6+44p
      ; DATA XREF: .data:10004C90o
   mov al, 0Bh
-  jmp short loc_10004B94
+  jmp short actt
 
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_10004B8A:  ; CODE XREF: sub_10004CF6+44p
+act13:  ; CODE XREF: sub_10004CF6+44p
      ; DATA XREF: .data:off_10004CACo
   mov al, 0Dh
-  jmp short loc_10004B94
+  jmp short actt
 
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_10004B8E:  ; CODE XREF: sub_10004CF6+44p
+act14:  ; CODE XREF: sub_10004CF6+44p
      ; DATA XREF: .data:10004CB0o
   mov al, 0Eh
-  jmp short loc_10004B94
+  jmp short actt
 
 
 
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_10004B92:  ; CODE XREF: sub_10004CF6+44p
+act7:  ; CODE XREF: sub_10004CF6+44p
      ; DATA XREF: .data:10004C84o
   mov al, 7
 
-loc_10004B94:    ; CODE XREF: sub_10004B72+2j
-     ; sub_10004B76+2j ...
-  mov byte_10004964, al
-  mov off_1000309C, offset loc_10004A2B
+actt:    ; CODE XREF: act1+2j
+     ; act3+2j ...
+  mov action, al
+  mov aword, offset loc_10004A2B
   mov eax, dword_10004920[eax*4]
 
 loc_10004BAA:    ; CODE XREF: sub_10004BC8+16j
   mov dword_1000308C+8, eax
   pop eax
   DROP
-  jmp loc_1000459D
-sub_10004B92 endp ; sp-analysis failed
+  jmp accept
+act7 endp ; sp-analysis failed
 
 
 ; =============== S U B R O U T I N E =======================================
@@ -3009,7 +3002,7 @@ sub_10004BB6:  ; DATA XREF: sub_10004BC8+Co
 
   DUP_
   xor eax, eax
-  inc dword_100030A4
+  inc words
   jmp loc_10004A2B
 
 
@@ -3019,9 +3012,9 @@ sub_10004BB6:  ; DATA XREF: sub_10004BC8+Co
 
 sub_10004BC8:  ; CODE XREF: sub_10004CF6+44p
      ; DATA XREF: .data:10004C80o
-  mov byte_10004964, 0Ch
+  mov action, 0Ch
   mov eax, 0FF00FFh
-  mov off_1000309C, offset sub_10004BB6
+  mov aword, offset sub_10004BB6
   jmp short loc_10004BAA
 
 
@@ -3029,17 +3022,16 @@ sub_10004BC8:  ; CODE XREF: sub_10004CF6+44p
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_10004BE0:  ; CODE XREF: sub_10004CF6+44p
+eout:  ; CODE XREF: sub_10004CF6+44p
      ; DATA XREF: .data:10004C54o
   pop eax
   DROP
-  mov off_1000309C, offset sub_10003BB9
-  mov off_100030A0, offset nullsub_1
+  mov aword, offset sub_10003BB9
+  mov anumber, offset nullsub_1
   mov byte_10004398, 0
   mov off_1000438C, offset loc_1000459A
   mov dword_1000308C+8, 0FFFF00h
-  jmp loc_1000459D
-sub_10004BE0 endp ; sp-analysis failed
+  jmp accept
 
 
 ; =============== S U B R O U T I N E =======================================
@@ -3047,8 +3039,8 @@ sub_10004BE0 endp ; sp-analysis failed
 
 sub_10004C16:  ; CODE XREF: sub_10004CF6+44p
      ; DATA XREF: .data:10004C58o
-  mov edx, dword_10003060
-  cmp edx, 1000B000h
+  mov edx, trash
+  cmp edx, buffer
   jnz short loc_10004C25
   retn
 ; ---------------------------------------------------------------------------
@@ -3056,7 +3048,7 @@ sub_10004C16:  ; CODE XREF: sub_10004CF6+44p
 loc_10004C25:    ; CODE XREF: sub_10004C16+Cj
   sub edx, 8
   mov ecx, [edx+4]
-  mov dword_100030A4, ecx
+  mov words, ecx
 
 loc_10004C31:    ; CODE XREF: sub_10004C16+26j
   DUP_
@@ -3065,37 +3057,37 @@ loc_10004C31:    ; CODE XREF: sub_10004C16+26j
   dec ecx
   jnz short loc_10004C31
   add edx, 4
-  mov dword_10003060, edx
+  mov trash, edx
   jmp sub_100049C4
 
 
 ; ---------------------------------------------------------------------------
 off_10004C4C dd offset nullsub_1 ; DATA XREF: sub_10004CF6+44r
-  dd offset sub_10004B40
-  dd offset sub_10004BE0
+  dd offset del
+  dd offset eout
   dd offset sub_10004C16
-  dd offset sub_10004B72
-  dd offset sub_10004B76
-  dd offset sub_10004B7A
+  dd offset act1
+  dd offset act3
+  dd offset act4
   dd offset sub_100049BC
-  dd offset sub_10004965
+  dd offset mcur
   dd offset sub_10004974
   dd offset sub_10004988
   dd offset sub_1000496D
   dd offset sub_10004998
   dd offset sub_10004BC8
-  dd offset sub_10004B92
+  dd offset act7
   dd offset sub_10004990
   dd offset nullsub_1
-  dd offset sub_10004B86
-  dd offset sub_10004B82
-  dd offset sub_10004B7E
+  dd offset act11
+  dd offset act10
+  dd offset act9
   dd offset nullsub_1
   dd offset nullsub_1
   dd offset nullsub_1
   dd offset sub_100049A9
-off_10004CAC dd offset sub_10004B8A ; DATA XREF: sub_10004CF6:loc_10004D17o
-  dd offset sub_10004B8E
+off_10004CAC dd offset act13 ; DATA XREF: sub_10004CF6:loc_10004D17o
+  dd offset act14
   dd offset nullsub_1
   dd offset sub_10004B68
 dword_10004CBC dd 72515h, 2D0D010Bh, 110160Ch, 2B0A0923h, 23A3800h, 220E1000h
@@ -3129,17 +3121,17 @@ loc_10004CF1:    ; DATA XREF: .data:100037F0o
 
 sub_10004CF6:  ; DATA XREF: .data:100038C0o
   call off_10004CD8
-  mov off_100030A0, offset loc_10004AA2
+  mov anumber, offset loc_10004AA2
   mov byte_10004398, 25h
   mov off_1000438C, offset loc_10004CDC
 
 loc_10004D17:    ; CODE XREF: .data:10004CDDj
-  mov off_10003088, offset off_10004CAC
+  mov shift, offset off_10004CAC
   mov off_10003084, offset dword_10004CBC
   mov dword_1000308C+8, 0FFFF00h
 
 loc_10004D35:    ; CODE XREF: sub_10004CF6+4Cj
-  call sub_10004353
+  call key
   call off_10004C4C[eax*4]
   DROP
   jmp short loc_10004D35
@@ -3153,10 +3145,10 @@ loc_10004D44:    ; DATA XREF: .data:100037B4o
   add edx, 8Ch
   mov off_10003084, edx
   sub edx, 10h
-  mov off_10003088, edx
+  mov shift, edx
 
 loc_10004D60:    ; CODE XREF: .data:10004D77j
-  call sub_10004353
+  call key
   mov edx, dword_10004944+1Ch
   add edx, eax
   lea edx, [edx+eax*4+5]
@@ -3165,7 +3157,7 @@ loc_10004D60:    ; CODE XREF: .data:10004D77j
   call edx
   jmp short loc_10004D60
 ; ---------------------------------------------------------------------------
-byte_10004D79 db 0B0h, 0FEh, 0E6h ; DATA XREF: .data:off_10003750o
+byte_10004D79 db 0B0h, 0FEh, 0E6h ; DATA XREF: .data:forth_words_addresseso
   db 64h, 0EBh, 0FEh
 ; ---------------------------------------------------------------------------
 
@@ -3226,7 +3218,7 @@ sub_10004DBB:  ; DATA XREF: .data:10003814o
 
 sub_10004DFC:  ; CODE XREF: sub_10004DFC+9j
      ; sub_10004E08+5p
-  dec dword_100030A4
+  dec words
   jz short locret_10004E07
   DROP
   jmp short sub_10004DFC
@@ -3245,7 +3237,7 @@ sub_10004E08:  ; DATA XREF: .data:10003868o
   call sub_10004DFC
   call find
   jnz abort
-  mov eax, ds:1018A800h[ecx*4]
+  mov eax, ds:forth_dictionary_addresses[ecx*4]
   retn
 
 
@@ -3256,7 +3248,7 @@ sub_10004E08:  ; DATA XREF: .data:10003868o
 sub_10004E25:  ; DATA XREF: .data:100038B8o
   and eax, 0FFFFFFF0h
   call find
-  mov eax, ds:1018A800h[ecx*4]
+  mov eax, ds:forth_dictionary_addresses[ecx*4]
   retn
 
 
@@ -4845,7 +4837,7 @@ sub_10006665:  ; CODE XREF: sub_10003983+17p
      ; load+18p
      ; DATA XREF: ...
   call sub_1000665F
-  jmp sub_10003914
+  jmp dopause
 
 
 ; ---------------------------------------------------------------------------
@@ -4860,12 +4852,12 @@ byte_1000666F db 0   ; DATA XREF: sub_1000676F+1Er
 ; =============== S U B R O U T I N E =======================================
 
 
-sub_1000676F:  ; CODE XREF: sub_10004353j
+sub_1000676F:  ; CODE XREF: keyj
      ; DATA XREF: .data:off_1000434Bo
   DUP_
 
 loc_10006774:    ; CODE XREF: .data:1000679Ej
-  call sub_10003914
+  call dopause
   mov ecx, 0FFFFFFFFh
   mov eax, dword_100056FC
   call sub_100056F5
@@ -4931,7 +4923,7 @@ loc_100067A0:    ; DATA XREF: sub_1000680A+28o
 sub_1000680A:  ; CODE XREF: sub_10004359j
      ; DATA XREF: .data:off_1000434Fo
   DUP_
-  call sub_10003914
+  call dopause
   mov ecx, 0FFFFFFFFh
   mov eax, dword_100056FC
   call sub_100056F5
@@ -4983,7 +4975,7 @@ unk_1000685F db    0   ; DATA XREF: .data:100069E7o
   db 10h
 ; ---------------------------------------------------------------------------
   mov dword_10006860+3, 0 ; DATA XREF: sub_10006A54o
-  mov off_10003088, offset unk_1000685F
+  mov shift, offset unk_1000685F
   mov off_10003084, 1000685Bh
 
 loc_100069FB:    ; CODE XREF: .data:10006A18j
@@ -5012,13 +5004,13 @@ loc_10006A37:    ; CODE XREF: .data:10006A28j
   cmp eax, 30h
   jns short loc_10006A4E
   call near ptr dword_10006874+0D8h
-  call off_1000309C
+  call aword
   DUP_
 
 loc_10006A4E:    ; CODE XREF: .data:10006A1Cj
      ; .data:10006A3Cj
   DROP
-  jmp loc_1000459D
+  jmp accept
 
 ; =============== S U B R O U T I N E =======================================
 
@@ -5056,13 +5048,13 @@ loc_10006A90:    ; CODE XREF: sub_10006A5F+6j
   mov esi, 10015800h
 
 loc_10006AA6:    ; CODE XREF: sub_10006A5F+40j
-  mov off_100030E8, offset sub_10003AD8
+  mov adefine, offset forthd
   mov off_100030EC, offset sub_10003BF2
-  mov off_100030F0, offset sub_10003B92
-  mov off_100030F4, offset sub_10003BA2
+  mov off_100030F0, offset cnum
+  mov off_100030F4, offset cshort
   mov eax, 2Fh
-  call sub_10004048
-  jmp loc_1000459D
+  call echo
+  jmp accept
 
 
 ; ---------------------------------------------------------------------------
@@ -5162,21 +5154,18 @@ loc_10006CD4:    ; DATA XREF: .data:10003754o
 ; START OF FUNCTION CHUNK FOR sub_10006D81
 
 loc_10006CD9:    ; CODE XREF: sub_10006D81+5j
-  call sub_100039A2
-; END OF FUNCTION CHUNK FOR sub_10006D81
-; ---------------------------------------------------------------------------
-  call sub_100039D3
-; ---------------------------------------------------------------------------
+  call noshow
+  call noserve
   mov [forths], 71h
   mov [macros], 6
-  mov dword_10003060, 1000B000h
+  mov trash, buffer
   push esi
-  lea esi, dword_1000358C
-  mov edi, 10188000h
+  lea esi, forth_words_names
+  mov edi, forth_dictionary_names
   mov ecx, [forths]
   rep movsd
-  lea esi, off_10003750
-  mov edi, 1018A800h
+  lea esi, forth_words_addresses
+  mov edi, forth_dictionary_addresses
   mov ecx, [forths]
   rep movsd
   pop esi
@@ -5189,13 +5178,11 @@ loc_10006CD9:    ; CODE XREF: sub_10006D81+5j
   mov dword_10003064, 40080h
   mov eax, 12h
   call load
-; ---------------------------------------------------------------------------
-  jmp loc_1000459D
-; ---------------------------------------------------------------------------
+  jmp accept
 
 loc_10006D6F:    ; CODE XREF: .data:10006D7Fj
-  call sub_10003914
-  call sub_10004353
+  call dopause
+  call key
   call sub_10005267
   DROP
   jmp short loc_10006D6F
