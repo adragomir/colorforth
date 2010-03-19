@@ -1322,11 +1322,11 @@ jump:
 
 load:
 ; ( b -- ) Interprets pre-parsed words in the block given.
-  sub    eax, 18 ; block, delete 18, because we don't have binary content
-  shl    eax, 10-2 ; multiply by 256
-  mov    ebx, [blocks_address] ; ebx contains the ADDRESS of the block contents
-  shr    ebx, 2 ; divide the address by 4
-  add    eax, ebx
+  sub eax, 18 ; block, delete 18, because we don't have binary content
+  shl eax, 10-2 ; multiply by 256
+  mov ebx, [blocks_address] ; ebx contains the ADDRESS of the block contents
+  shr ebx, 2 ; divide the address by 4
+  add eax, ebx
   push edi      ; [RST]
   mov edi, eax
   DROP ; eax <- esi ; esi = esi + 4
@@ -3315,7 +3315,7 @@ refresh:
   mov [cad], eax        ; for curs beyond end
 
   ; TODO
-  mov    eax, blk
+  mov    eax, [blk]
   sub    eax, 18
   shl    eax, 10-2
   mov    ebx, [blocks_address]
