@@ -1,0 +1,85 @@
+**`+at (n1 n2 - CF OF ZF SF)		Kernel`** DONE
+**`, (n)						Kernel`** DONE
+**`. (n)							Kernel`** DONE
+**`?lit (-ZF(0) | n ZF(1))			Kernel`** DONE
+**`1, (n)						Kernel`** DONE
+**`2, (n)						Kernel`** DONE
+**`2emit (n)						Kernel`** DONE
+**`3, (n)						Kernel`** DONE
+**`abort						Kernel`**
+**`accept						Kernel`** DONE
+**`aper (-a)						Kernel`**
+**`at (n1 n2)					Kernel`**  DONE
+**`blk 							Kernel`** DONE
+**`boot							Kernel`** DONE
+**`box	(n1 n2)					Kernel`** DONE
+**`buffer						Kernel`**
+**`bye							Kernel`** DONE
+**`c							Kernel`** DONE
+**`clog								Kernel`**
+**`color (n)							Kernel`** DONE
+**`copy (n) 							Kernel`** DONE
+**` cpoint							Kernel`**
+**`curs 							Kernel`** DONE
+**`cr 								Kernel`** DONE
+**`debug 							Kernel`** DONE
+**`device (n - a)						Kernel`** DONE
+**`digit (n)							Kernel`** DONE
+**`drop (n)							Kernel`** DONE
+**`dup (n1 – n1 n1)					Kernel`**
+**`e (n)							Kernel`** DONE
+**`edit (n)							Kernel`** DONE
+**`ekt 								Kernel`**
+**`emit (n)							Kernel`** DONE
+**`empt								Kernel`** DONE
+**`erase (b n)						Kernel`** DONE
+**`fifo (n)							Kernel`** DONE
+**`format (a c – a c)					Kernel`** DONE
+**`forth 							Kernel`** DONE
+**`fov								Kernel`** DONE
+**`freeze							Kernel`**
+**`graphic 							Kernel `**
+**`h 								Kernel`** DONE
+**`h. (n)							Kernel`** DONE
+**`h.n (n1 n2)						Kernel`** DONE
+**`here (a) 						Kernel`** DONE
+**`hsvv 							Kernel`**
+**`jump (n)							Kernel`** jump
+**`keyboard 						Kernel`** keyboard
+**`last							Kernel`** DONE
+**`less (n1 n2 – n1 n2 ZF) 			Kernel`** DONE
+**`line	(n1 n2)					Kernel`** DONE
+**`lm (n)							Kernel`** DONE
+**`load (b)							Kernel`** DONE
+**`macro 							Kernel`** DONE
+**`mark 							Kernel`** DONE
+**` nc 						Kernel`** DONE
+**`octant (p q - p q n)			Kernel`** DONE
+**` offset						Kernel`**
+**`olog						Kernel`**
+**`pad 						Kernel `** DONE
+**`pause						Kernel`** DONE
+**`pci (a – n)					Kernel `** DONE
+**`rback (b – n)					Kernel`**
+**`read (c a - `c `a)			Kernel`** DONE
+**`rm (n)						Kernel`** DONE
+**`serve 						Kernel`**  DONE
+**`show						Kernel`** DONE
+**`sp							Kernel`** DONE
+**`space						Kernel`** DONE
+**`stop 						Kernel`** DONE
+**`switch						Kernel`** DONE
+**`text 							Kernel `** DONE
+**`tic (–ba)						Kernel`**
+**`top							Kernel `** DONE
+**`trash							Kernel`**
+**`tsim 							Kernel `**
+**`unpack (w - w' c)					Kernel`** DONE
+**`vesa							Kernel`** DONE
+**`warm							Kernel `** DONE
+**`wback (b n)						Kernel`**
+**`winver (- t | f)					Kernel`**
+**`wlog (a n1)						Kernel`**
+**`word ( *)						Kernel`** DONE
+**` write ( a c - a' c')				Kernel`** DONE
+**`xy  							Kernel`** DONE

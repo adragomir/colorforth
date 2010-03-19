@@ -1,0 +1,21 @@
+implement kernel words:
+  **`abort						Kernel`**
+  **`aper (-a)						Kernel`**
+  **`buffer						Kernel`**
+  **`clog								Kernel`**
+  **` cpoint							Kernel`**
+  **`dup (n1 – n1 n1)					Kernel`**
+  **`ekt 								Kernel`**
+  **`freeze							Kernel`**
+  **`graphic 							Kernel `**
+  **`hsvv 							Kernel`**
+  **` offset						Kernel`**
+  **`olog						Kernel`**
+  **`rback (b – n)					Kernel`**
+  **`tic (–ba)						Kernel`**
+  **`trash							Kernel`**
+  **`tsim 							Kernel `**
+  **`wback (b n)						Kernel`**
+  **`winver (- t | f)					Kernel`**
+  **`wlog (a n1)						Kernel`**
+  

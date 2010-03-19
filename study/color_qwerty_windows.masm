@@ -1157,7 +1157,9 @@ macro0 dd 170o shl 25 ; ;
        dd (((140o shl 4+1)shl 4+3)shl 7+142o)shl 10 ; drop
        dd (((2 shl 7+144o)shl 4+4)shl 4+6)shl 13 ; then
        dd ((((143o shl 4+4)shl 5+25o)shl 4+7)shl 4+6)shl 8 ; begin
+
 macro1 dd 128 dup (0)
+
 forth0 dd (((143o shl 4+3)shl 4+3)shl 4+2)shl 13 ; boot
        dd ((((143o shl 5) + 23o) shl 4) + 4o) shl 16 ; bye
 ;       dd (((27o shl 4+5)shl 4+1)shl 5+21o)shl 14 ; warm

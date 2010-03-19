@@ -1,0 +1,41 @@
+**`! (a)							Macro`**
+**`* (n1 n2 – n3 CF OF)				Macro`**
+**`*/ (m n d – q CF OF ZF SF	)		Macro`**
+**`+ (n1 n2 – n3 CF OF ZF SF) 		Macro`**
+**`+! (n a - CF OF ZF SF)			Macro`**
+**`–if (SF - SF)					Macro`**
+**`;							Macro`**
+**`/ (n d – q CF OF ZF SF)			Macro`**
+**`/mod (n d – r q CF OF ZF SF)		Macro`**
+**`? (- SF ZF)					Macro`**
+**`?dup (n1 – n1 | n1 n1)			Macro`**
+**`@ (a)						Macro`**
+**`0							Macro`**
+**`2*	(n1 – n2 SF ZF)				Macro`**
+**`2/ (n1 – n2 SF ZF CF)			Macro`**
+**`7pop							Macro`**
+**`7push						Macro`**
+**`a							Macro`**
+**`a!							Macro`**
+**`align						Macro`**
+**`and (n1 n2 – n3 ZF SF)			Macro`**
+**`b! (n ba)						Macro`**
+**`bswap (n1 – n2)				Macro`**
+**`end (a)							Macro`**
+**`for 							Macro`**
+**`i								Macro`**
+**`if (ZF - ZF)						Macro`**
+**`loop							Macro`**
+**`mod (n d – r)						Macro`**
+**`next (a – SF OF ZF)			Macro`**
+**`nip (n1 n2 n3 – n1 n3)			Macro`**
+**`nop							Macro`**
+**`or (n1 n2 – n3 OF CF ZF SF)		Macro`**
+**`or! (n1 a - OF CF ZF SF)		Macro`**
+**`over (n1 n2 n3 – n1 n2 n3 n2)	Macro`**
+**`p@							Macro`**
+**`pop (-n) 					Macro`**
+**`push (n)						Macro`**
+**`swap						Macro`**
+**`time (n1)						Macro`**
+**`u+ (n3 n2 n1 – n4 n2)				Macro`**

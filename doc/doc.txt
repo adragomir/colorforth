@@ -1,0 +1,864 @@
+## Windows Changes ##
+
+The first thing you will notice on booting 2.0a is that instead of reading 90 blocks into memory at boot time, the system reads 1440. Colorforth 1.0 read from between one to eighty cylinders from a floppy with nc, cylinders from a (native) floppy, set to 5 for loading 90 blocks to memory at boot.
+
+`block`
+:    works as it always has in colorForth – converting a block number to a word address in memory.  Absolute block zero is still at absolute memory address zero.  However,  block  internally adds the value of a variable called  offset  to incoming block numbers before multiplying them by 256.  The value set in  offset  reflects the absolute memory address at which the disk image was read at boot.  Various BIOSes have forced this address to be two binary million (200000 hex as a byte address; 80000 as a word address) so that the value in  offset  is  hex 800, decimal 2048.  This affects all uses of  block  including  load  and  edit .
+`offset`
+:    has been added to the dictionary so it is accessible from colorForth source.
+
+The working Forth dictionary lies immediately after the disk image, at `offset` -relative block 1440.  The dictionary is followed immediately by the initial position of **`here`** as of the start of loading block 18.
+
+Other fixed allocations are made relative to very large block numbers and float above the point we call "block0" (200000 hex as a byte address in Native systems.)
+
+In addition to  offset  and  homef  as described above, there are several other additions to the dcitionary:
+
+`abort`
+:     This function existed in the 1.0 kernel but did not have a "head" and was accessed via kludging.  The head now exists.  Terminates execution and goes back to keyboard processing.  Sets editor pointers if  W  addresses block 18 or higher.  Empties return stack and resets a number of cells in the  spaces  table.  Echoes a  ?.
+`h ( - a)`
+:     This is the name of the variable whose current value  here  reports.  Simply added the head to avoid kludging.
+`aper ( - a)`
+:     Again, simply adds a head to an already existing variable, the one which points to the frame buffer that is to be used for refreshing the display (frame, which is used by the drawing primitives, is not given a head at this time.)
+`tic ( _ - a)`
+:     is a brand new function intended for interpretive use only.  Type  tic  and hit space.  Then type another word and hit space.  tic  will search for this word and leave its address on the stack.  Intended for use with garden variety, non macro red words to help interpret register values on hardware traps.
+`winver ( - tf)`
+:     is a new flag exported by both Native and Windows kernels; returns both a value and CPU flags reflecting that value.  For Native systems it returns zero.  For Windows systems it returns 1.
+
+New coding practices are required.  If you add something that depends on the native environment – such as priviliged code for I/O or CPU control register manipulation, or such as allocation of memory below block 0 or above 512 megs, you must do so in a manner that will not cause the windows version to fail.  See the definition of  env  in block 18, and the environmental dependency blocks 34 and 36 for the two systems.  At minimum make it possible to load both systems without failure; if the function won't work on both systems but has to be executed for some reason, put a no op in the native system.
+
+Hardware traps such as accessing unmapped memory, or divide by zero, display machine state and stack dumps.  For example, writing  0 @  produces a trap since location zero is not accessible by the program:
+
+~~~~~~~~~
+    Trap/Fault:
+    10006424  C0000005 00000000 00000000 1018C47B
+              Windows code
+    10006434  00000002 00000000
+
+    1000643C  0001003F 00000000 00000000 00000000
+    1000644C  00000000 00000000 00000000 FFFF027F
+    1000645C  FFFF0000 FFFFFFFF 00000000 04910000
+    1000646C  00000000 FFFF0000 01B8CF60 0176CB94
+    1000647C  EE180000 07387C90 FFFF7C91 7C9106AB
+    1000648C  7C9106EB 0034D054 0000C000 00000000
+    1000649C  00000000 020A0014 0732CC1C 00057C91
+    100064AC  07780000 01B557A8 0176CBF4 EE18BED8
+    100064BC  07387C90 FFFF7C91 00000000 00000000
+    100064CC  0000003B 00000023 00000023 10003F22
+                                         W (7/di)
+    100064DC  10015800 10004C8E 10004248 00000050
+               S (si)   3 (bx)   2 (dx)   1 (cx) 
+    100064EC  00000000 0012FFF0 1018C47B 0000001B
+               0 (ax)   5 (bp)      IP   CS (seg)
+    100064FC  00010246 0012FF90 00000023
+                 flg    R (sp)
+
+    10015800  00000000 00000000 00000000 00000000
+              Data stack top
+
+    0012FF90  100044AB 10006799 00000000 0012FFE0
+              Return stack top
+~~~~~~~~~
+
+The keyboard is a faithful rendition of the Native keyboard with two major exceptions:
+
+1.    The native system has a certain number of characters of typeahead buffer kept inside of the keyboard processor chip.  The keyboard processor is polled, not serviced by interrupt code, so when you hold down a key such as a cursor movement, you can have a fair amount of movement "queued" up in the chip when you lift your finger.  The Windows version receives keyboard events as they occur and as a result there is exactly one character of type ahead buffer.  When combined with the fast drawing speed of the Windows system, this leads to very satisfying results when navigating among blocks in the editor.
+2.    Because we are ignoring the extended keyboard flags, the Windows keyboard recognizes both left and right "alt" keys if the keyboard in use has them.
+
+New words unique to the Windows system:
+
+**`utime ( - u)`**
+:     returns the unix time in seconds since midnight UTC on Friday 1 Jan 1970.
+**`endram ( - a)`**
+:     returns the address of the first byte past the end of memory allocated to the application.
+**`keych ( - a)`**
+:     is a double cell variable.  The first cell if nonzero is a keyboard character (Windows key code) waiting to be processed by the keyboard task.  The second cell contains extended key flags which are not now relevant to us and probably never will be.
+**`retain`**
+:     writes the 1440 block image from memory into a file called OkadWork.cf.  This is the same file name that is read when starting the program.  If you wish to save the original, do so at some time before  retain  - the file is not open while the program is running, so it can be renamed after starting the program.  Note however that the file must exist by that name, even if zero length.
+
+## Editor, keyboard ##
+
+Bottom of screen:
+
+~~~~~~~~~~~~
+                                   qwer  [hex]
+                                         [text/num]
+stack                     current text
+~~~~~~~~~~~~~
+
+While in text entry mode of the editor, the Esc key is disabled while a word is in the current text area. The following table lists the keys, corresponding actions, a sample key sequence, and changes in the hint area. Enter or Spacebar will place something on the stack or execute if in the interpreter. They will place the word after the cursor if in text entry mode of the editor.
+
+`a-z !@*-+;,.?/`
+:     Enters text.
+:     add
+`0-9`
+:     Enters a number. The number is written in the stack area; not in the current text area.
+`-`
+:     Negates current number. Negates the current number. A digit must be entered before - or it will be entered as text.
+`` (grave accent)`
+:     Forces text for number
+`F1`
+:     Toggles Hex / Decimal
+`Backspace`
+:     Aborts current word
+`Enter / Spacebar`
+:     Enters a word on the stack in the interpreter. Places the current word after the cursor in a block in editor text entry mode. Clears current text after entry.
+`Esc`
+:     Exits text entry mode of editor. NOTE: Current word must be entered or aborted or the key will have no effect.
+
+## Interpreter commands ##
+
+`bye`
+:     closes coloforth
+`e or edit`
+:     enter editor
+`find`
+:     Waits for a second word to be typed then searches for the first occurrence of that word starting from block 18. Find will enter the editor after execution if the word is found. If the word is not found it will stay in the interpreter. Does not find literals.
+`literal (n)`
+:     Same as find but looks for n  as a yellow or green number in either hex or decimal, matching the value and not the representation in either radix
+`def`
+:     Same as find but looks for a (red word) / definition.
+`from (n)`
+:     Same as find but start at block n ie n from
+`c`
+:     Clears stack
+
+## Editor commands ##
+
+S (Shift Lock) comment
+:    Enter comment (white) in capitols 
+  C (Capitalize) comment
+:    Enter comment (white) first letter capitalized
+  t (text) comment
+:    Enter comment (white) all lower case
+  y (yellow) Interpreter
+:    Executes when encountered.  Gets executed during compilation if used inside a definition.
+  r (red) Word
+:    Word definition.  After the word is completed the color switches to green to enter instructions that the word defines.
+  g (green) Default compilation.
+:    Call Forth words or execute macros.
+  x is really an *
+:    Toggles between an even (source) block and odd (shadow) block.  This is normally used to document the associated text.
+  c (change)
+:    Changes color of word that follows cursor.
+  d (definition)
+:    Finds the (red word) / definition of the (green word) / call that is following the cursor.
+  f ( find)
+:    Finds the next word color combination occurrence of the search that was entered from the interpreter.
+  J
+:    Toggles between current block and the last block.  To write a block to the last block, enter <nn> edit from the interpretive mode.  <nn> is the number of the block to be edited. The <nn> block will be the last block and will be toggled with the current block.
+  l (left)
+:    Moves cursor left one word
+  u (up)
+:    Moves cursor up. ( left eight words )
+  d (down)
+:    Moves cursor down. (right eight words)
+  r (right)	
+:    Moves cursor right one word.
+  k (copy)
+:    Copies word to the left of the cursor and places on the stack.
+  - (down block)
+:    Moves down one block of memory
+  m (magenta) variable
+:    Variable name must fit in one cell.  Four characters will always fit in one cell.  The maximum length is seven characters but this depends on Shannon code.
+  c (cyan)
+:    Always compile.  Forces a call to a word.
+  + (up block)
+:    Moves up one block of memory.
+  x (cut)
+:    Deletes word to left of cursor and places on the stack.
+  .	
+:    Returns to interpreter.
+  i (insert)
+:    Pops words off of stack and places to at cursor. 
+  Esc	
+:    Returns to the editor control panel.
+
+##	Search utility ##
+
+This utility, integrated with the editor, facilitates searching the source in several practical and useful ways. When in the interpreter, there are four words for starting a search, and one for continuing it. The words for starting the search are find def from and literal . When a search is started, we begin at block 18 (except in the case of from ) and scan forward looking for the particular target. If it is not found, we remain silently in the interpreter. If it is found, we enter the editor with the cursor set at the target. Once a search has been started, it may be continued from the point of the last target found by using the "f" control panel key, if in the editor, or by typing f if in the interpreter. In either case a find will display a block, while a failure to find will remain silently in whatever environment (editor or interpreter) the continuation was requested.
+The searches continue until the end of nc cylinders. For the interpretive f below, searches continue from the point of last find in that same search. The continuation point is the current cursor position when the editor’s "f" key is used.
+The searches automatically consider only blocks of the same sort (source or shadow) as the block in which the search was started or continued. Thus, all searches start with source only; if they are continued using the interpretive f or if the editor cursor is never changed before using the editor’s "f" key, shadows will never be considered in that search. To search shadows, begin a search, ignore the first find (or no find), edit block 19, and then continue the search with the editor’s "f" key.
+
+`find`
+:     awaits a word from the keyboard and starts a new search for that word.  It will find all instances of that word as a definition (red or magenta), reference (green, yellow or cyan), or any sort of comment.
+`def`
+:     awaits a word from the keyboard and starts a new search for that word, as a definition (red or magenta) only.
+`from (n)`
+:     awaits a word from the keyboard and starts a new search for that word, in any form as in  find  but starting in block  n  instead of block 18.
+`literal (n)`
+:     starts a new search for the value n as a yellow or green number in either hex or decimal, matching the value and not the representation in either radix.
+`f`
+:     continues the most recently started search immediately after the point at which the last target was found in that search.  Due to the new dichotomy between source and shadows, this word is of limited usefulness.
+
+When in the editor, two keys activate word search functions without leaving the editor:
+
+**`"f"`**
+:    control panel key continues the most recently begun search, beginning after the current editor cursor position.  If the current block is source, only source will be searched; if it is a shadow, only shadows.
+ **`"d"`**
+:    control panel key starts a new search based on the word immediately preceding the cursor.
+    *	If the word is a definition (red or magenta) then the new search will be for references (green, yellow, or cyan) to that word.
+    *	If the word is a reference or a comment, then the new search will be for definitions of that word.
+    *	If the word is a literal number, then we do not search as such but simply edit the block by that number.
+
+## Reading and Writing ##
+On activating ColorForth2, the disk image file named OkadWork.cf is read into memory for 1440 blocks, and the file is closed.  From then on you are working with a RAM image of virtual disk.  The actual file is only updated when you explicitly say to do so.
+In the native system, this is done by typing floppy archive .  On the Windows system it is done by typing retain .
+Disk operations have been adjusted to give equivalent functionality on both native and Windows systems.  The following resident operations now exist on both platforms:
+
+`save`
+:     writes the active disk image ( nc  cylinders at block 0) to (native) floppy or (Windows) OkadWork.cf file.  This includes boot, native kernel, icon table and source code.
+`wrtboot`
+:     writes the boot and kernel image from block 0 to a native floppy, as an economical way to update the native kernel on floppy after executing  ati  or  nvidia  in the  floppy  utility.  It does nothing on Windows systems.
+`!back ( n)`
+:     writes nc cylinders to a (native) floppy or (Windows) OkadBack.cf file from RAM block  n .
+`@back ( n)`
+:     reads nc cylinders from a (native) floppy or (Windows) OkadBack.cf file into RAM at block  n .
+`@cyls ( a c n)`
+:     reads  n  cylinders to cell address  a  from cylinder  c  on backup.  For native, the read is direct from floppy.  For Windows, the whole OkadBack.cf  file is read into RAM at block 3000 and then the cylinder(s) in question are copied from there.
+`readme`
+:     reads the two cylinders at  cfuse  from the same cylinders on backup medium, using  @cyls .
+`tapeout`
+:     copies two cylinders of tapeout configuration from  cftape  to  cfuse  within the working RAM image.
+
+
+## Colorforth vocabulary ##
+The following is a description of colorForth words.  The stack effect for each word is placed to the right of the word name. 
+
+The stack effect notation is as follows: 
+* **"("** begins the stack effect and **")"** ends the stack effect.
+* Variables to the left of the "-" are consumed from the stack and variables to the right of the "-" are placed on the stack by the word being described.
+* If there is no "-" preceding the variables they are consumed by the word.
+* If there is a "-" preceding the variables they are produced by the word.
+* As with the variables, flags that are set by words precede "-" and flags that are used by the words are placed after the "-". 
+* Flags, however do not reside on the stack.  Therefore they may not be in a deterministic state unless changed by the previous command. For this reason flags are represented in italics. 
+
+N
+:     Number 
+A
+:     Cell address
+Ba
+:     Byte address
+M
+:     Multiplier
+Q
+:     Quotient
+D
+:     Divisor
+B
+:     Block number
+X
+:     Non specified 1 cell of memory
+R
+:     Remainder
+C
+:     Cylinder or character
+F
+:     Flag
+ZF
+:     Zero flag
+OF
+:     Overflow flag
+CF
+:     Carry flag
+SF
+:     Sign flag
+
+**`! (a)							Macro`**
+:    Store word at address.
+
+**`! (a)`**
+:    Store word at address.
+
+**`!back (b)`**
+:    Writes nc cylinders to a (native) floppy or (Windows) OkadBack.cf file from RAM block b.
+
+**`* (n1 n2 – n3 CF OF)				Macro`**
+:    32 bit product.
+
+**`* (n1 n2 – n3 CF OF)`**
+:    32 bit product
+
+**`*/ (m n d – q CF OF ZF SF	)		Macro`**
+:    64 bit product then quotient.
+
+**`*/ (m n d – q CF OF ZF SF)`**
+:    64 bit product then quotient.
+
+**`+ (n1 n2 – n3 CF OF ZF SF) 		Macro`**
+:    32 bit sum
+
+**`+ (n1 n2 – n3 CF OF ZF SF)`**
+:    32 bit sum
+
+**`+! (n a - CF OF ZF SF)			Macro`**
+:    Adds "n" to the addressed variable.
+
+**`+at (n1 n2 - CF OF ZF SF)		Kernel`**
+:    Adds two sixteen bit numbers from the stack to the variable xy.
+
+**`– (n1 – n2)`**
+:    Ones complement.  Not.
+
+**`–if (SF - SF)					Macro`**
+:    Jumps if previous statement sets sign flag to 0.  Sign flag is not reset or consumed.
+
+**`–offset (n1 – n2 CF OF ZF SF)`**
+:    Fetches offset and subtracts from n1.
+
+**`, (n)						Kernel`**
+:    Lays down 4 bytes of the value given in the dictionary.  
+
+**`. (n)							Kernel`**
+:    Formats a signed number in decimal with leading 0’s suppressed. 
+
+**`;							Macro`**
+:    Exit from a definition.  If immediately preceded by a call turns it into a direct jump.  Otherwise compiles a RET.
+
+**`/ (n d – q CF OF ZF SF)			Macro`**
+:    Divide and do not return remainder.
+
+**`/ (n d – q CF OF ZF SF)`**
+:    Divide and do not return remainder.
+
+**`/mod (n d – r q CF OF ZF SF)		Macro`**
+:    Divide places the quotient at the top of the stack and remainder in the next entry.
+
+**`? (- SF ZF)					Macro`**
+:    Test bits and set flags but only for literals. Does a bitwise and without changing data.
+
+**`?dup (n1 – n1 | n1 n1)			Macro`**
+:    If h (see h) indicates only one byte exists at List, and if that byte is a drop, then h is decremented (List is not changed) and nothing is compiled.  Otherwise we compile a dup.
+
+**`?lit (-ZF(0) | n ZF(1))			Kernel`**
+:    Looks at preceding instructions to see if there is a literal to unravel.  If one is found, it is returned with ZF flag set to 1.  Otherwise returns zero flag set to 0 and no value.  If preceded by DUP literal then kills both dup and the literal; if there is just a literal, it kills the literal and inserts a DROP. 
+NOTE: only macros.
+
+**`@ (a)						Macro`**
+:    Fetch value at address.
+
+**`@ (a)`**
+:    Fetch value at address.
+
+**`@back (b)`**
+:    Reads nc cylinders from a (native) floppy or (Windows) OkadBack.cf file into RAM at block  b
+
+**`@cyls (a c n)`**
+:    Same as reads.  Reads n cylinders to cell address  a  from cylinder  c  on backup.  For native, the read is direct from floppy.  For Windows, the whole OkadBack.cf  file is read into RAM at block 3000 and then the cylinder(s) in question are copied from there.
+
+**`0							Macro`**
+:    Identical to number 0.  Uses XOR to produce value at top of stack.
+
+**`1, (n)						Kernel`**
+:    Lays down 1 byte of the value given in the dictionary in little endian format. 
+
+**`1word (-n)`**
+:    Returns first cell of word.
+
+**`2*	(n1 – n2 SF ZF)				Macro`**
+:    Shift left 1 bit.  Multiply by two.
+
+**`2, (n)						Kernel`**
+:    Lays down 2 bytes of the value given in the dictionary in little endian format.  
+
+**`2/ (n1 – n2 SF ZF CF)			Macro`**
+:    Shift right 1 bit.  Divide by 2.
+
+**`2/ (n1 – n2 SF ZF CF)`**
+:    Shift right 1 bit.  Divide by 2.
+
+**`2emit (n)						Kernel`**
+:    Draws a 2x size character.  Unlike emit there is no check for carriage return.
+
+**`3, (n)						Kernel`**
+:    Lays down 3 byte of the value given in the dictionary in little endian format.  
+
+**`5*`**
+:    Emit letters.
+
+**`7pop							Macro`**
+:    Pop W (EDI).
+
+**`7push						Macro`**
+:    Push W (EDI)
+
+**`a							Macro`**
+:    Moves value at register 2 to register 0.  EDX to EAX.
+
+**`a!							Macro`**
+:    Moves value at register 0 to register 2.  EAX to EDX
+
+**`a, `**
+:    Compile word address.
+
+**`abs (n1 – n2)`**
+:    Returns absolute value.
+
+**`abort						Kernel`**
+:    Terminates execution and goes back to keyboard processing.  Sets editor pointers if  W addresses block 18 or higher.  Empties return stack and resets a number of cells in the spaces list.  Echoes a?.
+
+**`accept						Kernel`**
+:    Sets the keyboard for beginning of an alpha string and begins accepting it.  If first key is not a shift, "first" changes active shift table to the next one defined in memory; accepts a new Shannon coded string; does what is appropriate with it in aword ; and accepts the next string.
+
+**`align						Macro`**
+:    Aligns next call to end on word boundry.
+
+**`altfrm`**
+:    Byte address of alternate frame.
+
+**`and (n1 n2 – n3 ZF SF)			Macro`**
+:    Bitwise and. Zero flag and sign flag are set accordingly.
+
+**`aper (-a)						Kernel`**
+:    Byte address of aperture used for screen refresh
+
+**`at (n1 n2)					Kernel`**
+:    Moves two sixteen bit numbers from the stack to the xy location in memory.   Sets cursor location to given pixel coordinates.
+
+**`b! (n ba)						Macro`**
+:    Store n in literal byte address ba.
+
+**`beep`**
+:    Return;
+
+**`black`**
+:    Black foreground
+
+**`blk 							Kernel`**
+:    Variable used for current block number being edited. 
+
+**`blks (n1 – n2)`**
+:    Multiplies number by 256.   256 is the number of words/block.
+
+**`block (n – a)`**
+:    Returns word address of a given block number.
+
+**`blue`**
+:    Blue. Foreground.
+
+**`boot							Kernel`**
+:    Pulls the CPU reset line using the keyboard processor output port pin attached to same.
+
+**`box	(n1 n2)					Kernel`**
+:    Draws a solid box from upper left corner (cursor position xy) to lower right corner just inside absolute position limx limy limiting limx limy to screen size before start of arithmetic.
+
+**`bswap (n1 – n2)				Macro`**
+:    Swap byts.
+
+**`buffer						Kernel`**
+:    Variable used as a four byte memory buffer.
+
+**`bye							Kernel`**
+:    Terminates colorForth in an orderly fashion so that it may be called from and return to a BAT file.
+
+**`c							Kernel`**
+:    Empties data stack for keyboard task ONLY - first cell to be stored into the stack goes at keyd.
+
+**`cbg`**
+:    Change to big green.  Toggle decimal to hex.
+
+**`cbw`**
+:    Command block wrapper.
+
+**`cby`**
+:    Change to big yellow.  Toggle decimal to hex.
+
+**`cad (- a)`**
+:    Adds 3 to blk (current block).  Kernel hook to cursor address variable.
+
+**`cf`**
+:    Displays double size colorForth.
+
+**`change`**
+:    Change color of word behind cursor.  See section 3 colorforth human interface.
+
+**`clog								Kernel`**
+:    Closes the file.
+
+**`color (n)							Kernel`**
+:    Sets foreground for the given pixel value.
+
+**`comment`**
+:    Find white word in OKAD.  See section 3 colorforth human interface.
+
+**`copy (n) 							Kernel`**
+:    Copies the current block and shadow to block to the given block number, n, leaving the editor set to the destination block.  It will not copy anything to a block number less than 12.    
+
+**` cpoint							Kernel`**
+:    Variable is a vector for post 18 LOAD cursor correction on abort.
+
+**`curs 							Kernel`**
+:    Cursor position (absolute cell address).
+
+**`cr 								Kernel`**
+:    Invokes a "carriage return" by moving xy down ih pixels and left to l.
+
+**`csg`**
+:    Change word behind cursor to small green.
+
+**`csw (a n f)`**
+:    Command status wrapper.  Increment cbw tag.
+
+**`csy`**
+:    Change word behind cursor to small yellow.
+
+**`ctg`**
+:    Change word behind cursor to green.
+
+**`ctt`**
+:    Change word behind cursor to text (white).
+
+**`cty`**
+:    Change word behind cursor to yellow.
+
+**`debug 							Kernel`**
+:    Sets cursor position to …Then displays four numbers:  Keyboard task saved return stack pointer, top value on return stack, value of scr, and the running task's data stack pointer.
+
+**`def`**
+:    Find definition.  See section 3 Colorforth human interface.
+
+**`device (n - a)						Kernel`**
+:    Device searches for a PCI device class whose number is aligned in the high octet of the argument, returning the base of its configuration registers.  It searches downward starting at the literal address for literal number of steps, indexing device number field.  If no match, returns the last device that was examined.  This is why not finding the display often crashes the machine.
+
+**`digit (n)							Kernel`**
+:    Displays a digit value.
+
+**`drop (n)							Kernel`**
+:    (LODS instruction) Removes the top entry of the stack
+
+**`dup (n1 – n1 n1)					Kernel`**
+:    Duplicates the number on the top of the stack.
+
+**`dup (n1 – n1 n1)`**
+:    Duplicates the number on the top of the stack
+
+**`e (n)							Kernel`**
+:    Starts editor in block n.  If the block number is not provided the editor starts in block 18. 
+
+**`edit (n)							Kernel`**
+:    Starts editor in block n.  If the block number is not provided the editor starts in block 18. 
+
+**`ekt 								Kernel`**
+:    Variable containing vectors for editor keys beginning with null and the shift keys.  Then follows right hand top, middle, bottom rows, and left hand top, middle, bottom rows.
+
+**`emit (n)							Kernel`**
+:    Emit draws the character code given at the position xy using 16x24 patterns in icons with fore pixel value, updating  xy .  It checks for carriage return before start.
+
+**`empt								Kernel`**
+:    Restores the forget point in mk and sets class zero.
+
+**`empty`**
+:    Empties dictionary and displays logo.
+
+**`end (a)							Macro`**
+:    Jump to begin.
+
+**`erase (b n)						Kernel`**
+:    Stores zeroes into a string of blocks starting at b for n consecutive blocks.  Shadows are included
+
+**`f`**
+:    Find next occurrence after a find is executed.  See section 3 Colorforth human interface. 
+
+**`fall`**
+:    Find all words regardless of color.  See section 3 Colorforth human interface.
+
+**`fifo (n)							Kernel`**
+:    Synonym for drop.  Removes top stack entry.
+
+**`fill (n1 a n2)`**
+:    Writes n1 into a cell string address. Writes the third stack entry into the address that is in the second stack entry.
+
+**`find`**
+:    Finds a forth (green) word explained in cF user interface.  Following short compiled word blocks 18 through number of cylinders searched for a 32 bit match that means 1st 4 bytes of name.
+
+**`fk`**
+:    Key in edit keyboard.  Drops key and block number.
+
+**`fkc`**
+:    Find def of word to left of cursor.
+
+**`format (a c – a c)					Kernel`**
+:    formatf  is given cell address a of a format command under a cylinder number, with a cylinder's worth of format data in  buffer . Sets DMA for write from the buffer, sets cylinder in command and ensures motor running, executes the format command, then resets DMA for a cylinder write.
+This is a noop in Windows.  The reason is explained in section TBD.
+
+**`forth 							Kernel`**
+:    Sets state of system so that subsequent definitions are regular forth definitions and can be used by the interpreter unlike macros.
+Forth sets aDEFINE to forthd. The definition behavior is to add an entry to the forth dictionary as appropriate.  The encoded name is taken from the cell preceding the cell address in W.  The value for the definition is the contents of H.  Last is left holding the cell address of the dictionary pointer table just filled.  List is set to the address past the call to this function. lit is reset to adup.  Finally if class is nonzero, we jump off to it rather than returning.  On normal exit, 1 is bytadr of new name in dictionary, 2 is celladr of value field.
+
+**`for 							Macro`**
+:    Push count onto the return stack begin. 
+
+**`fov								Kernel`**
+:    fov is an abstract scale factor used in some applications.
+
+**`freeze							Kernel`**
+:    freeze  is a simple graphic process.  Usage is: : defn ...  freeze <thingstodo> ; The graphic task will endlessly do <thingstodo>. screen is the address of the thingstodo.
+
+**`from (n)`**
+:    From is the same as find but searches from a specific block number n.  See section 3 colorforth human interface.
+
+**`graphic 							Kernel `**
+:    Graphic is a no-op that is called from show.  It looks as though either it is never used or show would have to be patched.
+
+**`green`**
+:    Green foreground
+
+**`h 								Kernel`**
+:     Variable containing byte address of next available location in the dictionary.   here returns this address.
+
+**`h. (n)							Kernel`**
+:    Displays an 8 digit hex number.     
+
+**`h.n (n1 n2)						Kernel`**
+:    Displays the low order w hex digits of a number.
+
+**`here (a) 						Kernel`**
+:    Returns location counter H without destroying list.
+
+**`hsvv 							Kernel`**
+:    hsvv is stuffed from colorForth code with byte addresses and values by hardsim.
+
+**`i								Macro`**
+:    Copy loop index to data stack
+
+**`if (ZF - ZF)						Macro`**
+:    Jumps if previous statement is 0 or equal.  If does not reset or consume the zero flag.
+
+**`jump (n)							Kernel`**
+:    Jump implements a transfer vector.  Usage: i jump zero one two three.... Indexes the ith call and makes a jump to the routine in question.  Jump exits the calling definition as well.   
+
+**`keyboard 						Kernel`**
+:    Displays keyboard mapping in lower right of display.
+
+**`key?`**
+:    Exits calling definition if key is struck.
+
+**`last							Kernel`**
+:    ?  last  0 ,   ( must follow H till patch in 150 fixed)
+
+**`less (n1 n2 – n1 n2 ZF) 			Kernel`**
+:    Execution time behavior for  < .
+
+**`line	(n1 n2)					Kernel`**
+:    Line draws a line of fore pixels, n2 pixels long, starting at the cursor position xy adjusted to the left by 2 n1 pixels. Line advances the cursor downward one pixel afterward.
+
+**`lit (n)`**
+:    Finds compiled literal.  See section 3 Colorforth human interface.
+
+**`lm (n)							Kernel`**
+:    Lm sets the left margin.   
+
+**`load (b)							Kernel`**
+:    Sets the interpreter pointer to the start of the given block and begins interpreting it.
+
+**`loads (b n)`**
+:    Load block b and n successive blocks. NOTE: This will load successive executable blocks shadows are not counted (ie 2 96 loads will load blocks 96 and 98).
+
+**`logo`**
+:    Displays colorForth logo.
+
+**`loop							Macro`**
+:    repeat
+
+**`macro 							Kernel`**
+:    Sets state of system so that subsequent definitions are regular macro definitions and are not executable from the interpreter as forth commands are.
+Forth sets aDEFINE to macrod. The definition behavior is to add an entry to the macro dictionary as appropriate.  The encoded name is taken from the cell preceding the celladdr in W.  The value for the definition is the contents of H.  last is left holding the cell address of the dictionary pointer table just filled.  List is set to the address past the call to this function. lit is reset to adup.  Finally if class is nonzero, we jump off to it rather than returning.  On normal exit, 1 is bytadr of new name in dictionary, 2 is the cell address of value field.
+
+**`mark 							Kernel`**
+:    Saves a forget point in mk - #macros, #forths, and H.
+
+**`max	(n1 n2 – n)`**
+:    Returns maximum value.
+
+**`min	(n1 n2 – n)`**
+:    Returns minimum value
+
+**`minute`**
+:    Minutes past midnight.
+
+**`mod (n d – r)						Macro`**
+:    Divide but only return remainder
+
+**`move (a1 a2 n)`**
+:    Copies contents of address a1, which is the third entry in the stack, into address a2, which is in the second entry in stack. 
+
+**`negate (n1 – n2)`**
+:    Negates value 2’s complement.
+
+**`next (a – SF OF ZF)			Macro`**
+:    Decrement count.  Jump if not zero to for. Pop return stack. 
+
+**` nc 						Kernel`**
+:    Variable containing number of cylinders.
+
+**`nip (n1 n2 n3 – n1 n3)			Macro`**
+:    Removes the second entry in the stack.
+
+**`nop							Macro`**
+:    No operation
+
+**`null`**
+:    Return.  Useful as null jump word.
+
+**`octant (p q - p q n)			Kernel`**
+:    ?
+
+**` offset						Kernel`**
+:    Offset is a block number added to all regular uses of BLOCK.
+
+**`ok`**
+:    Start register display.
+
+**`olog						Kernel`**
+:    Olog opens a file by the name OkadSim.log which will be created if not there, and which will be truncated if it exists.  Due to new clib extra argument, if it is created it will probably be read only.  
+
+**`or (n1 n2 – n3 OF CF ZF SF)		Macro`**
+:    or is an exclusive or,  xor. OF and CF are always set to 0.  ZF and SF are set according to the result.
+
+**`or! (n1 a - OF CF ZF SF)		Macro`**
+:    Bitwise or with location in memory.  OF and CF are always set to 0.  ZF and SF are set according to the result.
+
+**`over (n1 n2 n3 – n1 n2 n3 n2)	Macro`**
+:    Copies 2nd entry in stack to top of stack.
+
+**`p@							Macro`**
+:    Read register.
+
+**`pad 						Kernel `**
+:    pad is Chuck's best redesign of the control pad definition mechanism as of the time he stopped maintaining the kernel.
+
+**`pause						Kernel`**
+:    Gives up the machine.  Saved state for current task is who called pause, data stack pointer on return stack, and R saved in the ROUND table.
+
+**`pci (a – n)					Kernel `**
+:    Pci fetches a cell from PCI configuration space given address.  Uses Config Mechanism 1 as defined by PCI Local Bus Spec 2.0     
+
+**`pop (-n) 					Macro`**
+:    Pops return stack to top of data stack.
+
+**`push (n)						Macro`**
+:    Pushes top of data stack on to top of return stack
+
+**`rback (b – n)					Kernel`**
+:    Reads OkadBack.cf to RAM block b for n blocks.
+
+**`reclr`**
+:    Recolor cycles yellow green white
+
+**`read (c a - `c `a)			Kernel`**
+:    Reads the given cylinder into the given CELL address, returning both incremented for the next cylinder.
+
+**`reads (a c n)`**
+:    Reads  n  cylinders to cell address  a  from cylinder  c  on backup.  For native, the read is direct from floppy.  For Windows, the whole  OkadBack.cf  file is read into RAM at block 3000 and then the cylinder(s) in question are copied from there.
+
+**`red`**
+:    Red foreground
+
+**`rm (n)						Kernel`**
+:    Sets right margin.
+
+**`ruu`**
+:    Boot.
+
+**`save`**
+:    Write entire image. Save all changes made during current OKAD session.  When OKAD is restarted the changes will be present.
+	save writes the active disk image ( nc  cylinders at block 0) to (native) floppy or (Windows) OkadWork.cf file.  This includes boot, native kernel, icon table and source code.
+
+**`screen`**
+:    Produces a 1024x768 screen of current color.
+
+**`serve 						Kernel`**
+:    Serve is a simple receive process, endlessly performing PAUSE <thingstodo>  where the latter is in  receive. 
+
+**`sec`**
+:    Seconds past midnight.
+
+**`show						Kernel`**
+:    Show  is a simple graphic process.  Usage is: : defn ...  show <thingstodo> ;  The graphic task will endlessly do <thingstodo> switchm graphic is a fixed nop; switchm refreshes screen and PAUSEs.
+
+**`silver`**
+:    Silver foreground.
+
+**`sp							Kernel`**
+:    sp is the vector table for token types while interpreting.  It is initialized later; some cells stuffed as state changes during compile/interpret; and these are reset on abort.	 
+
+**`space						Kernel`**
+:    Advances cursor,  xy, by one character.   
+
+**`swap						Macro`**
+:    Exchanges top of stack with next entry.
+
+**`stop 						Kernel`**
+:    Stops the floppy motor and points trash floppy buff.
+
+**`switch						Kernel`**
+:    switch in the native system copies RAM bitmap into the graphic frame buffer.  For functional equivalence, in Windows we invalidate the entire current window and call for a complete update from our DIB.
+
+**`t,`**
+:    Compile word into workspace.
+
+**`td (a n)`**
+:    Transfer descriptor.
+
+**`text 							Kernel `**
+:    Makes word white
+
+**`tic (–ba)						Kernel`**
+:    Tic used at keyboard or interpretively only; returns byte address of a Forth word.  To use type tic and hit space.  Tic will search for this word and leave it’s address on the stack.  See section 1.
+
+**`time (n1)						Macro`**
+:    Current value of processor time stamp. Pentium cycle counter, calibrate to actual clock rate.
+
+**`top							Kernel `**
+:    Sets xy and xycr to (lm, vs).
+
+**`trash							Kernel`**
+:    ???????   LABEL trash  buffer 4* ,
+
+**`tsim 							Kernel `**
+:    tsim replaces type in the transistor simulation loop.  Sets W and obtains contact voltages.  On completion processes delta charge. 
+
+**`u+ (n3 n2 n1 – n4 n2)				Macro`**
+:    Adds top of stack to third entry.  n4 = n3 + n1.
+
+**`unpack (w - w' c)					Kernel`**
+:    unpack removes the leftmost / high order Shannon coded cF character from the packed cell given.	 
+
+**`v+ (v1 v2 – v3)`**
+:    Adds a 2 dimensional vector.  v = (x,y). 
+
+**`vesa							Kernel`**
+:    Vesa  is a mode number for INT 10 4F02.  Bit 14 means use linear flat frame buffer.  Mode number is VESA-defined (Ralf Brown):4118 is 1024x768x16m  4123 is not standard - 1600x1200x16m?? Note 411B is 1280x1024x16m  Note that DAC may be limited to 6 bits after mode set, may need to do 4F08 afterward  4118 seems to be 24 bit not 32 bit 888wadr (-a) Address of word behind cursor.
+
+**`warm							Kernel `**
+:     warm is in the dictionary; analogous to  RELOAD. 
+
+**`wback (b n)						Kernel`**
+:    wback writes RAM block b for n blocks to start of OkadBack.cf
+
+**`white`**
+:    White foreground.
+
+**`winver (- t | f)					Kernel`**
+:    winver returns 1 if windows version, 0 if native, with indicators set for  if .
+
+**`wlog (a n1)						Kernel`**
+:    wlog writes a string into the file given *byte* address and *byte* count.
+
+**`word ( *)						Kernel`**
+:    Accepts a cF word from keyboard and returns  words  cells of Shannon coded characters on the stack.         
+
+**` write ( a c - a' c')				Kernel`**
+:    Writes the given cell address to the given cyl and incrs
+
+**`writes`**
+:    Address, cylinder, cylinder count
+WARNING: Do not hit any keys while floppy is being written.
+
+**`wrtboot`**
+:    Writes boot and kernel. wrtboot writes the boot and kernel image from block 0 to a native floppy, as an economical way to update the nativekernel on floppy after executing  ati  or  nvidia  in the  floppy  utility.  It does nothing on Windows systems.
+
+**`xy  							Kernel`**
+:    xy position vector for text display cursor, packed halfcell values y first x second so that fetched as a cell it looks like xy.
+
+**`yel`**
+:    Find yellow word.  See section 3 colorforth human interface.
