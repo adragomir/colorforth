@@ -775,7 +775,6 @@ abort:
   add    edi, 18
 
   mov [blk], edi
-  call debug_dumpregs
 
 abort1: 
   mov esp, top_main_return_stack ; [RST]
@@ -1371,7 +1370,7 @@ align 4
 spaces:
   dd qignore, execute, num        ; colors 0..2
 adefine:
-  dd forthd          ; color 3 ; TODO is forthd + 5
+  dd 5 + forthd          ; color 3 ; TODO is forthd + 5
     ; This is altered by sdefine, which stores the
     ; address of either macrod (to define a MACRO
     ; word) or forthd (to define a FORTH word) here.
@@ -2260,31 +2259,31 @@ keyboard:
   mov eax, [keyc]
   call color
   ; left margin = keyboard_hud_x
-  mov dword [rm], horizontal_chars * char_width
   mov dword [lm], screen_width - 30 * char_width - 3
-  mov dword [xy], (screen_width - 30 * char_width - 3) * 0x1000 + screen_height - 2 * char_height - 3
+  mov dword [rm], horizontal_chars * char_width
+  mov dword [xy], (screen_width - 30 * char_width - 3) * 0x10000 + screen_height - 2 * char_height - 3
   ; display finger keys
   mov edi, [board]
   test   edi,edi		; QWERTY
   jz     .0			; QWERTY
   call   fkeys		; QWERTY
-.0:
-  ; display thumb keys (leave a blank line, move 4 chars in).
-  call cr
-  add dword [xy], 25 * char_width * 0x10000
-  mov edi, [shift]
-  add edi, byte 16
-  mov ecx, 3
-  call nchars
-  ; display top element of stack (if any), at left.
-  mov dword [lm], char_padding
-  mov word [xy + 2], char_padding
-  call stack
-  ; display input history just to the left of keyboard display
-  mov word [xy + 2], screen_width - char_padding - (history_size + keyboard_hud_width) * char_width
-  lea edi, [history]
-  mov ecx, history_size
-  jmp nchars
+  .0:
+    ; display thumb keys (leave a blank line, move 4 chars in).
+    call cr
+    add dword [xy], 25 * char_width * 0x10000
+    mov edi, [shift]
+    add edi, byte 16
+    mov ecx, 3
+    call nchars
+    ; display top element of stack (if any), at left.
+    mov dword [lm], char_padding
+    mov word [xy + 2], char_padding
+    call stack
+    ; display input history just to the left of keyboard display
+    mov word [xy + 2], screen_width - char_padding - (history_size + keyboard_hud_width) * char_width
+    lea edi, [history]
+    mov ecx, history_size
+    jmp nchars
 
 
 ; Editor
