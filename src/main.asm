@@ -149,6 +149,12 @@ host_read_icons_file:
 
 host_read_blocks_file:
   host_read_file blocks
+  ; recompute nc
+  mov eax, dword [blocks_file_stat.st_size]
+  xor edx, edx
+  mov ecx, dword 18 * 1024
+  div ecx
+  mov [nc], eax
   ret
 
 host_write_backup_blocks_file:
