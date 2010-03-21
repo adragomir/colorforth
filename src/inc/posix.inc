@@ -49,6 +49,23 @@ extern _atexit
 %define	O_RDONLY	0
 %define	O_WRONLY	1
 %define	O_RDWR	2
+%define	O_CREAT		0x0200
+%define	O_TRUNC		0x0400
+
+;;;;;;; open other flags
+%define	S_IRWXU		0000700	 ;/* [XSI] RWX mask for owner */
+%define	S_IRUSR		0000400	 ;/* [XSI] R for owner */
+%define	S_IWUSR		0000200	 ;/* [XSI] W for owner */
+%define	S_IXUSR		0000100	 ;/* [XSI] X for owner */
+%define	S_IRWXG		0000070	 ;/* [XSI] RWX mask for group */
+%define	S_IRGRP		0000040	 ;/* [XSI] R for group */
+%define	S_IWGRP		0000020	 ;/* [XSI] W for group */
+%define	S_IXGRP		0000010	 ;/* [XSI] X for group */
+%define	S_IRWXO		0000007	 ;/* [XSI] RWX mask for other */
+%define	S_IROTH		0000004	 ;/* [XSI] R for other */
+%define	S_IWOTH		0000002	 ;/* [XSI] W for other */
+%define	S_IXOTH		0000001	 ;/* [XSI] X for other */
+
 
 ;;;;;;; mmap flags
 %define	PROT_NONE	0

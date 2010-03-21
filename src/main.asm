@@ -6,19 +6,16 @@
 %include "debug_dumpregs.inc"
 
 section .data
-  str_error_open_block_file db "Can't open blocks file OkadWork.cf", 0Ah, 0
-  str_error_stat_block_file db "Can't stat blocks file OkadWork.cf", 0Ah, 0
-  str_error_mmap_block_file db "Can't mmap blocks file OkadWork.ch", 0Ah, 0
-
+  str_icons_file db 'data/icons', 0
   str_blocks_file db 'data/OkadWork.cf', 0
   str_backup_blocks_file db 'data/OkadBack.cf', 0
-  str_icons_file db 'data/icons', 0
 
 section .bss 
   rstruct SDL_Surface, surface  
   rstruct SDL_Event, event
-  rstruct stat, blocks_file_stat
   rstruct stat, icons_file_stat
+  rstruct stat, blocks_file_stat
+  rstruct stat, backup_blocks_file_stat
 
 ; This version of colorforth has three tasks; main (the accept loop),
 ; draw (user defined), and serve (also user defined).  Each has two
@@ -113,46 +110,53 @@ host_exit_fail:
   syscall SYS_exit, 1
   ret
 
-icons_address: dd 0
 icons_fd: dd 0
-blocks_address: dd 0
+icons_address: dd 0
 blocks_fd: dd 0
+blocks_address: dd 0
+backup_blocks_fd: dd 0
+backup_blocks_address: dd 0
 
-host_read_icon_file:
+%macro host_read_file 1
   ; open
-  syscall SYS_open, str_icons_file, O_RDWR
-  mov dword [icons_fd], dword eax
+  syscall SYS_open, str_ %+ %1 %+  _file, O_RDONLY
+  mov dword [%1 %+ _fd], dword eax
   ;file stat: find file size
-  syscall SYS_fstat, dword[icons_fd], icons_file_stat ; pass the address, NOT the value
-  mov	ecx, dword [icons_file_stat.st_size]
+  syscall SYS_fstat, dword[%1 %+ _fd],  %1 %+ _file_stat ; pass the address, NOT the value
+  mov	ecx, dword [%1 %+ _file_stat.st_size]
   ; open memory that will contain the contents
-  syscall SYS_mmap, dword 0, ecx, PROT_READ | PROT_WRITE, MAP_ANON, dword 0, dword 0
-  mov dword [icons_address], eax
+  syscall SYS_mmap, dword 0, ecx, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_ANON, dword 0, dword 0
+  mov dword [%1 %+ _address], eax
   ;read the contents
-  syscall SYS_read, dword [icons_fd], dword [icons_address], dword [icons_file_stat.st_size]
+  syscall SYS_read, dword [%1 %+ _fd], dword [%1 %+ _address], dword [%1 %+ _file_stat.st_size]
   ; close the file
-  syscall SYS_close, dword [icons_fd]
+  syscall SYS_close, dword [%1 %+ _fd]
+%endmacro
+
+%macro host_write_file 2
+  ; open
+  syscall SYS_open, str_ %+ %1 %+  _file, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR
+  mov dword [%1 %+ _fd], dword eax
+  ;read the contents
+  syscall SYS_write, dword [%1 %+ _fd], dword [%2 %+ _address], dword [%2 %+ _file_stat.st_size]
+  ; close the file
+  syscall SYS_close, dword [%1 %+ _fd]
+%endmacro
+
+host_read_icons_file:
+  host_read_file icons
   ret
 
 host_read_blocks_file:
-  ; open
-  syscall SYS_open, str_blocks_file, O_RDONLY
-  mov dword [blocks_fd], dword eax
-  ;file stat: find file size
-  syscall SYS_fstat, dword[blocks_fd], blocks_file_stat ; pass the address, NOT the value
-  mov	ecx, dword [blocks_file_stat.st_size]
-  ; open memory that will contain the contents
-  syscall SYS_mmap, dword 0, ecx, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_ANON, dword 0, dword 0
-  mov dword [blocks_address], eax
-  ;read the contents
-  syscall SYS_read, dword [blocks_fd], dword [blocks_address], dword [blocks_file_stat.st_size]
-  ; close the file
-  syscall SYS_close, dword [blocks_fd]
+  host_read_file blocks
   ret
-  
-host_load_files:
-  call host_read_icon_file
-  call host_read_blocks_file
+
+host_write_backup_blocks_file:
+  host_write_file backup_blocks, blocks
+  ret
+
+host_write_blocks_file:
+  host_write_file blocks, blocks
   ret
 
 ; in:  ecx - size
@@ -169,7 +173,10 @@ host_alloc_buffers:
 
 _main:
   call debug_dumpregs
-  call host_load_files
+
+  call host_read_icons_file
+  call host_read_blocks_file
+
   call host_alloc_buffers
   call host_alloc_display
   jmp start1
@@ -1369,6 +1376,7 @@ forth_words_names:
   dd ((((_w<<7|_b)<<4|_a)<<5|_c)<<7|_k)<<4; wback (b n)
   dd (((((_w<<4|_i)<<4|_n)<<7|_v)<<4|_e)<<4|_r)<<4; winver (- t | f)
   dd (((_w<<5|_l)<<4|_o)<<5|_g)<<13; wlog (a n1)
+  dd (((((_r<<4|_e)<<4|_t)<<4|_a)<<4|_i)<<4|_n)<<8; retain
  
 
 num_of_forth_words  equ ($ - forth_words_names) / 4 ; number of forth words in the kernel
@@ -1455,11 +1463,18 @@ forth_words_addresses:
   dd host_notimpl; wback (b n)
   dd winver; winver (- t | f)
   dd host_notimpl; wlog (a n1)
+  dd retain; retain()
 
 ; Utilities
 
 ; General-purpose routines
  
+retain:
+  pushad
+  call host_write_blocks_file
+  popad
+  ret
+
 winver:
   DUP_
   mov eax, 1
