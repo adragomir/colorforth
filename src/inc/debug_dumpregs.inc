@@ -36,20 +36,21 @@ debug_asciidigit:
 ;
 debug_printhex:
   pushad ; save a copy of the registers
+
   mov edi, eax ; save a copy in edit
   mov cl, 28 ; start with 4 bits
   mov esi, 0 ; starting array pointer
 
-debug_hexloop1:
-  ror eax, cl ; rotate bits in eax right by amount in cl, a multiple of 4
-  and al, 00001111b ; clear top 4 bits 
-  call debug_asciidigit   ; convert to ascii 
-  mov [debug_tmpbytes + esi], al ; copy our value in to the array
-  inc esi           ; increment array pointer
-  mov eax, edi      ; restore copy
-  sub cl, 4         ; decrement four from the bit rotation
-  cmp cl, 0         ; compare to 28
-  jge debug_hexloop1 ; if greater then or equal to then continue (signed)
+  .debug_hexloop1:
+    ror eax, cl ; rotate bits in eax right by amount in cl, a multiple of 4
+    and al, 00001111b ; clear top 4 bits 
+    call debug_asciidigit   ; convert to ascii 
+    mov [debug_tmpbytes + esi], al ; copy our value in to the array
+    inc esi           ; increment array pointer
+    mov eax, edi      ; restore copy
+    sub cl, 4         ; decrement four from the bit rotation
+    cmp cl, 0         ; compare to 28
+    jge .debug_hexloop1 ; if greater then or equal to then continue (signed)
 
   syscall SYS_write, 1, debug_tmpbytes, 8
 
@@ -68,16 +69,16 @@ debug_convhex:
   mov cl, 28 ; start with 4 bits
   mov esi, 0 ; starting array pointer
 
-debug_convloop1:
-  ror eax, cl ; rotate bits in eax right by amount in cl, a multiple of 4
-  and al, 00001111b ; clear top 4 bits 
-  call debug_asciidigit   ; convert to ascii 
-  mov [ebx + esi], al ; copy our value in to the array
-  inc esi           ; increment array pointer
-  mov eax, edi      ; restore copy
-  sub cl, 4         ; decrement four from the bit rotation
-  cmp cl, 0         ; compare to 28
-  jge debug_convloop1 ; if greater then or equal to then continue (signed)
+  .debug_convloop1:
+    ror eax, cl ; rotate bits in eax right by amount in cl, a multiple of 4
+    and al, 00001111b ; clear top 4 bits 
+    call debug_asciidigit   ; convert to ascii 
+    mov [ebx + esi], al ; copy our value in to the array
+    inc esi           ; increment array pointer
+    mov eax, edi      ; restore copy
+    sub cl, 4         ; decrement four from the bit rotation
+    cmp cl, 0         ; compare to 28
+    jge .debug_convloop1 ; if greater then or equal to then continue (signed)
 
   pop esi
   pop edi
@@ -88,6 +89,7 @@ debug_convloop1:
 ; dump out the registers
 ;
 debug_dumpregs:
+  pushfd
   pushad ; first copy to return
   pushfd ; save a copy of the cpu flags
   pushad ; second copy for us to pop off
@@ -97,22 +99,21 @@ debug_dumpregs:
   mov ecx, 8
   mov edi, 0
 
-debug_regsloop:
-  pop eax  ; pop the first value off the stack
-  push ecx ; push counter onto the stack
-  push eax ; push the contents back on because we have to use eax
+  .debug_regsloop:
+    pop eax  ; pop the first value off the stack
+    push ecx ; push counter onto the stack
+    push eax ; push the contents back on because we have to use eax
 
-  mov ecx, debug_str_myregs ; what register?
-  add ecx, edi    ; pointer for debug_str_myregs
-  ;syscall SYS_write, 1, ecx, 4
-  pop eax       ; ok now lets get the value to print
-  call debug_printhex ; print out the contents of eax in hex 
-  call debug_space    ; print a debug_space
+    mov ecx, debug_str_myregs ; what register?
+    add ecx, edi    ; pointer for debug_str_myregs
+    ;syscall SYS_write, 1, ecx, 4
+    pop eax       ; ok now lets get the value to print
+    call debug_printhex ; print out the contents of eax in hex 
+    call debug_space    ; print a debug_space
 
-  pop ecx       ; lets get the counter back
-  ;call debug_newline
-  add edi, 4
-  loop debug_regsloop
+    pop ecx       ; lets get the counter back
+    add edi, 4
+    loop .debug_regsloop
 
   call debug_newline
 
@@ -147,5 +148,6 @@ debug_regsloop:
 
   ; restore original values
   popad ; restore original copy of the registers
+  popfd
   ret
 

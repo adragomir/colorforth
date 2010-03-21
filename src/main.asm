@@ -178,13 +178,16 @@ host_alloc_buffers:
   ret
 
 _main:
-  call debug_dumpregs
+  debug_print "Starting up", 0xa, 0x0
+  mov eax, 1
+  test eax, 2
 
   call host_read_icons_file
   call host_read_blocks_file
 
   call host_alloc_buffers
   call host_alloc_display
+  debug_print "Jump to start1...", 0xa, 0x0
   jmp start1
 
 host_notimpl:
@@ -318,6 +321,7 @@ start1:
     ; load block 18, and start the colorforth system
     mov eax, 18
     call load
+    debug_print "After load...", 0xa, 0x0
     jmp accept
 
 
@@ -581,6 +585,7 @@ sdefine:
 
 ;Points word-definition vector at macrod
 macro:
+  debug_print "call macro", 0xa, 0x0
   call sdefine
   ; Does NOT fall through to macrod.
 
@@ -597,6 +602,7 @@ macrod:
 
 ;Points word-definition vector at forthd.
 forth:
+  debug_print "call forth", 0xa, 0x0
   call sdefine
   ; Does NOT fall through to forthd.
 
@@ -1104,6 +1110,8 @@ jump:
 
 load:
 ; ( b -- ) Interprets pre-parsed words in the block given.
+  debug_print "Load Blocks address", 0xa, 0x0
+  call debug_dumpregs
   sub eax, 18 ; block, delete 18, because we don't have binary content
   shl eax, 10-2 ; multiply by 256
   mov ebx, [blocks_address] ; ebx contains the ADDRESS of the block contents
@@ -1383,6 +1391,8 @@ forth_words_names:
   dd (((((_w<<4|_i)<<4|_n)<<7|_v)<<4|_e)<<4|_r)<<4; winver (- t | f)
   dd (((_w<<5|_l)<<4|_o)<<5|_g)<<13; wlog (a n1)
   dd (((((_r<<4|_e)<<4|_t)<<4|_a)<<4|_i)<<4|_n)<<8; retain
+  dd (((((_e<<4|_n)<<7|_d)<<4|_r)<<4|_a)<<5|_m)<<4; endram
+  dd ((((_k<<4|_e)<<5|_y)<<5|_c)<<7|_h)<<4; keych
  
 
 num_of_forth_words  equ ($ - forth_words_names) / 4 ; number of forth words in the kernel
@@ -1461,7 +1471,7 @@ forth_words_addresses:
   dd host_notimpl; clog
   dd host_notimpl; cpoint
   dd host_notimpl; graphic
-  dd host_notimpl; offset
+  dd offset_; offset
   dd host_notimpl; olog
   dd host_notimpl; rback (b – n)
   dd host_notimpl; tic (–ba)
@@ -1470,6 +1480,9 @@ forth_words_addresses:
   dd winver; winver (- t | f)
   dd host_notimpl; wlog (a n1)
   dd retain; retain()
+  dd endram_; endram
+  dd keych_; keych
+
 
 ; Utilities
 
@@ -1482,9 +1495,10 @@ retain:
   ret
 
 winver:
+  debug_print "called winver", 0xa, 0x0
   DUP_
   mov eax, 1
-  test eax, 1
+  test eax, 2
   ret
 
 erase:
@@ -1647,6 +1661,24 @@ ekeys_:
 trash_:
   DUP_
   mov eax, trash
+  shr eax, 2
+  ret
+
+offset_:
+  DUP_
+  mov eax, offset
+  shr eax, 2
+  ret
+
+keych_:
+  DUP_
+  mov eax, keych
+  shr eax, 2
+  ret
+
+endram_:
+  DUP_
+  mov eax, endram
   shr eax, 2
   ret
 
@@ -2338,6 +2370,7 @@ getkey:
   push ebx
   mov ebx, [event.key.keysym.scancode]
   mov eax, [sdl_scancode_to_raw + ebx]
+  mov [keych], eax
   pop ebx
   and eax, 0ffh ; get rid of high bits
   jz getkey
@@ -2476,6 +2509,7 @@ key0:
     xor	eax, eax
     call dopause
     call getcfkey
+    debug_print "Key, got key", 0xa, 0x0
     cmp al, 3ah			; limit to 39
     jnc key0
     add eax, eax		; double to account for shifted characters
@@ -3198,6 +3232,9 @@ bas:  dd dot10
 
 ; blk is the current block
 blk:  dd 18, 18
+offset: dd 0
+keych: dd 0
+endram: dd 0
 
 curs: dd 0
 cad:  dd 0
