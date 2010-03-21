@@ -2,35 +2,17 @@
 %include "posix.inc"
 %include "SDL.inc"
 
-section .data
-  run db 1
-  msg_color_forth db 'colorForth', 0x0
+%include "debug.inc"
+%include "debug_dumpregs.inc"
 
+section .data
   str_error_open_block_file db "Can't open blocks file OkadWork.cf", 0Ah, 0
   str_error_stat_block_file db "Can't stat blocks file OkadWork.cf", 0Ah, 0
   str_error_mmap_block_file db "Can't mmap blocks file OkadWork.ch", 0Ah, 0
 
-  str_blocks_file db 'OkadWork.cf', 0
-  str_icons_file db 'icons', 0
-
-	debug_str_myregs db "EDI      ESI      EBP      ESP      EBX      EDX      ECX      EAX", 0x10, 0x0
-  debug_str_myregs_len equ $ - debug_str_myregs
-	debug_str_myflagso db "ZF=0 CF=0 OF=0 SF=0 PF=0", 0xa
-	debug_nl_char db 0xa
-	debug_space_char db ' '
-
-  debug_qignore db 'called qignore', 0xa, 0x0
-  debug_execute db 'called execute', 0xa, 0x0
-  debug_num db 'called num', 0xa, 0x0
-  debug_forthd db 'called forthd', 0xa, 0x0
-  debug_qcompile db 'called qcompile', 0xa, 0x0
-  debug_cnum db 'called cnum', 0xa, 0x0
-  debug_cshort db 'called cshort', 0xa, 0x0
-  debug_compile db 'called compile', 0xa, 0x0
-  debug_short_ db 'called short_', 0xa, 0x0
-  debug_nul db 'called nul', 0xa, 0x0
-  debug_variable db 'called variable', 0xa, 0x0
-  debug_macro db 'called macro', 0xa, 0x0
+  str_blocks_file db 'data/OkadWork.cf', 0
+  str_backup_blocks_file db 'data/OkadBack.cf', 0
+  str_icons_file db 'data/icons', 0
 
 section .bss 
   rstruct SDL_Surface, surface  
@@ -90,7 +72,7 @@ dummy dd  0
 
 section .text
 
-extern _printf, _open, _mmap, _read
+extern _printf, _open, _mmap, _read, _malloc, _write, _realloc
 
 global _main                ; make the main function externally visible
 
@@ -106,151 +88,13 @@ global _main                ; make the main function externally visible
 %define sdl_rgb16(r, g, b) dword ((r >> 3) << 11) | ((g >> 2) << 5) | ((b >> 3)) | -16777216
 %define sdl_rgbsingle16(rgb) dword ( (((rgb >> 16) & 0xff) >> 3) << 11) | ( (((rgb >> 8) & 0xff) >> 2) << 5) | ((rgb & 0xff) >> 3)  | -16777216
 
-debug_newline:
-  pushad
-  syscall SYS_write, 1, debug_nl_char, 1
-  popad
-  ret
-
-debug_space:
-  pushad
-  syscall SYS_write, 1, debug_space_char, 1
-  popad
-  ret
-
-debug_asciidigit:
-  add al, 0x30  ; add to make 0-9 ascii
-  cmp al, 0x39  ; if the value is over 9
-  jbe digitdone ; if not skip
-  add al, 0x27  ; if so then add to make a-f
-  digitdone:
-  ret
-
-;
-; print the contents of eax in hex
-;
-debug_printhex:
-  pushad ; save a copy of the registers
-  mov edi, eax ; save a copy in edit
-  mov cl, 28 ; start with 4 bits
-  mov esi, 0 ; starting array pointer
-
-debug_hexloop1:
-  ror eax, cl ; rotate bits in eax right by amount in cl, a multiple of 4
-  and al, 00001111b ; clear top 4 bits 
-  call debug_asciidigit   ; convert to ascii 
-  mov [debug_tmpbytes + esi], al ; copy our value in to the array
-  inc esi           ; increment array pointer
-  mov eax, edi      ; restore copy
-  sub cl, 4         ; decrement four from the bit rotation
-  cmp cl, 0         ; compare to 28
-  jge debug_hexloop1 ; if greater then or equal to then continue (signed)
-
-  syscall SYS_write, 1, debug_tmpbytes, 8
-
-  popad ; restore copy of the registers
-  ret
-
-;
-; print the contents of eax in hex
-; ebx = pointer to buffer
-;
-debug_convhex:
-  push ecx ; save a copy of ecx
-  push edi
-  push esi
-  mov edi, eax ; save a copy in edit
-  mov cl, 28 ; start with 4 bits
-  mov esi, 0 ; starting array pointer
-
-debug_convloop1:
-  ror eax, cl ; rotate bits in eax right by amount in cl, a multiple of 4
-  and al, 00001111b ; clear top 4 bits 
-  call debug_asciidigit   ; convert to ascii 
-  mov [ebx + esi], al ; copy our value in to the array
-  inc esi           ; increment array pointer
-  mov eax, edi      ; restore copy
-  sub cl, 4         ; decrement four from the bit rotation
-  cmp cl, 0         ; compare to 28
-  jge debug_convloop1 ; if greater then or equal to then continue (signed)
-
-  pop esi
-  pop edi
-  pop ecx ; restore copy of the registers
-  ret
-
-;
-; dump out the registers
-;
-debug_dumpregs:
-  pushad ; first copy to return
-  pushfd ; save a copy of the cpu flags
-  pushad ; second copy for us to pop off
-
-  syscall SYS_write, 1, debug_str_myregs, debug_str_myregs_len
-  call debug_newline
-  mov ecx, 8
-  mov edi, 0
-
-debug_regsloop:
-  pop eax  ; pop the first value off the stack
-  push ecx ; push counter onto the stack
-  push eax ; push the contents back on because we have to use eax
-
-  mov ecx, debug_str_myregs ; what register?
-  add ecx, edi    ; pointer for debug_str_myregs
-  ;syscall SYS_write, 1, ecx, 4
-  pop eax       ; ok now lets get the value to print
-  call debug_printhex ; print out the contents of eax in hex 
-  call debug_space    ; print a debug_space
-
-  pop ecx       ; lets get the counter back
-  ;call debug_newline
-  add edi, 4
-  loop debug_regsloop
-
-  call debug_newline
-
-  ;now lets print the flags
-  mov ecx, 25 ; length to copy
-  mov esi, 0  ; offset pointer
-
-  copyloop: ; lets copy the .text to the .bss so we can modify it
-  mov al, [debug_str_myflagso + esi] ; move this byte here because we can't move mem to mem
-  mov [debug_myflags + esi], al ; copy the byte from the register
-  inc esi ; increment the pointer
-  loop copyloop
-
-  popfd ; restore the copy of the cpu flags so we can print them out
-  jnz nosetzf ; jump if zero flag not set
-  mov [debug_myflags+3], byte 0x31 ; set to ascii 1
-  nosetzf:
-  jnc nosetcf ; jump if carry flag not set
-  mov [debug_myflags+8], byte 0x31
-  nosetcf:
-  jno nosetof ; jump if overflow flag not set
-  mov [debug_myflags+13], byte 0x31
-  nosetof:
-  jns nosetsf ; jump if sign flag not set
-  mov [debug_myflags+18], byte 0x31
-  nosetsf: 
-  jnp nosetpf ; jump if parity flag not set
-  mov [debug_myflags+23], byte 0x31
-  nosetpf:
-
-  syscall SYS_write, 1, debug_myflags, 25
-
-  ; restore original values
-  popad ; restore original copy of the registers
-  ret
-
-sdl_flip:
+host_flip_screen:
   push eax
   __SDL_Flip dword [surface]
   pop eax
   ret
 
-program_alloc_display:
+host_alloc_display:
   __SDL_Init SDL_INIT_VIDEO
   __SDL_SetVideoMode screen_width, screen_height, screen_depth * 8, SDL_FULLSCREEN
   mov [surface], eax
@@ -258,45 +102,17 @@ program_alloc_display:
   mov [frame], edx
 
   __SDL_EnableKeyRepeat 125, 50 
-  __SDL_WM_SetCaption msg_color_forth, msg_color_forth
-  ret
-
-program_draw_pixel:
-  push eax
-
-  ; 
-  ;__SDL_DrawPoint dword [surface], 600, 600, dword [color]
-  ; hardcore computation
-  ; *(Uint32 *)((Uint8 *)dst->pixels + (y) * dst->pitch  + (x) * 4) = (type) color
-  ; pitch =  2048
-  ; bpp = 2
-  ; pixels + 600 * 4096 + 600 * 4
-
-  ; ebx = y * dst->pitch
-  mov eax, dword [surface] ; eax contains the surface contents
-  ;movzx eax, word [eax + 16]; eax = screen.pitch
-  mov eax, dword [eax + 16]; eax = screen.pitch
-  ;cdq ; EDX = signextend eax
-  mov edx, 0
-  ;and edx, 3 ; EDX = edx & 3
-  add eax, edx; eax = eax + edx
-  sar eax, (screen_depth / 2); eax = screen.pitch / 4  ; should be sar eax, 2 for 32 bit
-  imul eax, 500 ; y
-  add eax, 200  ; x
-  mov edx, [frame] ; mov to edx the value at the address ecx + 20, which is the value of screen->pixels. This value is an address
-  mov [edx + eax * screen_depth], sdl_rgb32(0xFF, 0xFF, 0xFF) ; should be [edx + eax * 4] for 32 bit
-  call sdl_flip
-
-  pop eax
+  string color_forth, "colorForth for MacOSX", 0x0
+  __SDL_WM_SetCaption str_color_forth, str_color_forth
   ret
 
 bye:
-program_exit_ok:
+host_exit_ok:
   __SDL_Quit
   syscall SYS_exit, 0
   ret
 
-program_exit_fail:
+host_exit_fail:
   __SDL_Quit
   syscall SYS_exit, 1
   ret
@@ -306,7 +122,7 @@ icons_fd: dd 0
 blocks_address: dd 0
 blocks_fd: dd 0
 
-program_map_files:
+host_load_files:
   ; open
   syscall SYS_open, str_blocks_file, O_RDWR
   jc .cantopen
@@ -348,15 +164,15 @@ program_map_files:
   ret
   .cantopen:
     ccall _printf, str_error_open_block_file
-    jmp program_exit_fail
+    jmp host_exit_fail
   .cantstat:
     ccall _printf, str_error_open_block_file
-    jmp program_exit_fail
+    jmp host_exit_fail
   .cantmmap:
     ccall _printf, str_error_mmap_block_file
-    jmp program_exit_fail
+    jmp host_exit_fail
   .sizezero:
-    jmp program_exit_ok
+    jmp host_exit_ok
 
 ; in:  ecx - size
 ; out: eax - address
@@ -364,52 +180,18 @@ alloc_mem:
   syscall SYS_mmap, dword 0, ecx, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_ANON, dword 0, dword 0
   ret
 
-program_alloc_buffers:
+host_alloc_buffers:
   mov ecx, 1024 * 384        ; dictionary size 1 MB; TODO constant here
   call alloc_mem      
   mov [H], eax
   ret
 
 _main:
-  call program_map_files
-  call program_alloc_buffers
-  call program_alloc_display
-
+  call debug_dumpregs
+  call host_load_files
+  call host_alloc_buffers
+  call host_alloc_display
   jmp start1
-  ;.while_run:
-    ;.while_poll_event:
-      ;call program_draw_pixel
-      ;__SDL_PollEvent event
-      ;cmp eax, 0
-      ;je .while_poll_event ; if there was no event, go forward
-      ;; here, we are sure to have an event
-      ;cmp byte [event.type], SDL_KEYDOWN ; was it a key event ? 
-      ;je .treat_key_event
-      ;; was it a quit event ? 
-      ;cmp byte [event.type], SDL_QUIT
-      ;je .treat_quit_event
-      ;; here, we have another kind of event
-      ;jmp .while_poll_event
-    ;.while_poll_eventquit:
-      ;cmp byte [run], 1
-      ;je .while_run
-    ;.treat_key_event:
-      ;; TODO  XXX
-      ;mov ebx, [event.key.keysym.scancode]
-      ;mov ecx, [sdl_scancode_to_raw]
-      ;;add ecx, ebx
-      ;mov eax, [sdl_scancode_to_raw + ebx]
-      ;and eax, 0ffh ; get rid of high bits
-      ;;debug_int eax
-      ;test dword [event.key.keysym.mod], KMOD_LSHIFT | KMOD_RSHIFT
-      ;jz .not_shift
-        ;debug_int 0xff
-    ;.not_shift:
-      ;cmp byte [run], 1
-      ;je .while_run
-    ;.treat_quit_event:
-      ;call program_exit_ok
-  ;call program_exit_ok
 
 program_notimpl:
     ret
@@ -1229,6 +1011,12 @@ here:
   mov eax, [H]
   ret
 
+h_:
+; Returns end-of-dictionary pointer on data stack.
+  DUP_
+  mov eax, H
+  ret
+
 ; qlit: If the last instruction in the dictionary is "MOV EAX, literal", move the
 ; literal onto the data stack and remove the instruction from the dictionary. If the
 ; instruction was preceded by a DUP, remove that also. Returns with zero flag set if
@@ -1585,6 +1373,23 @@ forth_words_names:
   dd (((_w<<4|_o)<<4|_r)<<7|_d)<<12    ; word
   dd ((_e<<7|_k)<<4|_t)<<17      ; ekt
 
+  dd _h<<25; h
+  dd ((((_a<<7|_b)<<4|_o)<<4|_r)<<4|_t)<<9; abort
+  dd (((_a<<7|_p)<<4|_e)<<4|_r)<<13; aper
+  dd ((((_b<<7|_u)<<5|_f)<<5|_f)<<4|_e)<<4; buffe(r)
+  dd (((_c<<5|_l)<<4|_o)<<5|_g)<<13; clog
+  dd (((((_c<<7|_p)<<4|_o)<<4|_i)<<4|_n)<<4|_t)<<4; cpoint
+  dd (((((_g<<4|_r)<<4|_a)<<7|_p)<<7|_h)<<4|_i)<<1; graphic
+  dd (((((_o<<5|_f)<<5|_f)<<5|_s)<<4|_e)<<4|_t)<<5; offset
+  dd (((_o<<5|_l)<<4|_o)<<5|_g)<<14; olog
+  dd ((((_r<<7|_b)<<4|_a)<<5|_c)<<7|_k)<<5; rback (b – n)
+  dd ((_t<<4|_i)<<5|_c)<<19; tic (–ba)
+  dd ((((_t<<4|_r)<<4|_a)<<5|_s)<<7|_h)<<8; trash
+  dd ((((_w<<7|_b)<<4|_a)<<5|_c)<<7|_k)<<4; wback (b n)
+  dd (((((_w<<4|_i)<<4|_n)<<7|_v)<<4|_e)<<4|_r)<<4; winver (- t | f)
+  dd (((_w<<5|_l)<<4|_o)<<5|_g)<<13; wlog (a n1)
+ 
+
 num_of_forth_words  equ ($ - forth_words_names) / 4 ; number of forth words in the kernel
 
 forth_words_addresses:
@@ -1654,10 +1459,32 @@ forth_words_addresses:
   dd _word
   dd ekeys_
 
+  dd h_; h
+  dd program_notimpl; abort
+  dd program_notimpl; aper
+  dd program_notimpl; buffe(r)
+  dd program_notimpl; clog
+  dd program_notimpl; cpoint
+  dd program_notimpl; graphic
+  dd program_notimpl; offset
+  dd program_notimpl; olog
+  dd program_notimpl; rback (b – n)
+  dd program_notimpl; tic (–ba)
+  dd trash_; trash
+  dd program_notimpl; wback (b n)
+  dd winver; winver (- t | f)
+  dd program_notimpl; wlog (a n1)
+
 ; Utilities
 
 ; General-purpose routines
  
+winver:
+  DUP_
+  mov eax, 1
+  test eax, 1
+  ret
+
 erase:
 ;( b n -- ) Erase n blocks, starting with block b.
   mov ecx, eax
@@ -1815,6 +1642,13 @@ ekeys_:
   shr eax, 2
   ret
 
+trash_:
+  DUP_
+  mov eax, trash
+  shr eax, 2
+  ret
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; include 'gen.asm'
 align 4; TODO is this needed ?
 
@@ -1861,7 +1695,7 @@ switch_:
   pushad
   ;push esi
   ;push edi
-  call sdl_flip
+  call host_flip_screen
   ;pop edi
   ;pop esi
   popad
@@ -2496,7 +2330,7 @@ getkey:
   je getkey ; if there was no event, go forward
   ; here, we are sure to have an event
   cmp byte [event.type], SDL_QUIT 
-  je program_exit_ok
+  je host_exit_ok
   cmp byte [event.type], SDL_KEYDOWN ; was it a key event ? 
   jne getkey
   push ebx

@@ -1,6 +1,13 @@
 %ifndef __MACROS_H
 %define __MACROS_H
 
+%macro string 2+
+  [section .data]
+  str_ %+ %1 db %2
+  str_ %+ %1 %+ .Size equ ($-str_ %+ %1)
+  __SECT__
+%endm
+
 ;--------- Extracted from Mammon's APJ #3 "Extending Nasm" tutorial ------------------------
 ; http://www.eccentrix.com/members/mammon/Text/nasm_apj.txt
 
