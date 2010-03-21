@@ -6,6 +6,11 @@
 	debug_space_char db ' '
 __SECT__
 
+[SECTION .bss]
+	debug_tmpbytes resb 8
+	debug_myflags resb 25
+__SECT__
+
 debug_newline:
   pushad
   syscall SYS_write, 1, debug_nl_char, 1

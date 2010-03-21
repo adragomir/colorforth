@@ -20,10 +20,6 @@ section .bss
   rstruct stat, blocks_file_stat
   rstruct stat, icons_file_stat
 
-	debug_tmpbytes resb 8
-	debug_myflags resb 25
-
-
 ; This version of colorforth has three tasks; main (the accept loop),
 ; draw (user defined), and serve (also user defined).  Each has two
 ; grows - down stacks.  A suffix of 's' indicates the return stack, 'd'
@@ -122,67 +118,52 @@ icons_fd: dd 0
 blocks_address: dd 0
 blocks_fd: dd 0
 
-host_load_files:
-  ; open
-  syscall SYS_open, str_blocks_file, O_RDWR
-  jc .cantopen
-
-  mov dword [blocks_fd], dword eax
-  ;file stat: find file size
-  syscall SYS_fstat, dword[blocks_fd], blocks_file_stat ; pass the address, NOT the value
-  jc .cantstat
-  mov	ecx, dword [blocks_file_stat.st_size]
-
-  cmp ecx, 0
-  je .sizezero; if size is 0
-
-  syscall SYS_mmap, dword 0, ecx, PROT_READ | PROT_WRITE, MAP_SHARED, dword [blocks_fd], dword 0
-  mov [blocks_address], eax
-  jc .cantmmap
-  ;or     eax, eax
-
-  ; TODO close the file on close
-  ;syscall SYS_munmap, dword [blocks_address], ecx
-
+host_read_icon_file:
   ; open
   syscall SYS_open, str_icons_file, O_RDWR
-  jc .cantopen
-
   mov dword [icons_fd], dword eax
   ;file stat: find file size
   syscall SYS_fstat, dword[icons_fd], icons_file_stat ; pass the address, NOT the value
-  jc .cantstat
   mov	ecx, dword [icons_file_stat.st_size]
-
-  cmp ecx, 0
-  je .sizezero; if size is 0
-
-  syscall SYS_mmap, dword 0, ecx, PROT_READ | PROT_WRITE, MAP_SHARED, dword [icons_fd], dword 0
-  jc .cantmmap
+  ; open memory that will contain the contents
+  syscall SYS_mmap, dword 0, ecx, PROT_READ | PROT_WRITE, MAP_ANON, dword 0, dword 0
   mov dword [icons_address], eax
-
+  ;read the contents
+  syscall SYS_read, dword [icons_fd], dword [icons_address], dword [icons_file_stat.st_size]
+  ; close the file
+  syscall SYS_close, dword [icons_fd]
   ret
-  .cantopen:
-    ccall _printf, str_error_open_block_file
-    jmp host_exit_fail
-  .cantstat:
-    ccall _printf, str_error_open_block_file
-    jmp host_exit_fail
-  .cantmmap:
-    ccall _printf, str_error_mmap_block_file
-    jmp host_exit_fail
-  .sizezero:
-    jmp host_exit_ok
+
+host_read_blocks_file:
+  ; open
+  syscall SYS_open, str_blocks_file, O_RDONLY
+  mov dword [blocks_fd], dword eax
+  ;file stat: find file size
+  syscall SYS_fstat, dword[blocks_fd], blocks_file_stat ; pass the address, NOT the value
+  mov	ecx, dword [blocks_file_stat.st_size]
+  ; open memory that will contain the contents
+  syscall SYS_mmap, dword 0, ecx, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_ANON, dword 0, dword 0
+  mov dword [blocks_address], eax
+  ;read the contents
+  syscall SYS_read, dword [blocks_fd], dword [blocks_address], dword [blocks_file_stat.st_size]
+  ; close the file
+  syscall SYS_close, dword [blocks_fd]
+  ret
+  
+host_load_files:
+  call host_read_icon_file
+  call host_read_blocks_file
+  ret
 
 ; in:  ecx - size
 ; out: eax - address
-alloc_mem:
+host_alloc_mem:
   syscall SYS_mmap, dword 0, ecx, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_ANON, dword 0, dword 0
   ret
 
 host_alloc_buffers:
   mov ecx, 1024 * 384        ; dictionary size 1 MB; TODO constant here
-  call alloc_mem      
+  call host_alloc_mem
   mov [H], eax
   ret
 
@@ -193,7 +174,7 @@ _main:
   call host_alloc_display
   jmp start1
 
-program_notimpl:
+host_notimpl:
     ret
 
 %include "huffman.inc"
@@ -1393,17 +1374,17 @@ forth_words_names:
 num_of_forth_words  equ ($ - forth_words_names) / 4 ; number of forth words in the kernel
 
 forth_words_addresses:
-  dd program_notimpl; boot
+  dd host_notimpl; boot
   dd warm
   dd dopause
   dd macro
   dd forth
   dd c_
-  dd program_notimpl; stopf; TODO
-  dd program_notimpl;readf; TODO
-  dd program_notimpl;writef; TODO
+  dd host_notimpl; stopf; TODO
+  dd host_notimpl;readf; TODO
+  dd host_notimpl;writef; TODO
   dd nc_
-  dd program_notimpl;formatf ; ADR
+  dd host_notimpl;formatf ; ADR
   dd show
   dd serve
   dd load
@@ -1415,8 +1396,8 @@ forth_words_addresses:
   dd comma
   dd less
   dd jump
-  dd program_notimpl;north; TODO
-  dd program_notimpl;dev; TODO
+  dd host_notimpl;north; TODO
+  dd host_notimpl;dev; TODO
   dd accept
   dd pad
   dd erase
@@ -1460,20 +1441,20 @@ forth_words_addresses:
   dd ekeys_
 
   dd h_; h
-  dd program_notimpl; abort
-  dd program_notimpl; aper
-  dd program_notimpl; buffe(r)
-  dd program_notimpl; clog
-  dd program_notimpl; cpoint
-  dd program_notimpl; graphic
-  dd program_notimpl; offset
-  dd program_notimpl; olog
-  dd program_notimpl; rback (b – n)
-  dd program_notimpl; tic (–ba)
+  dd host_notimpl; abort
+  dd host_notimpl; aper
+  dd host_notimpl; buffe(r)
+  dd host_notimpl; clog
+  dd host_notimpl; cpoint
+  dd host_notimpl; graphic
+  dd host_notimpl; offset
+  dd host_notimpl; olog
+  dd host_notimpl; rback (b – n)
+  dd host_notimpl; tic (–ba)
   dd trash_; trash
-  dd program_notimpl; wback (b n)
+  dd host_notimpl; wback (b n)
   dd winver; winver (- t | f)
-  dd program_notimpl; wlog (a n1)
+  dd host_notimpl; wlog (a n1)
 
 ; Utilities
 
