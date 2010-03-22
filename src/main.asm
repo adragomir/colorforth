@@ -321,7 +321,6 @@ start1:
     ; load block 18, and start the colorforth system
     mov eax, 18
     call load
-    debug_print "After load...", 0xa, 0x0
     jmp accept
 
 
@@ -536,6 +535,8 @@ execute:
   mov eax, [ -4 + edi * 4] ; grab the next pre-parsed word
   and eax, byte -16 ; Mask out color bits (bits 0..3).
   .0:
+    debug_print "**** called execute", 0xa, 0x0
+    call debug_dumpregs
     call find ; Look up word in FORTH wordlist.
     jnz abort ; If not found, abort.
     DROP
@@ -546,6 +547,7 @@ abort:
   ;TODO
   ;cmp edi, 0x1200
   ;js abort1
+  debug_print "**** called ABORT", 0xa, 0x0
   mov [curs], edi
 
   ; TODO
@@ -557,6 +559,7 @@ abort:
   mov [blk], edi
 
 abort1: 
+  debug_print "**** called ABORT1", 0xa, 0x0
   mov esp, top_main_return_stack ; [RST]
   mov dword [adefine], forthd
   mov dword [adefine + 4], qcompile
@@ -765,6 +768,7 @@ var1:
 
 ; Used by inter to handle magenta (color=12, variable) words.
 variable:
+  debug_print "called variable", 0xa, 0x0
   call forthd
   mov dword [forth_dictionary_addresses - forth_dictionary_names + ecx], var1
   inc dword [forths] ; dummy entry for source address
@@ -883,6 +887,8 @@ qcompile:
   call [lit]        ; For info, search for "lit: dd adup"
   mov eax, [ - 4 + edi * 4]     ; Get next pre-parsed word
   and eax, byte -16      ; mask out color bits (bits 0..3)
+  debug_print "called qcompile", 0xa, 0x0
+  call debug_dumpregs
   call mfind        ; look it up in the macro word list
   jnz .0
   DROP        ; If found in MACRO wordlist,
@@ -894,6 +900,8 @@ qcompile:
 ; Call_ takes the routine address at the top of the stack and compiles from it the
 ; machine code needed to call that routine.
 qcom1:  
+  debug_print "called qcom1", 0xa, 0x0
+  call debug_dumpregs
   jnz abort        
   mov edx, [H]
   mov [list], edx
@@ -1133,6 +1141,8 @@ inter:
   mov edx, [edi * 4]
   inc edi          ; (Thus all routines work on [-4+edi*4].)
   and edx, byte 15        ; Clear all bits except color bits (0..3).
+  debug_print "*********** inter loop ", 0xa, 0x0
+  call debug_dumpregs
   call [spaces + edx * 4]       ; Use result as offset to routine to run. 
   jmp inter
 
@@ -1160,7 +1170,7 @@ align 4
 spaces:
   dd qignore, execute, num        ; colors 0..2
 adefine:
-  dd 5 + forthd          ; color 3 ; TODO is forthd + 5
+  dd forthd          ; color 3 ; TODO is forthd + 5
     ; This is altered by sdefine, which stores the
     ; address of either macrod (to define a MACRO
     ; word) or forthd (to define a FORTH word) here.
@@ -1352,6 +1362,7 @@ forth_words_names:
   dd _e<<28          ; e
   dd (_l<<5|_m)<<22        ; lm
   dd (_r<<5|_m)<<23        ; rm
+  dd ((((_g<<4|_r)<<4|_a)<<7|_p)<<7|_h)<<5 ; graph
   dd (((((_s<<5|_w)<<4|_i)<<4|_t)<<5|_c)<<7|_h)<<2  ; switch
   dd (((((_f<<4|_r)<<4|_e)<<4|_e)<<7|_z)<<4|_e)<<4  ; freeze
   dd (((_t<<4|_e)<<7|_x)<<4|_t)<<13    ; text
@@ -1374,28 +1385,55 @@ forth_words_names:
   dd (((_c<<7|_u)<<4|_r)<<5|_s)<<11    ; curs
   dd (((_w<<4|_o)<<4|_r)<<7|_d)<<12    ; word
   dd ((_e<<7|_k)<<4|_t)<<17      ; ekt
-
-  dd _h<<25; h
   dd ((((_a<<7|_b)<<4|_o)<<4|_r)<<4|_t)<<9; abort
-  dd (((_a<<7|_p)<<4|_e)<<4|_r)<<13; aper
+  dd _h<<25; h
   dd ((((_b<<7|_u)<<5|_f)<<5|_f)<<4|_e)<<4; buffe(r)
-  dd (((_c<<5|_l)<<4|_o)<<5|_g)<<13; clog
-  dd (((((_c<<7|_p)<<4|_o)<<4|_i)<<4|_n)<<4|_t)<<4; cpoint
-  dd (((((_g<<4|_r)<<4|_a)<<7|_p)<<7|_h)<<4|_i)<<1; graphic
   dd (((((_o<<5|_f)<<5|_f)<<5|_s)<<4|_e)<<4|_t)<<5; offset
-  dd (((_o<<5|_l)<<4|_o)<<5|_g)<<14; olog
-  dd ((((_r<<7|_b)<<4|_a)<<5|_c)<<7|_k)<<5; rback (b – n)
-  dd ((_t<<4|_i)<<5|_c)<<19; tic (–ba)
-  dd ((((_t<<4|_r)<<4|_a)<<5|_s)<<7|_h)<<8; trash
-  dd ((((_w<<7|_b)<<4|_a)<<5|_c)<<7|_k)<<4; wback (b n)
+  dd ((_t<<4|_i)<<5|_c)<<19 ; tic
   dd (((((_w<<4|_i)<<4|_n)<<7|_v)<<4|_e)<<4|_r)<<4; winver (- t | f)
-  dd (((_w<<5|_l)<<4|_o)<<5|_g)<<13; wlog (a n1)
-  dd (((((_r<<4|_e)<<4|_t)<<4|_a)<<4|_i)<<4|_n)<<8; retain
+  dd (((_a<<7|_p)<<4|_e)<<4|_r)<<13 ; aper
+  dd (((_v<<4|_e)<<5|_s)<<4|_a)<<12 ; vesa
+  dd ((((_t<<4|_r)<<4|_a)<<5|_s)<<7|_h)<<8; trash
+  dd (((_h<<5|_s)<<7|_v)<<7|_v)<<6 ; hsvv
+  dd (((_t<<5|_s)<<4|_i)<<5|_m)<<14 ; tsim
+  dd (((((_c<<7|_p)<<4|_o)<<4|_i)<<4|_n)<<4|_t)<<4 ; cpoint
+  dd ((((_w<<4|_o)<<4|_r)<<7|_d)<<5|_s)<<7 ; words
+  dd (((_q<<7|_k)<<4|_e)<<5|_y)<<9 ; qkey
+  dd ((((_d<<4|_i)<<5|_g)<<4|_i)<<4|_n)<<8 ; digin
+  dd ((((_q<<5|_w)<<4|_e)<<4|_r)<<4|_t)<<8 ; qwert(y)
+  dd (((((_n<<4|_o)<<7|_dash)<<4|_r)<<4|_e)<<4|_t)<<5 ; no-ret
+  dd (_r<<7|_question)<<21 ; r?
+  dd ((_n<<7|_u)<<5|_l)<<16; nul
+  dd ((_c<<4|_a)<<7|_d)<<16; cad
+  dd (((_p<<5|_c)<<4|_a)<<7|_d)<<9; pcad
+  dd ((((_d<<4|_i)<<5|_s)<<7|_p)<<5|_l)<<4; displ(ay)
+  dd (((_a<<5|_c)<<4|_t)<<5|_c)<<14 ; actc
+  dd ((((_plus<<5|_l)<<4|_i)<<5|_s)<<4|_t)<<7 ; +list(new)
+  dd ((((_i<<4|_t)<<4|_i)<<5|_c)<<7|_k)<<8 ; itick(new)
+  dd ((_l<<4|_i)<<5|_s)<<18 ; lis(new)
+  dd (_plus<<4|_e)<<21 ; +e(new)
+  dd (((((_r<<4|_e)<<4|_t)<<4|_a)<<4|_i)<<4|_n)<<8 ; retain
+  dd ((((_k<<4|_e)<<5|_y)<<5|_c)<<7|_h)<<4 ; keych
+  dd ((((_u<<4|_t)<<4|_i)<<5|_m)<<4|_e)<<8 ; utime
   dd (((((_e<<4|_n)<<7|_d)<<4|_r)<<4|_a)<<5|_m)<<4; endram
-  dd ((((_k<<4|_e)<<5|_y)<<5|_c)<<7|_h)<<4; keych
- 
+  dd (((_w<<5|_g)<<7|_d)<<5|_s)<<10 ; wgds
+  dd (((_o<<5|_l)<<4|_o)<<5|_g)<<14 ; olog
+  dd (((_w<<5|_l)<<4|_o)<<5|_g)<<13 ; wlog
+  dd (((_c<<5|_l)<<4|_o)<<5|_g)<<13 ; clog
+  dd ((_b<<5|_y)<<4|_e)<<16 ; bye
+  dd ((((_r<<7|_b)<<4|_a)<<5|_c)<<7|_k)<<5; rback (b – n)
+  dd ((((_w<<7|_b)<<4|_a)<<5|_c)<<7|_k)<<4; wback (b n)
+  dd ((((((_f<<5|_c)<<4|_r)<<4|_e)<<4|_a)<<4|_t)<<4|_e)<<2 ; fcreate (new)
+  dd (((((_f<<5|_c)<<5|_l)<<4|_o)<<5|_s)<<4|_e)<<4 ; fclose (new)
+  dd (((((_f<<4|_i)<<4|_o)<<5|_c)<<4|_t)<<5|_l)<<5 ; fioctl (new)
+  dd ((((_f<<4|_r)<<4|_e)<<4|_a)<<7|_d)<<8 ; fread (new)
+  dd (((((_f<<5|_w)<<4|_r)<<4|_i)<<4|_t)<<4|_e)<<6 ; fwrite (new)
+  dd (((_f<<4|_e)<<5|_s)<<5|_c)<<13 ; fesc (new)
+  dd ((((_r<<5|_w)<<4|_o)<<4|_r)<<7|_k)<<8 ; rwork (new)
+  dd ((((_w<<5|_w)<<4|_o)<<4|_r)<<7|_k)<<7 ; wwork (new)
 
-num_of_forth_words  equ ($ - forth_words_names) / 4 ; number of forth words in the kernel
+num_of_forth_words equ ($ - forth_words_names) / 4 ; number of forth words in the kernel
+  times 512 dd 0
 
 forth_words_addresses:
   dd host_notimpl; boot
@@ -1441,6 +1479,7 @@ forth_words_addresses:
   dd e
   dd lms
   dd rms
+  dd host_notimpl; graph(ic)
   dd switch_
   dd freeze
   dd text1
@@ -1461,32 +1500,65 @@ forth_words_addresses:
   dd unpack
   dd blk_
   dd curs_
-  dd _word
-  dd ekeys_
+  dd _word  ; word
+  dd ekeys_ ; ekt
 
-  dd h_; h
-  dd host_notimpl; abort
-  dd host_notimpl; aper
-  dd host_notimpl; buffe(r)
-  dd host_notimpl; clog
-  dd host_notimpl; cpoint
-  dd host_notimpl; graphic
-  dd offset_; offset
-  dd host_notimpl; olog
-  dd host_notimpl; rback (b – n)
-  dd host_notimpl; tic (–ba)
-  dd trash_; trash
-  dd host_notimpl; wback (b n)
+  dd abort; abort
+  dd h_ ; h
+  dd host_notimpl ; buffe(r)
+  dd offset_ ; offset
+  dd host_notimpl ; tic
   dd winver; winver (- t | f)
-  dd host_notimpl; wlog (a n1)
+  dd host_notimpl ; aper
+  dd host_notimpl ; vesa
+  dd trash_ ; trash
+  dd host_notimpl ; hsvv
+  dd host_notimpl ; tsim
+  dd cpoint_ ; cpoint
+  dd words_; words
+  dd host_notimpl ; qkey
+  dd host_notimpl ; digin
+  dd qwerty ; qwert(y)
+  dd host_notimpl ; no-ret
+  dd host_notimpl ; r?
+  dd nul; nul
+  dd cad_; cad
+  dd pcad_; pcad
+  dd displ_; displ(ay)
+  dd host_notimpl ; actc
+  dd host_notimpl ; +list
+  dd host_notimpl ; itick
+  dd host_notimpl ; lis
+  dd host_notimpl ; +e
   dd retain; retain()
-  dd endram_; endram
   dd keych_; keych
+  dd host_notimpl; utime
+  dd endram_; endram
+  dd host_notimpl ; wgds
+  dd host_notimpl ; olog
+  dd host_notimpl ; wlog (a n1)
+  dd host_notimpl ; clog
+  dd bye ; bye
+  dd host_notimpl ; rback (b – n)
+  dd host_notimpl ; wback (b n)
+  dd host_notimpl ; fcreate
+  dd host_notimpl ; fclose
+  dd host_notimpl ; fioctl
+  dd host_notimpl ; fread
+  dd host_notimpl ; fwrite
+  dd host_notimpl ; fesc
+  dd host_notimpl ; rwork
+  dd host_notimpl ; wwork
+  times 512 dd 0
 
 
 ; Utilities
 
 ; General-purpose routines
+
+qwerty:
+  debug_print "called qwerty", 0xa, 0x0
+  ret
  
 retain:
   pushad
@@ -1498,7 +1570,7 @@ winver:
   debug_print "called winver", 0xa, 0x0
   DUP_
   mov eax, 1
-  test eax, 2
+  or eax, eax
   ret
 
 erase:
@@ -1607,7 +1679,8 @@ xy: dd char_padding * 0x10000 + char_padding
 lm: dd char_padding
 rm: dd horizontal_chars * char_width; screen_width + char_padding
 xycr: dd 0
-fov:  dd 10 * (2 * screen_height + screen_height / 2) ;512
+fov: dd 10 * (2 * screen_height + screen_height / 2) ;512
+cpoint: dd 0
 
 ; Getting variable addresses
 nc_:
@@ -1654,7 +1727,7 @@ curs_:
 
 ekeys_:
   DUP_
-  mov eax, curs
+  mov eax, ekeys
   shr eax, 2
   ret
 
@@ -1676,21 +1749,51 @@ keych_:
   shr eax, 2
   ret
 
+cpoint_:
+  DUP_
+  mov eax, cpoint
+  shr eax, 2
+  ret
+
 endram_:
   DUP_
   mov eax, endram
   shr eax, 2
   ret
 
+words_:
+  DUP_
+  mov eax, words
+  shr eax, 2
+  ret
+
+pcad_:
+  DUP_
+  mov eax, pcad
+  shr eax, 2
+  ret
+
+cad_:
+  DUP_
+  mov eax, cad
+  shr eax, 2
+  ret
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; include 'gen.asm'
 align 4; TODO is this needed ?
 
+;displ: dd 0x0
 frame: dd 0x0
 fore: dd _yellow
 
 xc: dd 0
 yc: dd 0
+
+displ_:
+  DUP_
+  mov eax, display
+  shr eax, 2
+  ret
 
 rgb:
   ror eax, 8
@@ -2509,7 +2612,6 @@ key0:
     xor	eax, eax
     call dopause
     call getcfkey
-    debug_print "Key, got key", 0xa, 0x0
     cmp al, 3ah			; limit to 39
     jnc key0
     add eax, eax		; double to account for shifted characters
@@ -2517,6 +2619,7 @@ key0:
     mov al, [keys + eax]		; index into keys
     and al, al
     jz key0			; repeat if zero
+    debug_print "Key, got key", 0xa, 0x0
     pop edi
     pop esi
     ret
@@ -3137,6 +3240,7 @@ gsw:
 ; Variable word (magenta)
 ;  falls through to a green number word
 var:
+  debug_print "called var", 0xa, 0x0
   call magenta
   call type_
 
@@ -3216,6 +3320,28 @@ ref1:
 ; The display-routine table
 
 
+; Tag  Syntax Element      Color
+; 
+;  15  Commented Number    White
+;  14  Display Macro       Blue
+;  13  Compiler Feedback   Grey
+;  12  Variable            Magenta
+; 
+;  11  COMMENT (caps)      (White) Obsolete
+;  10  Comment             (White) Obsolete
+;   9  comment (lower)     White
+;   8  Interpreted Number  Yellow
+; 
+;   7  Compile macro call  Cyan
+;   6  Compile number      Green
+;   5  Compile big number  Green
+;   4  Compile forth word  Green
+; 
+;   3  Define forth word   Red
+;   2  Interp big number   Yellow
+;   1  Interp forth word   Yellow
+;   0  Word extension      (color of preceding word)
+; 
 ; Offsets to display routines.
 align 4
 display:
