@@ -235,7 +235,7 @@ off_100030DC dd offset qignore ; DATA XREF: load+18r
   dd offset execute
   dd offset num
 adefine dd offset forthd ; DATA XREF: sdefinew
-     ; sub_10006A5F:loc_10006AA6w
+     ; sub_10006A5F:abort1w
 off_100030EC dd offset sub_10003BF2 ; DATA XREF: sub_10006A5F+51w
 off_100030F0 dd offset cnum ; DATA XREF: sub_10006A5F+5Bw
 off_100030F4 dd offset cshort ; DATA XREF: sub_10006A5F+65w
@@ -264,7 +264,8 @@ dword_10003150 dd 0F7DEh, 2 dup(0) ; DATA XREF: white:colorw
      ; emit+16r ...
   dd 0F0000000h, 0C19B1000h, 0FF833620h, 0C0278800h, 2C88C000h
   dd 0C6957600h, 80h dup(0)
-macro_addresses dd offset semi ; DATA XREF: sub_10003BF2+18r
+macro_addresses 
+  dd offset semi ; DATA XREF: sub_10003BF2+18r
      ; compile+15r
   dd offset cdup
   dd offset qdup
@@ -296,7 +297,8 @@ forth_words_names dd 0C6664000h, 0BA8C4000h, 0C4B9A080h, 8AC84C00h, 0B1896400h
   dd 950EA000h, 0C7340000h, 1C6B2E80h, 0BE359740h, 0B4851490h
   dd 0B4A87040h, 0B39C8A80h, 0B0A2E000h, 0B5C5C900h, 0B2424000h
   dd 1B98F400h, 0BDCC7A00h, 0
-forth_words_addresses dd offset byte_10004D79 ; DATA XREF: .data:10006D15o
+forth_words_addresses 
+  dd offset byte_10004D79 ; DATA XREF: .data:10006D15o
   dd offset loc_10006CD4
   dd offset dopause
   dd offset macro
@@ -5044,10 +5046,10 @@ loc_10006A90:    ; CODE XREF: sub_10006A5F+6j
   mov esp, [ebx+4]
   cld
   cmp esi, 10015800h
-  jb short loc_10006AA6
+  jb short abort1
   mov esi, 10015800h
 
-loc_10006AA6:    ; CODE XREF: sub_10006A5F+40j
+abort1:    ; CODE XREF: sub_10006A5F+40j
   mov adefine, offset forthd
   mov off_100030EC, offset sub_10003BF2
   mov off_100030F0, offset cnum
