@@ -1,0 +1,113 @@
+ boot
+ warm
+ pause
+ macro
+ forth
+ c
+ stop
+ read
+ write
+ nc
+ format
+ show
+ serve
+ load
+ here
+ ?lit
+ 3,
+ 2,
+ 1,
+ ,
+ less
+ jump
+ pci
+ devic(e)
+ accept
+ pad
+ erase
+ copy
+ mark
+ empt(y)
+ emit
+ digit
+ 2emit
+ .
+ h.
+ h.n
+ cr
+ space
+ down
+ edit
+ e
+ lm
+ rm
+ graph
+ switch
+ freeze
+ text
+ top
+ keybo(ard)
+ debu(g)
+ at
+ +at
+ xy
+ fov
+ fifo
+ box
+ line
+ color
+ octant
+ sp
+ last
+ unpac(k)
+ blk
+ curs
+ word
+ ekt
+ abort
+ h
+ buffe(r)
+ offset
+ tic
+ winver (- t | f)
+ aper
+ vesa
+ trash
+ hsvv
+ tsim
+ cpoint
+ words
+ qkey
+ digin
+ qwert(y)
+ no-ret
+ r?
+ nul
+ cad
+ pcad
+ displ(ay)
+ actc
+ +list(new)
+ itick(new)
+ lis(new)
+ +e(new)
+ retain
+ keych
+ utime
+ endram
+ wgds
+ olog
+ wlog
+ clog
+ bye
+ rback (b – n)
+ wback (b n)
+ fcreate (new)
+ fclose (new)
+ fioctl (new)
+ fread (new)
+ fwrite (new)
+ fesc (new)
+ rwork (new)
+ wwork (new)
+
