@@ -115,6 +115,20 @@ huffman_encodings = [
 highbit =  0x80000000L
 mask =     0xffffffffL
 
+def packword_num(word):
+  """pack a word into a 32-bit integer like colorForth editor does
+
+        this routine ignores anything past 28 bits"""
+  packed, bits = 0, 28
+  for letter in word:
+    lettercode = code.index(letter)
+    length = 4 + (lettercode > 7) + (2 * (lettercode > 15))  # using True as 1
+    lettercode += (8 * (length == 5)) + ((96 - 16) * (length == 7))  # True=1
+    packed = (packed << length) + lettercode
+    bits -= length
+  packed <<= bits + 4
+  return packed
+
 def packword(word):
   """pack a word into a 32-bit integer like colorForth editor does
 
@@ -149,5 +163,6 @@ def packword(word):
 
 if __name__ == "__main__":
   word = sys.argv[1]
-  print word
   packword(word)
+  packed = packword_num(word)
+  print "0x%x" % packed
