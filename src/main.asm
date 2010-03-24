@@ -123,7 +123,7 @@ backup_blocks_address: dd 0
   mov dword [%1 %+ _fd], dword eax
   ;file stat: find file size
   syscall SYS_fstat, dword[%1 %+ _fd],  %1 %+ _file_stat ; pass the address, NOT the value
-  mov	ecx, dword [%1 %+ _file_stat.st_size]
+  mov ecx, dword [%1 %+ _file_stat.st_size]
   ; open memory that will contain the contents
   syscall SYS_mmap, dword 0, ecx, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_ANON, dword 0, dword 0
   mov dword [%1 %+ _address], eax
@@ -178,7 +178,6 @@ host_alloc_buffers:
   ret
 
 _main:
-  debug_print "Starting up", 0xa, 0x0
   mov eax, 1
   test eax, 2
 
@@ -187,7 +186,6 @@ _main:
 
   call host_alloc_buffers
   call host_alloc_display
-  debug_print "Jump to start1...", 0xa, 0x0
   jmp start1
 
 host_notimpl:
@@ -227,16 +225,20 @@ host_notimpl:
 ; the Pentium manual recommends not using "complex instructions"
 ; like LOOP.  However, it IS used in the boot sector where space
 ; is at a premium.
+; can't use loopnz in 32-bit mode
 %macro NEXT 1
   dec ecx
   jnz %1
 %endmacro
 
+; save contents of eax on data stack
+; (eax is already a copy of top of data stack)
 %macro DUP_ 0
   lea esi, [esi - 4]
   mov [esi], eax
 %endmacro
 
+; pop what's at bottom of data stack back into eax
 %macro DROP 0
   lodsd ; Load doubleword at address DS:(E)SI into EAX.
 %endmacro
@@ -284,19 +286,20 @@ char_height equ char_padding + icon_height + char_padding     ; 30
 horizontal_chars  equ screen_width / char_width       ; 1024 / 22 = 46 (remainder 12)
 vertical_chars  equ screen_height / char_height       ; 768 / 30 = 25 (remainder 18)
 
+hexbit equ 20q  ; that's octal, bit 4 set to indicate hexadecimal display
+tagbits equ 17q ; octal again, low 4 bits (0-3) indicate type tag
+
+
 warm:
   DUP_
   jmp start1.0
 
 start1:
   ; TODO: setup arrays
-  mov [top_serve_data_stack - 12], dword 8
-  mov [top_serve_data_stack - 16], dword 90
+  ;mov [top_serve_data_stack - 12], dword 8
+  ;mov [top_serve_data_stack - 16], dword 90
   mov esi, top_main_data_stack
 
-  ;mov esi, top_main_data_stack
-  ;lea esi, [top_main_data_stack + ebp] 
-  
   .0:
     call noshow
     call noserve
@@ -318,7 +321,7 @@ start1:
 
     pop esi
     
-    ; load block 18, and start the colorforth system
+    ; load start screen block 18, and start the colorforth system
     mov eax, 18
     call load
     jmp accept
@@ -374,24 +377,24 @@ serv: dd 0
 
 ; pause this task and switch to the next one.
 dopause:
-  DUP_        ; Push TOS onto data stack..
-  push esi    ; [RST] ; Push NOS (data-stack pointer) onto return stack, which already has the task's return address
-  mov eax, [me]     ; Get pointer to the current executing task
-  mov [eax], esp    ; save return stack pointer (to which task it needs)
-  add eax, byte 4   ; get address AFTER the current task
-  jmp eax    ; jump there (into round, which immediately calls resume below)
+  DUP_            ; push TOS onto data stack..
+  push esi        ; [RST] save NOS (data-stack pointer) onto return stack, which already has the task's return address
+  mov eax, [me]   ; get current task
+  mov [eax], esp  ; save return stack pointer (to which task it needs)
+  add eax, byte 4 ; get address AFTER the current task (skip storage slot, point to round-robin CALL or JMP)
+  jmp eax         ; jump there (into round, which immediately calls resume below)
 
 ; resume a task.
 ; Pause stops the current task and jumps into round, which then calls unpause, which causes
 ; the other task to run.
 ; IN: return address points to the save slot.
 resume:
-  pop eax  ; [RST] Return address is always god or main, where return-stack pointer for OTHER task is stored
-  mov esp, [eax]  ; [RST] Load other task's return-stack pointer (this switches return stacks).
-  mov [me], eax   ;  EAX = pointer to other task's return-stack pointer; save it to either task
-  pop esi  ; [RST] Restore other task's NOS from the return stack
-  DROP      ; Restore other task's TOS from the data stack
-  ret      ; and jump to the next task
+  pop eax        ; [RST] return address is always god or main, where return-stack pointer for OTHER task is stored
+  mov esp, [eax] ; [RST] load other task's return-stack pointer (this switches return stacks).
+  mov [me], eax  ; EAX = pointer to other task's return-stack pointer
+  pop esi        ; [RST] restore other task's NOS from the return stack
+  DROP           ; load previously dup'd datum back into EAX
+  ret            ; and jump to the next task
 
 ; Hint in difference between pause and unpause: Pause saves ESP where "me" points.
 ; Unpause does NOT retrieve ESP from where "me" points
@@ -400,16 +403,15 @@ resume:
 ; contains a pointer to "god".
 ; So what happens when a ColorForth block calls show?
 
-
 ; set draw task to code following 'call to_draw' (with empty stacks).
 to_draw:
-  mov edx, top_draw_data_stack - 4  ; data stack is empty.
-  mov ecx, top_draw_return_stack - 4  ; return stack contains our return address
-  pop dword [ecx] ; ecx = address of .0 in show
-  lea ecx, [ecx - 4]  ; and the data stack pointer
+  mov edx, top_draw_data_stack - 4   ; data stack is empty.
+  mov ecx, top_draw_return_stack - 4 ; return stack contains our return address
+  pop dword [ecx]                    ; ecx = address of .0 in show
+  lea ecx, [ecx - 4]                 ; and the data stack pointer
   mov [ecx], edx
-  mov [draw], ecx   ; store it in the draw slot
-  ret     ; and return twice (to our caller's caller).
+  mov [draw], ecx                    ; store it in the draw slot
+  ret                                ; and return twice (to our caller's caller).
 
 ; ditto, for serve task
 to_serve:
@@ -427,7 +429,6 @@ to_serve:
 ; Note that when show0 is run at startup, the current task is the GOD task.
 noshow:
   call show
-  ; an empty "drawing" routine
   ret
 
 ; set user drawing routine to code following 'call show'.
@@ -477,90 +478,87 @@ c_:
   ret
 
 ; ADDING TEMPORARY DEFINITIONS
-;Set beginning of definitions that will be removed by empty.
-
+; save current state so we can recover later with 'empty'
 mark:
-  mov ecx, [macros] ; Save # words in MACRO wordlist.
+  mov ecx, [macros] ; Save # macros in longword mk
   mov [mk], ecx
-  mov ecx, [forths] ; Save # words in FORTH wordlist.
+  mov ecx, [forths] ; Save # forth words in mk + 1
   mov [mk + 4], ecx
-  mov ecx, [H] ; Save end-of-dictionary pointer.
+  mov ecx, [H]      ; Save end-of-dictionary pointer in mk + 2
   mov [mk + 8], ecx
   ret
 
+; restore state saved at last 'mark'
 empty:
-  mov ecx, [mk + 8] ; Restore end-of-dictionary pointer.
+  mov ecx, [mk + 8]    ; restore end-of-dictionary pointer.
   mov [H], ecx
-  mov ecx, [mk + 4] ; Restore # words in FORTH wordlist.
+  mov ecx, [mk + 4]    ; restore # words in FORTH wordlist.
   mov [forths], ecx
-  mov ecx, [mk] ; Restore # words in MACRO wordlist.
+  mov ecx, [mk]        ; restore # words in MACRO wordlist.
   mov [macros], ecx
-  mov dword [class], 0
+  mov dword [class], 0 ; used by C18 compiler, cleared here
   ret
 
 ; FINDING WORDS
 ; These routines return with ECX = offset into wordlist to word if zero flag set(?)
 ; [note how instructions affect zero flag]
 
-;Look up word in MACRO wordlist.
+; find pointer to macro code
 mfind:
-  mov ecx, [macros]
-  push edi
-  lea edi, [macro_names - 4 + ecx * 4]
-  jmp short ffind
+  mov ecx, [macros]                    ; number of macros, 1-based
+  push edi                             ; save destination pointer, we need to use it momentarily
+  lea edi, [macro_names - 4 + ecx * 4] ; point to last macro
+  jmp short ffind                      ; search dictionary
 
-;Look up word in FORTH wordlist.
+; locate code of high- or low-level Forth word
 find:
-  mov ecx, [forths]
-  push edi
-  lea edi, [forth_dictionary_names - 4 + ecx * 4]
+  mov ecx, [forths]                               ; current number of Forth definitions
+  push edi                                        ; save destination pointer so we can use it
+  lea edi, [forth_dictionary_names - 4 + ecx * 4] ; point it to last packed Forth word
 
 ffind:
-  std
-  repne scasd
-  cld
-  pop edi
+  std         ; search backwards
+  repne scasd ; continue moving until we hit a match
+  cld         ; clear direction flag again
+  pop edi     ; no longer need this, can tell from ECX where match was found
   ret
 
 ; execute word (full name on top of stack).
+; exword is the default action of 'aword'; find and execute the word
 exword:
-  dec dword [words]
+  dec dword [words] ; from keyboard
   jz execute.0
   DROP
   jmp exword
 
+; execute source word
 execute:
   mov dword [lit], alit
-  DUP_
-  mov eax, [ -4 + edi * 4] ; grab the next pre-parsed word
-  and eax, byte -16 ; Mask out color bits (bits 0..3).
+  DUP_                                         ; save EAX (top of stack) on data stack
+  mov eax, [ -4 + edi * 4]                     ; grab the next pre-parsed word
+  and eax, byte -16                            ; Mask out color bits (bits 0..3).
   .0:
-    debug_print "**** called execute", 0xa, 0x0
-    call debug_dumpregs
-    call find ; Look up word in FORTH wordlist.
-    jnz abort ; If not found, abort.
-    DROP
-    jmp [forth_dictionary_addresses + ecx * 4] ; run the word's definition
+    call find                                  ; look for word in the dictionary
+    jnz abort                                  ; If not found, abort.
+    DROP                                       ; restore EAX from stack
+    jmp [forth_dictionary_addresses + ecx * 4] ; jump to low-level code of Forth word or macro
 
-; canceling execution
+; abort execution or load operation
 abort:
-  ;TODO
-  ;cmp edi, 0x1200
-  ;js abort1
-  debug_print "**** called ABORT", 0xa, 0x0
-  mov [curs], edi
+  debug_print "called ABORT !!!!!!!!!!!!!", 0xa, 0x0
+  mov [curs], edi ; store pointer to last source word encountered
 
-  ; TODO
+  ; get block number from word pointer
   shl    edi, 2
   sub    edi, [blocks_address] 
   shr    edi, 10
   add    edi, 18
 
-  mov [blk], edi
+  mov [blk], edi ; update BLK
+  ; this way, E will begin editing at point of failure
 
 abort1: 
-  debug_print "**** called ABORT1", 0xa, 0x0
-  mov esp, top_main_return_stack ; [RST]
+  mov esp, top_main_return_stack ; [RST] reset return stack pointer
   mov dword [adefine], forthd
   mov dword [adefine + 4], qcompile
   mov dword [adefine + 8], cnum
@@ -588,7 +586,6 @@ sdefine:
 
 ;Points word-definition vector at macrod
 macro:
-  debug_print "call macro", 0xa, 0x0
   call sdefine
   ; Does NOT fall through to macrod.
 
@@ -605,7 +602,6 @@ macrod:
 
 ;Points word-definition vector at forthd.
 forth:
-  debug_print "call forth", 0xa, 0x0
   call sdefine
   ; Does NOT fall through to forthd.
 
@@ -614,28 +610,29 @@ forth:
 ;  (if the current wordlist is FORTH).
 forthd:
   push eax
-  mov ecx, [forths]    ;Increment number of words in the
-  inc dword [forths]    ; FORTH wordlist
-  lea ecx, [forth_dictionary_names + ecx * 4] ; Make offset into FORTH word array.
+  mov ecx, [forths]    ; current count of Forth words
+  inc dword [forths]   ; make it one more
+  lea ecx, [forth_dictionary_names + ecx * 4] ; point to the slot for the next definition
   mov eax, forth_dictionary_addresses - forth_dictionary_names
 
 forthdd:
-  mov edx, [ - 4 + edi * 4] ; grab pre-parsed word
+  mov edx, [ - 4 + edi * 4] ; grab pre-parsed word, load the packed word from source block
   and edx, byte -16 ; Clear color bits (bits 0..3).
-  mov [ecx], edx ; Store result at end of word array.
-  mov edx, [H] ; Store end-of-dictionary pointer
+  mov [ecx], edx ; store the "naked" word in the dictionary
+  mov edx, [H] ; HERE pointer, place available for new compiled code
   mov [ecx + eax], edx ;   into wordlist's address array.
-  lea edx, [ecx + eax]        ; Get address of address-array cell.
-  shr edx, 2      ; Convert it into DWORD address.
-  mov [last], edx      ; Store it (to allow optimization).
+  lea edx, [ecx + eax]        ; get address of address-array cell.
+  shr edx, 2      ; convert it into DWORD address.
+  mov [last], edx      ; store it (to allow optimization).
   pop eax
   mov [list], esp      ; ?
   mov dword [lit], adup      ; ?
-  test dword [class], -1      ; Call custom routine only if
-  jz .9          ;   vector is non-zero.
-  jmp [class]
+  ; for CLASS stuff, search web for moore01a.pdf
+  test dword [class], -1      ; is CLASS set for C18 compilation?
+  jz .9          ; return if not
+  jmp [class] ; otherwise do C18 compilation
   .9:
-    ret ; Otherwise simply return.
+    ret ; otherwise simply return.
 
 ; ColorForth's compiler works by adding bytes of machine code to the end of a buffer called
 ; the dictionary. (This buffer starts at address 0x100000 - the one-megabyte mark - and
@@ -664,11 +661,12 @@ forthdd:
 ; to optimize away the LODSD, it can do so.
 ;
 
+; compile a DROP instruction
 cdrop:
-  mov edx, [H]
-  mov [list], edx
-  mov byte [edx], op_drop ; lodsd
-  inc dword [H]
+  mov edx, [H]            ; get HERE pointer to newly compiled code
+  mov [list], edx         ; store at LIST for tail optimization
+  mov byte [edx], op_drop ; compile LODSD=DROP
+  inc dword [H]           ; update HERE pointer
   ret
 
 ; DUP
@@ -684,14 +682,20 @@ cdrop:
 ; The word ?dup is often used at the beginning of a macro word to compile a dup only if the
 ; definition of the word being defined does not already end with a drop (i.e., a LODSD
 ; instruction). If the drop is there, it is removed, and dup is not compiled.
+
+; compile a DUP if necessary (uses tail optimizer)
 qdup:
-  mov edx, [H] ; See if the last optimizable instruction was one byte back from the end of the dictionary
-  dec edx
-  cmp [list], edx
-  jne cdup ; If not, go compile a dup
-  cmp byte [edx], op_drop ; If so, was the instruction drop ?
-  jne cdup ; if not, go compile a dup
-  mov [H], edx ; ; If so, remove the DROP and continue compilation
+  mov edx, [H] ; get HERE pointer
+  dec edx ; point back to last byte compiled
+  cmp [list], edx ; is it subject to tail optimization?
+  jne cdup ; if not, go ahead and compile the DUP
+  cmp byte [edx], op_drop ; is it a DROP instruction?
+  jne cdup ; if not, compile the DUP
+  ; so it's a DROP instruction, and we were about to compile a DUP.
+  ; DROP followed by DUP is a no-op, so point HERE to before the DROP
+  ; was compiled, and we've eliminated a one-byte DROP, a 5-byte DUP,
+  ; and the wasted runtime they would have consumed
+  mov [H], edx ; move HERE back one byte
   ret
 
 ; Non-optimized DUP (cdup)
@@ -706,11 +710,15 @@ qdup:
 ; is four bytes, so lea esi, [esi-4] makes room on the stack for another item. EAX is TOS, the
 ; register containing the top item on the stack, so mov [esi], eax copies TOS into the new
 ; space.)
+; compile a DUP instruction
 cdup:
-  mov edx, [H]
-  mov dword [edx], op03_dup
+  mov edx, [H]                ; get HERE pointer
+  ; disassembly of DUP:
+  ; 8d 76 fc    lea    esi,[esi-4]
+  ; 89 06       mov    DWORD PTR [esi],eax
+  mov dword [edx], op03_dup   ; compile the DUP
   mov byte [edx + 4], op4_dup
-  add dword [H], byte 5
+  add dword [H], byte 5       ; adjust HERE accordingly, point past compiled code
   ret
 
 ; THE INTERPRETER
@@ -767,12 +775,18 @@ var1:
 ; dummy entry is the address to which "[4+forth0+ecx*4]" refers.)
 
 ; Used by inter to handle magenta (color=12, variable) words.
+
+; compile a variable from preparsed source
 variable:
-  debug_print "called variable", 0xa, 0x0
+  ; note: it doesn't actually compile anything at this point, just adds to
+  ; the dictionaries. when the variable is _used_ is when something
+  ; gets compiled
+  ; first add it to the forth dictionary...
   call forthd
+  ; after forthd, ECX is already offset by loadaddr
   mov dword [forth_dictionary_addresses - forth_dictionary_names + ecx], var1
   inc dword [forths] ; dummy entry for source address
-  mov [4 + ecx], edi
+  mov [4 + ecx], edi ; EDI is source address containing variable's value
 
   ; Then variable creates parallel entries in the MACRO wordlist. This operation is the same as
   ; above, except that variable calls macrod instead of forthd, and it stores, not the address of
@@ -780,6 +794,7 @@ variable:
   ; label "@@"), which I choose to call "var2".
 
   call macrod
+  ; after call to macrod, ECX is offset by loadaddr
   mov dword [macro_addresses - macro_names + ecx], .var
   inc dword [macros]
   mov [4 + ecx], edi
@@ -787,7 +802,7 @@ variable:
   ; The wordlist entries created, variable increments the pre-parsed-word pointer, so that the
   ; interpreter will not interpret the value following the magenta word (which of course is the
   ; value of the variable).
-  inc edi
+  inc edi ; update source word pointer to following word
   ret
 
   ; So how is a variable used after it is defined?
@@ -829,11 +844,13 @@ variable:
 ; Whereas most routines called by inter (the interpreter loop) access the current pre-
 ; parsed word via [-4+edi*4], cnum needs to access the following pre-parsed word (the
 ; 32-bit number itself) via [edi*4].
+
+; compile a number
 cnum:
   call [lit]
-  mov eax, [edi * 4] ; Get cell AFTER "prefix."
+  mov eax, [edi * 4] ; get the number from preparsed source
   inc edi
-  jmp short cshort_
+  jmp short cshort_ ; join common code below
 
 ; CSHORT
 ;
@@ -846,13 +863,15 @@ cnum:
 ; this case color six (a "green" number to be compiled), the next bit indicates
 ; whether to display the number as decimal or hexadecimal, and the other 27 bits
 ; contain the number.
-cshort:
-; Used by inter to handle green (color=6, 27-bit number) words.
-  call [lit]
-  mov eax, [ - 4 + edi * 4]
-  sar eax, 5
 
-cshort_:
+; used by inter to handle green (color=6, 27-bit number) words.
+; compile short (27 bits or less) signed number
+cshort:
+  call [lit]
+  mov eax, [ - 4 + edi * 4] ; get number from pre-parsed source
+  sar eax, 5 ; get rid of hexbit and tagbits
+
+cshort_: ; common code for both cnum and cshort
   call literal
   DROP
   ret
@@ -866,15 +885,17 @@ alit:
 ; machine code needed to push that number onto the stack later. (In most cases it
 ; generates a dup followed by a MOV EAX, <32_bit_number> instruction.) Note that
 ; this routine does not drop the number from the stack after compiling it.
+
+; compile the literal (number) in EAX
 literal:
-  call qdup    ; compile code to preserve top of stack
-  mov edx, [list]     ; preserve previous instruction address
-  mov [list + 4], edx ; saved for optimization
-  mov edx, [H]  ; save address of the "mov eax" instruction about to be compiled
-  mov [list], edx
-  mov byte [edx], op_mov_eax_n  ; compile "mov eax, literal"
-  mov [edx + 1], eax      ; using the literal on the stack
-  add dword [H], byte 5  ; adjust end of dictionary pointer
+  call qdup                    ; compile code to preserve top of stack
+  mov edx, [list]              ; get what was last saved in 'list', preserve previous instruction address
+  mov [list + 4], edx          ; save that in the next slot, for optimization
+  mov edx, [H]                 ; save address of the "mov eax" instruction about to be compiled
+  mov [list], edx              ; and store that in 'list'
+  mov byte [edx], op_mov_eax_n ; compile "mov eax, literal"
+  mov [edx + 1], eax           ; store the N
+  add dword [H], byte 5        ; adjust HERE pointer
   ret
 ;
 ; Qcompile retrieves the next pre-parsed word from the source code and looks it up,
@@ -882,56 +903,53 @@ literal:
 ; the MACRO wordlist, the word's definition is executed. If the word is found in the
 ; FORTH wordlist, a CALL to the word's definition is compiled into the dictionary.
 ; If the word is found in neither, the interpreter aborts.
+
+; used by inter to handle green (color=4, compile) words.
 qcompile:
-;Used by inter to handle green (color=4, compile) words.
-  call [lit]        ; For info, search for "lit: dd adup"
-  mov eax, [ - 4 + edi * 4]     ; Get next pre-parsed word
-  and eax, byte -16      ; mask out color bits (bits 0..3)
-  debug_print "called qcompile", 0xa, 0x0
-  call debug_dumpregs
-  call mfind        ; look it up in the macro word list
-  jnz .0
-  DROP        ; If found in MACRO wordlist,
-  jmp [macro_addresses + ecx * 4] ; execute its definition immediately.
+  call [lit]                                        ; For info, search for "lit: dd adup"
+  mov eax, [ - 4 + edi * 4]                         ; Get next pre-parsed word
+  and eax, byte -16                                 ; mask out color bits (bits 0..3)
+  call mfind                                        ; locate word in macro dictionary
+  jnz .0                                            ; if failed, try in Forth dictionary
+  DROP                                              ; if found in MACRO wordlist, restore EAX
+  jmp [macro_addresses + ecx * 4]                   ; execute its definition immediately, jump to macro code
   .0:
-    call find          ; Otherwise, find it in FORTH wordlist.
-    mov eax, [forth_dictionary_addresses + ecx * 4]
+    call find                                       ; otherwise, find it in FORTH wordlist.
+    mov eax, [forth_dictionary_addresses + ecx * 4] ; load code pointer in case there was a match
 
 ; Call_ takes the routine address at the top of the stack and compiles from it the
 ; machine code needed to call that routine.
 qcom1:  
-  debug_print "called qcom1", 0xa, 0x0
-  call debug_dumpregs
-  jnz abort        
-  mov edx, [H]
-  mov [list], edx
-  mov byte [edx], op_call       ; Store CALL opcode into dictionary.
-  add edx, byte 5        ; Calculate correct offset from the CALL
-  sub eax, edx      ;   instruction to the routine called.
-  mov [edx - 4], eax      ; store offset in dictionary
-  mov [H], edx
-  DROP
+  jnz abort               ; abort if no match in dictionary
+  mov edx, [H]            ; get HERE pointer to where new compiled code goes
+  mov [list], edx         ; save that in 'list' for tail optimization
+  mov byte [edx], op_call ; Store CALL opcode into dictionary.
+  add edx, byte 5         ; whole instruction including offset is 5 bytes
+  sub eax, edx            ; it has to be a 32-bit offset rather than absolute address
+  mov [edx - 4], eax      ; store it after the "call" instruction
+  mov [H], edx            ; point HERE to end of just-compiled code
+  DROP                    ; restore EAX from data stack
   ret
 
-compile:
 ; Used by inter to handle cyan (color=7, compile macro) words.
+compile:
   call [lit]
   mov eax, [ - 4 + edi * 4]
-  and eax, byte -16
+  and eax, byte -16 ; mask out tag bits
   call mfind
   mov eax, [macro_addresses + ecx * 4]
   jmp qcom1
 
-short_:
 ; Used by inter to handle yellow (color=8, 27-bit number) words.
+short_:
   mov dword [lit], alit
   DUP_
   mov eax, [ - 4 + edi * 4]
   sar eax, 5
   ret
 
-num:
 ; Used by inter to handle yellow (color=2, 32-bit number) words.
+num:
   mov dword [lit], alit
   DUP_
   mov eax, [edi * 4]
@@ -944,30 +962,31 @@ num:
 ; machine code into the dictionary, from one to four bytes at a time.
 ; 
 ; compile code for: , ,1 ,2 & ,3
-comma:
+
 ; Moves a cell (four bytes) of machine code to the end of the dictionary.
+comma:
   mov ecx, 4
 
 dcomma:
-  mov edx, [H]
-  mov [edx], eax
+  mov edx, [H] ; get HERE pointer to where code is compiled
+  mov [edx], eax ; move what's at TOS into that location
   DROP
-  lea edx, [ecx + edx]
-  mov [H], edx
+  lea edx, [ecx + edx] ; adjust HERE for number of bytes compiled
+  mov [H], edx ; update HERE
   ret
 
-comma1:
 ; Moves one byte of machine code to the end of the dictionary.
+comma1:
   mov ecx, 1
   jmp dcomma
 
-comma2:
 ; Moves two bytes of machine code to the end of the dictionary.
+comma2:
   mov ecx, 2
   jmp dcomma
 
-comma3:
 ; Moves three bytes of machine code to the end of the dictionary.
+comma3:
   mov ecx, 3
   jmp dcomma
 
@@ -986,20 +1005,20 @@ comma3:
 ; same return address but if it jumps to the beginning of its own definition
 ; instead, the return stack is not overfilled.
  
-; compile code for a semi-colon
+; compile code for a semi-colon, end definition
+; compiles code to return to caller (either JMP or RET).
 semi:
-; Compiles code to return to caller (either JMP or RET).
-  mov edx, [H]
-  sub edx, byte 5
+  mov edx, [H]                 ; get HERE pointer
+  sub edx, byte 5              ; peek back 5 bytes
   cmp [list], edx
   jne .0
-  cmp byte [edx], op_call
-  jne .0
-  inc byte [edx]        ; convert call to jmp
+  cmp byte [edx], op_call      ; was it a 'call' instruction? (e8=call, e9=jmp)
+  jne .0                       ; skip ahead if not
+  inc byte [edx]               ; tail optimization, turn 'call' into 'jmp' (0xe9)
   ret
   .0:
-    mov byte [edx + 5], op_ret        ; convert call to ret
-    inc dword [H]
+    mov byte [edx + 5], op_ret ; compile a 'ret' at end
+    inc dword [H]              ; make 'here' pointer reflect that
     ret
 
 then:
@@ -1042,21 +1061,24 @@ qlit:
   mov eax, [list + 4]
   mov [list], eax
   mov eax, [edx + 1]
+  ; disassembly of DUP:
+  ; 8d 76 fc    lea    esi,[esi-4]
+  ; 89 06       mov    DWORD PTR [esi],eax
   cmp dword [edx - 5], op03_dup
   je .0
   mov [H], edx
   jmp cdrop
   .0:
-    add dword [H], byte -10
+    add dword [H], byte -10     ; flag nz
     ret
   .1:
-    xor edx, edx        ; flag z
+    xor edx, edx                ; flag z
     ret
 
 less:
   cmp [esi], eax
-  js .9        ; flag nz ?????? bug fix; should be jl
-  xor ecx, ecx        ; flag z
+  js .9        ; flag nz
+  xor ecx, ecx ; flag z
   .9:
     ret
 
@@ -1078,14 +1100,17 @@ less:
 ; you keep improving your software by handling these small concerns because the
 ; effects of doing so build up eventually, and you end up with smaller, faster
 ; code.)
+
+; used by inter to handle extension (color=0) words.
 qignore:
-; Used by inter to handle extension (color=0) words.
-  test dword [ - 4 + edi * 4], -16  ; Unless word's top 28 bits are
-  jnz nul        ;   null, return to interpreter.
-  pop edi        ; Otherwise, exit interpreter. [RST]
-  pop edi        ; [RST]
+  ; is this a continuation of the previous word? ignore if so
+  test dword [ - 4 + edi * 4], -16  ; valid packed word ? unless word's top 28 bits are null, return to interpreter.
+  jnz nul        ;   
+  ; otherwise call it a NUL and terminate the LOAD
+  pop edi        ; [RST] pop the RET address from the call to qignore, exit interpreter
+  pop edi        ; [RST] now pop the saved EDI which was PUSHed by LOAD
 nul:
-  ret
+  ret ; return to caller (where LOAD was called if NUL)
 
 ; jump
 
@@ -1116,18 +1141,16 @@ jump:
 ; interpreter begins grabbing the pre-parsed words already in memory and using each
 ; word's color bits to determine the routine to use to handle that word.
 
-load:
 ; ( b -- ) Interprets pre-parsed words in the block given.
-  debug_print "Load Blocks address", 0xa, 0x0
-  call debug_dumpregs
-  sub eax, 18 ; block, delete 18, because we don't have binary content
-  shl eax, 10-2 ; multiply by 256
+load:
+  sub eax, 18               ; block, delete 18, because we don't have binary content
+  shl eax, 10-2             ; multiply by 256 longwords, same as 1024 bytes
   mov ebx, [blocks_address] ; ebx contains the ADDRESS of the block contents
-  shr ebx, 2 ; divide the address by 4
+  shr ebx, 2                ; divide the address by 4
   add eax, ebx
-  push edi      ; [RST]
+  push edi                  ; [RST] save EDI register in case it's being used by interpreter
   mov edi, eax
-  DROP ; eax <- esi ; esi = esi + 4
+  DROP                      ; drop block number from data stack
 
 ; inter
 
@@ -1138,13 +1161,11 @@ load:
 ; checks for the last word in the pre-parsed code, so there is no need for inter to
 ; do it.)
 inter:
-  mov edx, [edi * 4]
-  inc edi          ; (Thus all routines work on [-4+edi*4].)
-  and edx, byte 15        ; Clear all bits except color bits (0..3).
-  debug_print "*********** inter loop ", 0xa, 0x0
-  call debug_dumpregs
-  call [spaces + edx * 4]       ; Use result as offset to routine to run. 
-  jmp inter
+  mov edx, [edi * 4]      ; get next longword from block
+  inc edi                 ; then point to the following one
+  and edx, byte 15        ; get only low 4 bits, the type tag
+  call [spaces + edx * 4] ; call the routine appropriate to this type
+  jmp inter               ; loop till "nul" reached, which ends the loop
 
 ; 16 Interpreter Vectors:
 ;
@@ -1166,17 +1187,18 @@ inter:
 ; f null
 
 align 4
-; 
+; these are the compiler actions for the various type tags
 spaces:
-  dd qignore, execute, num        ; colors 0..2
-adefine:
+  dd qignore, execute, num        ; colors 0..2: 0 = extension, 1=execute, 2=executelong
+; 3=define, either in macro dictionary or forth dictionary
+adefine: ; where definitions go, either in macrod (dictionary) or forthd
   dd forthd          ; color 3 ; TODO is forthd + 5
     ; This is altered by sdefine, which stores the
     ; address of either macrod (to define a MACRO
     ; word) or forthd (to define a FORTH word) here.
-  dd qcompile, cnum, cshort, compile    ; colors 4..7
-  dd short_, nul, nul, nul        ; colors 8..11
-  dd variable, nul, nul, nul      ; colors 12..15
+  dd qcompile, cnum, cshort, compile    ; colors 4..7: 4 = green, 5 = long, 6 = short, 7 = cyan
+  dd short_, nul, nul, nul        ; colors 8..11: 8 = executeshort
+  dd variable, nul, nul, nul      ; colors 12..15: 12 = variable
 
 ; Other variables
 ;
@@ -1233,7 +1255,7 @@ mk: dd 0, 0, 0        ; macros, forths, H
 ; when a word needs to be compiled. The code space begins at address 0x100000 (the
 ; one-megabyte mark), so if the code space is empty, h is set at 0x100000. As the
 ; compiler adds bytes of machine code to the code space, h advances.
-H:  dd 0x100000
+H:  dd 0x100000 ; here pointer, start compiling here
 
 ; last
 ;
@@ -1251,14 +1273,14 @@ last: dd 0
 ; this was intended as a way to customize the interpreter by having some custom code
 ; executed whenever a word is defined, except that I haven't found any way to do
 ; that except by altering the assembly-language source and reassembling ColorForth.
-class:  dd 0
+class:  dd 0 ; used by C18 compiler
 
 ; list
 ;
 ; This is a list of up to two addresses within the dictionary. Each address is that
 ; of a previously compiled instruction an instruction that could later be changed
 ; or removed in order to optimize the machine code.
-list: dd 0, 0
+list: dd 0, 0 ; used by tail optimizer
 
 
 ; Wordlists
@@ -1557,7 +1579,6 @@ forth_words_addresses:
 ; General-purpose routines
 
 qwerty:
-  debug_print "called qwerty", 0xa, 0x0
   ret
  
 retain:
@@ -1567,14 +1588,13 @@ retain:
   ret
 
 winver:
-  debug_print "called winver", 0xa, 0x0
   DUP_
   mov eax, 1
   or eax, eax
   ret
 
-erase:
 ;( b n -- ) Erase n blocks, starting with block b.
+erase:
   mov ecx, eax
   shl ecx, 8
   DROP
@@ -1592,27 +1612,26 @@ erase:
   DROP
   ret
 
+;( n -- ) Copy current block to block n, and make that block the current block
 copy:
-;( n -- ) Copy current block to block n, and make that
-;  block the current block.
-  cmp eax, byte 12
-  jc abort1
-  ;push edi; TODO
-  mov edi, eax
-  sub edi, 18; TODO
-  shl edi, 2 + 8
-  push esi
-  mov esi, [blk]
-  sub esi, 18; TODO
-  shl esi, 2 + 8
-  mov ecx, 512
-  add esi, [blocks_address]; TODO
-  add edi, [blocks_address]; TODO
-  rep movsd
-  pop esi
+  cmp eax, byte 12          ; can't overwrite machine-code blocks...
+  jc abort1                 ; so if we're asked to, abort the operation
+  ; push edi                ; TODO
+  mov edi, eax              ; get block number into EDI
+  sub edi, 18               ; TODO
+  shl edi, 2 + 8            ; multiply by 1024 to get physical (byte) address
+  push esi                  ; save data stack pointer so we can use it for block move
+  mov esi, [blk]            ; get current block number from blk
+  sub esi, 18               ; TODO
+  shl esi, 2 + 8            ; multiply by 1024 to get address
+  mov ecx, 512              ; 256 longwords = 1024 bytes TODO
+  add esi, [blocks_address] ; TODO
+  add edi, [blocks_address] ; TODO
+  rep movsd                 ; move the block from source (ESI) to destination (EDI)
+  pop esi                   ; restore data stack pointer
   pop edi
-  mov [blk], eax
-  DROP
+  mov [blk], eax            ; destination block becomes new current block (blk)
+  DROP                      ; no longer need the block number
   ret
 
 ; move dwords
@@ -1629,8 +1648,10 @@ move:
   rep movsd
   ret
 
-;(?)Print four numbers --
+; (?)Print four numbers --
+; show current machine state
 debug:
+  ; locate character output two lines above bottom
   mov dword [xy], char_padding * 0x10000 + (vertical_chars - 2) * char_height + char_padding
   DUP_
   mov eax, [main]
@@ -1643,7 +1664,7 @@ debug:
   mov eax, [draw]
   call dot
   DUP_
-  mov eax, esi
+  mov eax, esi ; data stack pointer
   jmp dot
 
 align 4; TODO ? is this needed ?
@@ -1795,18 +1816,19 @@ displ_:
   shr eax, 2
   ret
 
-rgb:
-  ror eax, 8
-  shr ax, 2
-  ror eax, 6
-  shr al, 3
-  rol eax, 6+5
-  and eax, 0f7deh
+; change 8:8:8 bit format to 5:6:5
+rgb: 
+  ror eax, 8 ; rotate blue bits into upper word
+  shr ax, 2 ; drop two low bits of green
+  ror eax, 6 ; rotate green into upper word, leaving only red in AX
+  shr al, 3 ; drop low 3 bits of red
+  rol eax, 6+5 ; now rrrrrggggggbbbbb
+  and eax, 0f7deh ; remove low bit of each color 0b1111011111011110
   ret
 
 white:
   DUP_
-  mov eax, _white
+  mov eax, _white ; 8:8:8 rgb, full brightness
 
 color:
   ;call rgb
@@ -1903,17 +1925,18 @@ bit32:
     NEXT .0
     ret
 
-; : emit ( c -- )
+; ( c -- ) emit
+; paint a character on the screen
 emit:
-  call qcr
-  push esi
+  call qcr ; issue CRLF if at end of line
+  push esi ; save registers we need...
   push edi
   push edx
-  imul eax, byte icon_width * icon_height / 8
-  mov    esi, [icons_address]
-  add    esi, eax
+  imul eax, byte icon_width * icon_height / 8 ; index into icon table...
+  mov esi, [icons_address] ; point to the bit-representation of this character
+  add esi, eax
   call pen_addr
-  mov edx, [fore]
+  mov edx, [fore] ; get foreground color into EDX:w
   mov ecx, icon_height
   .0:
     push ecx
@@ -1921,7 +1944,7 @@ emit:
     add edi, (screen_width - icon_width) * screen_depth
     pop ecx
     NEXT .0
-  pop edx
+  pop edx ; restore registers...
   pop edi
   pop esi
 
@@ -1979,12 +2002,12 @@ line:
   DROP
   ret
 
-; ( width height -- )
+; ( width height -- ) draw a box and fill with foreground color
 box:
   call pen_addr
-  cmp eax, screen_height + 1
-  js .0
-  mov eax, screen_height
+  cmp eax, screen_height + 1 ; past vertical end of screen?
+  js .0 ; continue if not
+  mov eax, screen_height  ; else set vertical parameter to end of screen
   .0:
     mov ecx, eax
     sub ecx, [yc]
@@ -2082,8 +2105,8 @@ down:
   add edx, char_padding * 0x10000 + 0x8000 - char_height + char_padding
   mov [xy], edx    ; set xy and fall through to zero...
 
+; if TOS=0, set TOS and ZF to 1; otherwise set both to 0.
 zero: 
-; If TOS=0, set TOS and ZF to 1; otherwise set both to 0.
   test eax, eax
   mov eax, 0
   jnz .9
@@ -2091,9 +2114,8 @@ zero:
   .9:
     ret
 
-;Blanks the screen (draws a black box over the whole screen).
+; blanks the screen (draws a black box over the whole screen).
 blank:
-; Blanks the screen (draws a black box over the whole screen).
   DUP_
   xor eax, eax
   mov [xy], eax
@@ -2104,56 +2126,59 @@ blank:
   mov eax, screen_height
   jmp box
 
+; sets cursor position to top-left corner.
 top:
-;Sets cursor position to top-left corner.
-  mov ecx, [lm]
-  shl ecx, 16 ; Make offset from video-memory start to scanline.
-  add ecx, byte 3 ; Add padding between left margin and first icon
-  mov [xy], ecx
-  mov [xycr], ecx
+  mov ecx, [lm] ; get left margin in pixels
+  shl ecx, 16 ; shift to X of XY doubleword
+  add ecx, byte 3 ; add 3 pixels for top (Y) margin
+  mov [xy], ecx ; update XY
+  mov [xycr], ecx ; update XYCR (unused? [jc])
   ret
 
+; insert a carriage return if at end of line
 qcr:
-  mov cx, [xy + 2]      ; get x
-  cmp cx, [rm]    ; x > rm ?
-  js cr.9        ; if so, do cr
+  mov cx, [xy + 2] ; get X, the horizontal character pointer
+  cmp cx, [rm] ; at or past right margin?
+  js cr.9  ; no, return
 
+; insert a carriage return (drop to next line)
 cr:
-  mov ecx, [lm]
-  shl ecx, 16    ; x = lm
-  mov cx, [xy]    ; get y
-  add ecx, byte char_height; y += char_height
-  mov [xy], ecx  ; set xy
+  mov ecx, [lm] ; set X to left margin
+  shl ecx, 16 ; move to high 16 bits of XY doubleword...
+  mov cx, [xy] ; now get Y word...
+  add ecx, byte char_height ; and add height of icon (character) to it
+  mov [xy], ecx ; update XY pointer
   .9:
     ret
 
 ; Setting screen parameters
+
+; set left margin to new pixel amount (high-level FORTH word LM)
 lms:
-; set left margin
-  mov [lm], eax
+  mov [lm], eax ; top of stack becomes new left margin
   DROP
   ret
 
+; set right margin to new pixel amount (high-level FORTH word RM)
 rms:
-; set right margin
   mov [rm], eax
   DROP
   ret
 
+; ( x y -- ) set current screen position
 at_:
-; ( x y -- ) set screen position
-  mov [xy], ax
-  DROP
-  mov [xy + 2], ax
-  DROP
+  mov [xy], ax ; top of stack should be Y position
+  DROP ; next on stack should be X position
+  mov [xy + 2], ax ; X goes in high 16 bits of XY
+  DROP ; clean X off the stack before returning
   ret
 
-pat:
 ; (x y -- ) set screen position relative to current
-  add [xy], ax
-  DROP
-  add [xy + 2], ax
-  DROP
+pat:
+  add [xy], ax  ; first add Y update
+  DROP ; then get X update into EAX
+  add [xy + 2], ax ; update X
+  DROP ; clean X update off the stack before returning
   ret
 
 octant:
@@ -2174,11 +2199,11 @@ octant:
 
 ; Drawing the user interface
 
-eight:
 ; display one line of the onscreen keyboard (eight icons)
 ; four chars at addr + 12, space, four chars at addr.
 ; IN: edi = addr - 4
 ; OUT: edi = addr
+eight:
   add edi, byte 12
   call four
   call space
@@ -2193,9 +2218,8 @@ fkeys:
 four:
   mov ecx, 4
 
-nchars:
 ; display ECX chars from EDI + 4, incrementing EDI with each char.
-; ex four1
+nchars:
   push ecx
   DUP_
   xor eax, eax
@@ -2206,14 +2230,17 @@ nchars:
   NEXT nchars
   ret
 
+; show stack picture at lower left of screen
 stack:
-; (?)Retrieves items from stack and prints them one by one?
-  mov edi, top_main_data_stack - 4
+  mov edi, top_main_data_stack - 4 ; point to 1st element on god data stack
+  ; the top-of-stack (TOS) of the god stack, whose pointer is available in
+  ; the save slot labeled 'god', contains 'godd', the god data stack pointer.
+  ; we're going to compare it to the godd base, and show anything that's
+  ; there.
   .0:
     mov edx, [main]
     cmp [edx], edi
-    ;jae .9; TODO is jnc in others
-    jae .9
+    jae .9 ; return if greater or equal  TODO is jnc in others
     DUP_
     mov eax, [edi]
     sub edi, byte 4
@@ -2235,9 +2262,9 @@ keyboard:
   mov dword [xy], (screen_width - 30 * char_width - 3) * 0x10000 + screen_height - 2 * char_height - 3
   ; display finger keys
   mov edi, [board]
-  test   edi,edi		; QWERTY
-  jz     .0			; QWERTY
-  call   fkeys		; QWERTY
+  test   edi,edi  ; QWERTY
+  jz     .0 ; QWERTY
+  call   fkeys ; QWERTY
   .0:
     ; display thumb keys (leave a blank line, move 4 chars in).
     call cr
@@ -2358,33 +2385,33 @@ numb1:
 letter:
   ; filters 0..9 and a..f for numeric, and returns
   ;  flags according to al
-  and	al, al
-  js	.9
-  cmp	dword [shift], numb0		; numbers?
-  jc	.2				; yes
-  cmp	dword [current], decimal		; decimal?
-  jz	.0				;  yes
-  cmp	al, 04h				;  no check for hex
-  jz	.2
-  cmp	al, 05h
-  jz	.2
-  cmp	al, 0ah
-  jz	.2
-  cmp	al, 0eh
-  jz	.2
-  cmp	al, 10h
-  jz	.2
-  cmp	al, 13h
-  jz	.2
+  and al, al
+  js .9
+  cmp dword [shift], numb0  ; numbers?
+  jc .2    ; yes
+  cmp dword [current], decimal  ; decimal?
+  jz .0    ;  yes
+  cmp al, 04h    ;  no check for hex
+  jz .2
+  cmp al, 05h
+  jz .2
+  cmp al, 0ah
+  jz .2
+  cmp al, 0eh
+  jz .2
+  cmp al, 10h
+  jz .2
+  cmp al, 13h
+  jz .2
   .0:
-    cmp	al, 18h
-    jc	.1
-    cmp	al, 22h
-    jc	.2
+    cmp al, 18h
+    jc .1
+    cmp al, 22h
+    jc .2
   .1:
-    xor	eax, eax
+    xor eax, eax
   .2:
-    and	al, al				; set flag
+    and al, al    ; set flag
   .9:
     ret
 
@@ -2511,21 +2538,21 @@ align 2
 
 keys
     db 00,00
-    dw 0ffffh, 2a19h, 2c1ah, 001bh	;  1  esc   !1      @2  #3
-    dw 001ch, 001dh, 001eh, 001fh	  ;  5  $4    %5      ^6  &7
-    dw 2d20h, 0021h, 0018h, 0023h	  ;  9  *8    (9      )0  _-
-    dw 2b00h, 0ffffh, 0000h, 1717h	;  d  +=    bs      tab Qq
-    dw 0f0fh, 0404h, 0101h, 0202h	  ; 11  Ww    Ee      Rr  Tt
-    dw 0b0bh, 1616h, 0707h, 0303h	  ; 15  Yy    Uu      Ii  Oo
-    dw 1212h, 0000h, 0000h, 0fefeh	; 19  Pp    {[      }]  ret
-    dw 0000h, 0505h, 0808h, 1010h	  ; 1d  Lctrl Aa      Ss  Dd
-    dw 0e0eh, 0d0dh, 1414h, 2222h	  ; 21  Ff    Gg      Hh  Jj
-    dw 2424h, 0c0ch, 2928h, 0000h	  ; 25  Kk    Ll      :;  "'
-    dw 0000h, 0000h, 0000h, 2626h	  ; 29  ~`    Lshift  |\  Zz
-    dw 1515h, 0a0ah, 1111h, 1313h	  ; 2d  Xx    Cc      Vv  Bb
-    dw 0606h, 0909h, 002eh, 0025h	  ; 31  Nn    Mm      <,  >.
-    dw 2f27h, 0000h, 2d2dh, 0fdfdh	; 35  ?/    Rshift  *   Lalt
-    dw 0fefeh			; 39  space
+    dw 0ffffh, 2a19h, 2c1ah, 001bh ;  1  esc   !1      @2  #3
+    dw 001ch, 001dh, 001eh, 001fh   ;  5  $4    %5      ^6  &7
+    dw 2d20h, 0021h, 0018h, 0023h   ;  9  *8    (9      )0  _-
+    dw 2b00h, 0ffffh, 0000h, 1717h ;  d  +=    bs      tab Qq
+    dw 0f0fh, 0404h, 0101h, 0202h   ; 11  Ww    Ee      Rr  Tt
+    dw 0b0bh, 1616h, 0707h, 0303h   ; 15  Yy    Uu      Ii  Oo
+    dw 1212h, 0000h, 0000h, 0fefeh ; 19  Pp    {[      }]  ret
+    dw 0000h, 0505h, 0808h, 1010h   ; 1d  Lctrl Aa      Ss  Dd
+    dw 0e0eh, 0d0dh, 1414h, 2222h   ; 21  Ff    Gg      Hh  Jj
+    dw 2424h, 0c0ch, 2928h, 0000h   ; 25  Kk    Ll      :;  "'
+    dw 0000h, 0000h, 0000h, 2626h   ; 29  ~`    Lshift  |\  Zz
+    dw 1515h, 0a0ah, 1111h, 1313h   ; 2d  Xx    Cc      Vv  Bb
+    dw 0606h, 0909h, 002eh, 0025h   ; 31  Nn    Mm      <,  >.
+    dw 2f27h, 0000h, 2d2dh, 0fdfdh ; 35  ?/    Rshift  *   Lalt
+    dw 0fefeh   ; 39  space
 
 ; There are twenty-eight ColorForth-specific key codes. The blue cells are for keys 
 ; you press with your right thumb; the green, for keys you press with the four 
@@ -2609,35 +2636,34 @@ key:
   push esi
   push edi
 key0:
-    xor	eax, eax
-    call dopause
-    call getcfkey
-    cmp al, 3ah			; limit to 39
-    jnc key0
-    add eax, eax		; double to account for shifted characters
-    add eax, [shifted]		; +1 if shifted
-    mov al, [keys + eax]		; index into keys
-    and al, al
-    jz key0			; repeat if zero
-    debug_print "Key, got key", 0xa, 0x0
-    pop edi
-    pop esi
-    ret
+  xor eax, eax
+  call dopause
+  call getcfkey ; returns a virtual scan code - appendix 3
+  cmp al, 3ah  ; limit to 39
+  jnc key0
+  add eax, eax  ; double to account for shifted characters
+  add eax, [shifted]  ; +1 if shifted
+  mov al, [keys + eax]  ; index into keys
+  and al, al
+  jz key0  ; repeat if zero
+  pop edi
+  pop esi
+  ret
 
 ; programmable keys. Scan code to colorforth character codes
 pkeys
-  db 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 	;  0..7     . esc 1 2 3 4 5 6
-  db 0 , 0 , 0 , 0 , 0 , 0 , 1 , 0	;  8..f     7 8 9 0 - = bs tab
-  db 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0 	; 10..17    Q W E R T Y U I
-  db 0 , 0 , 0 , 0 , 2 , 0 , 0 , 0	; 18..1f    O P [ ] ret Lctrl A S
-  db 0 , 0 , 0 , 0 , 20, 17, 25, 22	; 20..27    D F G H J K L ;
-  db 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0	; 28..2f    ' ` Lshift \ Z X C V
-  db 0 , 0 , 18, 0 , 0 , 26, 0 , 0 	; 30..37    B N M , . / Rshift *
-  db 3 , 2 , 0 , 4 , 5 , 6 , 7 , 8	; 38..3f    Lalt space.F1|F2|F3|F4|F5
-  db 9 , 10, 11, 12, 13, 0 , 0 , 16	; 40..47    F6|F7|F8|F9|F10..KP7
-  db 17, 18, 19, 20, 21, 22, 23, 24	; 48..4f    KP8|KP9|KP-|KP4|KP5|KP6|KP+|KP1
-  db 25, 26, 27, 28, 0 , 0 , 0 , 14	; 50..57    KP2|KP3|KP0|KP.|...F11
-  db 15								; 58                      F12
+  db 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  ; 0..7     . esc 1 2 3 4 5 6
+  db 0 , 0 , 0 , 0 , 0 , 0 , 1 , 0  ; 8..f     7 8 9 0 - = bs tab
+  db 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  ; 10..17   Q W E R T Y U I
+  db 0 , 0 , 0 , 0 , 2 , 0 , 0 , 0  ; 18..1f   O P [ ] ret Lctrl A S
+  db 0 , 0 , 0 , 0 , 20, 17, 25, 22 ; 20..27   D F G H J K L ; 
+  db 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  ; 28..2f   ' ` Lshift \ Z X C V
+  db 0 , 0 , 18, 0 , 0 , 26, 0 , 0  ; 30..37   B N M , . / Rshift *
+  db 3 , 2 , 0 , 4 , 5 , 6 , 7 , 8  ; 38..3f   Lalt space caps F1 F2 F3 F4 F5
+  db 9 , 10, 11, 12, 13, 0 , 0 , 16 ; 40..47   F6 F7 F8 F9 F10 numlock scrlock home(kp7)
+  db 17, 18, 19, 20, 21, 22, 23, 24 ; 48..4f   up(kP8) pgup(KP9) -(KP-) left(KP4) center(KP5) right(KP6) +(KP+) end(KP1)
+  db 25, 26, 27, 28, 0 , 0 , 0 , 14 ; 50..57   down(KP2) pgdn(KP3) ins(KP0) del(KP.) /(kp/) enter(kpenter) ?? F11
+  db 15                             ; 58       F12
 
 ; key handler for pad. Returns 0..27 for
 ; the 28 programmable keys.
@@ -2646,13 +2672,15 @@ pkey:
   push esi
   push edi
 pkey0:
-  xor	eax, eax
+  xor eax, eax
   call dopause
-  call getcfkey
-  cmp al, 59h ; al - 59h
+  call getcfkey ; returns a virtual scan code - appendix 3
+  cmp al, 59h ; al - 59h, 58h is the end of one byte raw keyboard scan codes - appendix 3
   jnc pkey0
   mov al, [pkeys + eax]
   and al, al
+  debug_print "called pkey !!!", 0xa, 0x0
+  call debug_dumpregs
   jz pkey0
   dec al
   pop edi
@@ -2671,10 +2699,10 @@ keyboard_hud_y: dd screen_height - keyboard_hud_height * char_height + char_padd
 ; followed by four bytes: the characters to print as the keyboard
 ; guide in the lower-right corner of the screen.
 ; [Refs: keyboard, letter, accept1, decimal, hex, graph, e, pad]
-board:  dd 0;keyboard_layout_alpha - 4  ; current keyboard (finger keys)
+board: dd 0;keyboard_layout_alpha - 4  ; current keyboard (finger keys)
 ; Shift generally points to one of the following tables:
 ; alpha0, alpha1, graph0, graph1, numb0, numb1.
-shift:  dd alpha0;alpha1 ; current shift (thumb) keys
+shift: dd alpha0;alpha1 ; current shift (thumb) keys
 ; ColorForth displays numbers in one of two formats â decimal and hexadecimal. 
 ; Decimal stores 10 here; hex stores 16 here. 
 ; Therefore routines with "cmp base, 10 : jz base10" fall into handling hexadecimal. 
@@ -2689,8 +2717,8 @@ aword:  dd exword
 ; after number
 anumber: dd nul
 ; how many cells on top of the stack hold huffman - encoded characters?
-words:  dd 1
-shifted:   dd 0			; QWERTY
+words: dd 1
+shifted: dd 0 ; QWERTY
 
 nul0:
   DROP
@@ -2699,7 +2727,7 @@ nul0:
 accept:
   mov dword [shift], alpha0
   ;lea edi, [keyboard_layout_alpha - 4]; TODO NONQWERTY
-  xor edi, edi		; QWERTY skip display of command key map
+  xor edi, edi ; QWERTY skip display of command key map
 
 ; "Key" returns in AL a number 0..27. If number is 4..27, jump to first -- otherwise
 ; convert AL into an offset into whichever of the six tables [each with four DD's]
@@ -2722,67 +2750,73 @@ accept2:
 acmdk:
   neg al; QWERTY
   mov edx, [shift]
-  jmp dword [edx+eax*4]
+  jmp dword [edx+eax*4] ; jump to corresponding longword pointer
 
 ; Pre-parsing words
 ;
 ; Pack takes a single character (first item on stack), converts it into a pre-
 ; parsed-source bit pattern, and adds the bit pattern to a pre-parsed word (second
 ; item on stack), if the word is full already, a new word is started.
+; for reference, Huffman codes are in groups of 8, the prefixes being:
+;  0xxx, 10xxx, 1100xxx, 1101xxx, 1110xxx, 1111xxx
+;  "pack" packs one letter (character code at a time, 
+;  into a Huffman-coded word at [ESI] (stack item)
 
 bits_:  db 28
 
 ; This is part of the "pack" routine.
 pack0:
-  add eax, byte 120q
-  mov cl, 7
-  jmp short pack1
+  add eax, byte 120q ; 120q = 0b01010000, make 0b00010000 into 0b01100000, high 2 bits set
+  mov cl, 7 ; this is a 7-bit Huffman code
+  jmp short pack1 ; continue below
 
 pack:
-  cmp al, 20q      ; If character is 20o or higher,
-  jnc pack0        ;   go to section above.
-  mov cl, 4        ; Assume character size of 4 bits.
-  test al, 10q      ; If character is 10o..17o, then
-  jz pack1
-  inc ecx    ;   set character size to 5 bits and
-  xor al, 30q      ;   change character to bitpattern
+  cmp al, 20q      ; 0b00010000 ; character code greater than 16?
+  jnc pack0        ; if so, it's a 7-bitter, see above
+  mov cl, 4        ; otherwise assume it's a 4-bit code
+  test al, 10q     ; 10q = 0b00001000, character code more than 7?
+  jz pack1     ; if so, it's a 5-bit Huffman code
+  inc ecx    ; make the 4 into a 5
+  xor al, 30q   ; 30q = 0b00011000, and change prefix to 10xxx
 
+; common entry point for 4, 5, and 7-bit Huffman codes
 pack1: 
-  mov edx, eax
-  mov ch, cl
+  mov edx, eax ; copy Huffman code into EDX
+  mov ch, cl ; copy Huffman-code bitcount into 8-bit CH register
   .0:
-    cmp [bits_], cl
-    jnc .1
-    shr al, 1
-    jc full
-    dec cl
-    jmp .0
+    cmp [bits_], cl ; do we have enough bits left in the word?
+    jnc .1 ; if so, continue on
+    shr al, 1 ; low bit of character code set?
+    jc full ; if so, word is full, need to start an extension word instead
+    dec cl ; subtract one from bitcount
+    jmp .0 ; keep going; as long as we don't find any set bits, it'll fit
   .1:
-    shl dword [esi], cl
-    xor [esi], eax
-    sub [bits_], cl
+    shl dword [esi], cl ; shift over just the amount of bits necessary
+    xor [esi], eax ; 'or' or 'add' would have worked as well (and clearer?)
+    sub [bits_], cl ; reduce remaining bitcount by what we just used
     ret
 
+; left-justification routine packs Huffman codes into the MSBs of the word, so that the leftmost bit is in bit 31.
 lj0:
-;"Left-justifies" bits by shifting them left,
-;  so that the leftmost bit is in bit 31.
-  mov cl, [bits_]
-  add cl, 4
-  shl dword [esi], cl
+  mov cl, [bits_] ; bits remaining into CL register
+  add cl, 4 ; add to that the 4 reserved bits for type tag
+  shl dword [esi], cl ; shift packed word into MSBs
   ret
 
+; this is just the high-level entry point to the above routine
 lj:
   call lj0
   DROP
   ret
 
-;Finish packing a pre-parsed word.
+; the packed word is full, so finish processing
 full:
-  call lj0
-  inc dword [words]
-  mov byte [bits_], 28
-  sub [bits_], ch
-  mov eax, edx
+  call lj0 ; left-justify the packed word
+  inc dword [words] ; bump the count
+  mov byte [bits_], 28 ; 32 - 4 reset bit count, still saving 4 bits for tag
+  ; we were processing a character when we found the word full, so add it in
+  sub [bits_], ch ; subtract saved bitcount of this Huffman code
+  mov eax, edx ; restore top-of-stack with partial packed word
   DUP_
   ret
 
@@ -3010,11 +3044,12 @@ dot:
 ; Print 32-bit number onto screen without leading zeroes as a decimal or a
 ; hexadecimal number, depending on the current base.
 qdot:
-  cmp dword [base], byte 10
-  jne dot
+  cmp dword [base], byte 10 ; is current base decimal?
+  jne dot ; display as hex if not
+  ; otherwise fall through to dot10 routine
 
-dot10:
 ; (?)Prints a decimal number.
+dot10:
   mov edx, eax
   test edx, edx
   jns .0
@@ -3100,13 +3135,14 @@ qring:
     DROP
     ret
 
+; show "pacman" cursor at current source word (pointed to by EDI)
 ring:
-  mov [cad], edi
-  sub dword [xy], char_width * 0x10000    ; backspace
+  mov [cad], edi ; save as current cursor address
+  sub dword [xy], char_width * 0x10000 ; backspace one icon width
   DUP_
-  mov eax, _orange
+  mov eax, _orange ; ochre-colored cursor
   call color
-  mov eax, 48 ; index of first capital icon
+  mov eax, 48 ; cursor character (shift-space, so to speak, in this code)
   mov cx, [xy + 2]
   cmp cx, [rm]
   js .9
@@ -3142,25 +3178,25 @@ ring:
 
 ; Red word
 rw:
-  mov cx, [xy + 2]
-  cmp cx, [lm]
-  jz .0
-  call cr
+  mov cx, [xy + 2] ; get current X position
+  cmp cx, [lm] ; at left margin?
+  jz .0 ; skip if so
+  call cr ; insert newline before definition
   .0:
-    call red
-    jmp type_
+    call red ; set text color to red
+    jmp type_ ; type the word
 
-; Green word
+; green word
 gw:
   call green
   jmp type_
 
-; Macro word
+; deferred macro word
 mw:
   call cyan
   jmp type_
 
-; Word word
+; word word: display "white", executable word (actually yellow)
 ww:
   DUP_
   mov eax, _yellow
@@ -3169,13 +3205,13 @@ ww:
 
 ; Displaying word extensions
 
-; Display a type 0 word
+; display continuation of previous word
 type0:
-  sub dword [xy], char_width * 0x10000      ; call bspcr
-  test dword [ - 4 + edi * 4], -16
-  jnz type_
-  dec edi
-  mov [lcad], edi
+  sub dword [xy], char_width * 0x10000 ; call bspcr
+  test dword [ - 4 + edi * 4], -16 ; valid packed word?
+  jnz type_ ; display it if so...
+  dec edi ; otherwise we've gone past the end of the source, go back one
+  mov [lcad], edi ; "last" cursor address is the last source word of screen
   call space
   call qring
   pop edx       ; end of block ; [RST]
@@ -3184,18 +3220,18 @@ type0:
 
 ; Displaying comments
 
+; initial character capitalized comment word (white)
 cap:
-; Initial character capitalized comment word (white)
   call white
   DUP_
   mov eax, [ - 4 + edi * 4]
-  and eax, byte -0x10
+  and eax, byte -0x10 ; mask out tag bits
   call unpack
   add al, 48
   call emit
   jmp short type2
 
-; All capitals comment word (white)
+; all capitals comment word (white)
 caps:
   call white
   DUP_
@@ -3203,7 +3239,7 @@ caps:
   and eax, byte -0x10
   .0:
     call unpack
-    jz type3
+    jz type3 ; space if it unpacked to nothing
     add al, 48
     call emit
     jmp .0
@@ -3231,18 +3267,19 @@ type3:
 
 ; Displaying numbers
 
-; Green short word
+; Green short word (27 bits)
 gsw:
   mov edx, [ - 4 + edi * 4]
-  sar edx, 5
+  sar edx, 5 ; shift into position
   jmp short gnw1
 
 ; Variable word (magenta)
 ;  falls through to a green number word
 var:
-  debug_print "called var", 0xa, 0x0
   call magenta
   call type_
+  ; fall through to next routine to display its value
+  ; green (compiled) normal (32 bits) word
 
 ; Green number word
 gnw:  
@@ -3252,27 +3289,27 @@ gnw:
 gnw1:
   DUP_
   mov eax, _green
-  cmp dword [bas], dot10
-  jz nw2
-  mov eax, _dkgrn
+  cmp dword [bas], dot10 ; is it base 10?
+  jz nw2 ; bright green if so
+  mov eax, _dkgrn ; else dark green
   jmp short nw2
 
-; Short number word (yellow)
+; Short number executable word (yellow), 27 bits
 sw:
   mov edx, [ - 4 + edi * 4]
   sar edx, 5
   jmp short nw1
 
-; Number word (yellow)
+; Number word (yellow), 32 bits
 nw:
   mov edx, [edi * 4]
   inc edi
 nw1:
   DUP_
   mov eax, _yellow
-  cmp dword [bas], dot10
-  jz nw2
-  mov eax, _dkylw
+  cmp dword [bas], dot10 ; is it base 10?
+  jz nw2 ; bright yellow if so
+  mov eax, _dkylw ; else dark yellow
 nw2:
   call color
   DUP_
@@ -3285,20 +3322,20 @@ refresh:
   call blank
   call text1
   DUP_                  ; counter
-  mov eax, [lcad]
+  mov eax, [lcad] ; pointer to end of screen source
   mov [cad], eax        ; for curs beyond end
 
   ; TODO
-  mov    eax, [blk]
+  mov    eax, [blk] ; get current block, which is being edited
   sub    eax, 18
-  shl    eax, 10-2
+  shl    eax, 10-2 ; multiply by 256 longwords per block
   mov    ebx, [blocks_address]
   shr    ebx, 2
   add    eax, ebx
   mov    edi, eax
 
   xor eax, eax
-  mov [pcad], edi       ; for curs=0
+  mov [pcad], edi  ; for curs=0 (page cursor address)
 
 ref1:
   test dword [edi * 4], 0xf
@@ -3307,13 +3344,14 @@ ref1:
 .0:
   mov edx, [edi * 4]
   inc edi
+  ; assume decimal number display
   mov dword [bas], dot10
-  test dl, 20q
-  jz .1
-  mov dword [bas], dot
+  test dl, 20q ; TODO hexbit
+  jz .1 ; not set, so skip ahead
+  mov dword [bas], dot ; display as hex
 .1:
-  and edx, byte 0xf
-  call [display + edx * 4]
+  and edx, byte 0xf ; get typetag bits as index into display vector
+  call [display + edx * 4] ; call the appropriate display routine
   jmp ref1
 
 
@@ -3363,12 +3401,13 @@ keych: dd 0
 endram: dd 0
 
 curs: dd 0
-cad:  dd 0
-pcad: dd 0
-lcad: dd 0
+cad:  dd 0 ; cursor (ring) address
+pcad: dd 0 ; "previous"/page cursor address
+lcad: dd 0 ; "last" / left cursor address of multipart word)
 trash:  dd buffer
 
 ; Action colors.
+; 1-based array of colors used for various action modes
 actc: dd _yellow, _black, _red, _dkgrn
   dd _black, _black, _cyan, _black
   dd _white, _white, _white, _blue
@@ -3406,96 +3445,101 @@ act7:
   mov al, 7    ; 7 compile macro cyan word
 
 actt: 
-  mov [action], al
-  mov eax, [actc - 4 + eax * 4]
-  mov dword [aword], insert
+  mov [action], al ; number of action
+  mov eax, [actc - 4 + eax * 4] ; load color corresponding to action
+  mov dword [aword], insert ; "insert" becomes the active word
 
+; action for number
 actn: 
-  mov dword [keyc], eax
+  mov dword [keyc], eax ; store key color
   pop eax      ; RST
   DROP
   jmp accept
 
+; after 'm' pressed, change color and prepare to store variable name
 actv: 
   mov byte [action], 12   ; 12 = variable (magenta word)
-  mov eax, _mag
+  mov eax, _mag 
   mov dword [aword], .0
   jmp actn
   .0:
-    ; gets called after word is read in.
-    DUP_
-    xor eax, eax
-    inc dword [words]
-    jmp insert
+    ; this is the action performed after the variable name is entered
+    DUP_ ; save EAX (packed word) on stack
+    xor eax, eax ; zero out EAX
+    inc dword [words] ; add one to count of words
+    jmp insert ; insert packed word into preparsed source
 
 ; Cursor and block routines
 
+; minus cursor
 mcur: 
-  dec dword [curs]
-  jns pcr1
+  dec dword [curs] ; move left
+  jns pcr1 ; just return if it didn't go negative, otherwise undo it...
 
+; plus cursor
 pcur: 
-  inc dword [curs]
+  inc dword [curs] ; move right
 pcr1: 
   ret
 
+; move up one "row"...
 mmcur:  
-  sub dword [curs], byte 8
-  jns hcur.9
+  sub dword [curs], byte 8 ; ... actually, only 8 words
+  jns hcur.9 ; return if it didn't go negative
 hcur:
-  mov dword [curs], 0
+  mov dword [curs], 0 ; otherwise set to 0
   .9:
     ret
 
-ppcur:  
-  add dword [curs], byte 8
-  ret
+; move down one "row"...
+ppcur:
+  add dword [curs], byte 8 ; ... actually, only 8 words
+  ret ; guess it's ok to increment beyond end of screen (?)
 
-; plus block - move editor to next source (or shadow) block
+; plus one block (+2 since odd are shadows)
 pblk: 
   add dword [blk], byte 2
   add dword [esi], byte 2
   ret
 
 ; minus block - move editor to previous source (or shadow) block
-; restrict to ...
 mblk: 
-  cmp dword [blk], byte 20
-  js .9
+  cmp dword [blk], byte 20 ; minus one block unless below 20
+  js .9 ; (18 is first block available for editing)
   sub dword [blk], byte 2
   sub dword [esi], byte 2
   .9:
     ret
 
-popblk: ; ??
 ; Jump to previous block edited with 'edit'
 ; [blk], N <= [blk+4] <= N
+popblk: ; ??
   mov ecx, [esi]
   xchg ecx, [blk + 4]
   mov [blk], ecx
   mov [esi], ecx
   ret
 
+; shadow screens in Forth are documentation for corresponding source screens
 shadow:
-; Toggles between code (even-numbered)
-; and documentation (odd-numbered) blocks.
-  xor dword [blk], byte 1
-  xor dword [esi], byte 1
+  xor dword [blk], byte 1 ; switch between shadow and source
+  xor dword [esi], byte 1 ; change odd to even and vice versa
   ret
 
 ; (27 keys in keyboard; 28 offsets in "ekeys" table)
 ; initial key functions in editor
 ekeys:
-  dd nul, eout, shadow, act3; 0-3
-  dd act4, act1, actv, act7; 4-7
-  dd act9, act10, act11, popblk; 8-11		; F8 should now be 'jump'
-  dd nul, nul, nul, hcur; 12-15
-  dd mmcur, mblk, nul, mcur; 16-19
-  dd nul, pcur, nul, shadow; 20-23
+  dd nul, eout, shadow, act3; 0-3 longword
+  dd act4, act1, actv, act7; 4-7 longword
+  dd act9, act10, act11, popblk; 8-11 longword, F8 should now be 'jump'
+  dd nul, nul, nul, hcur; 12-15 longword
+  dd mmcur, mblk, nul, mcur; 16-19 longword
+  dd nul, pcur, nul, shadow; 20-23 longword
 
 ekbd0:
-  dd ppcur, pblk, destack, del; 24-28 ; used as dummy execution vectors for ekbd
-  db 0, cap_E,  Is ,  0 ; initial control key map in editor (shift)
+  dd ppcur, pblk, destack, del; 24-27 longword, used as dummy execution vectors for ekbd
+  ;dd nul, nul, nul, nul; 24-27 longword
+  db 0, cap_E,  Is ,  0 ; 28-31, initial control key map in editor (shift)
 
 ; note that there are 4 db per line, so it stays word aligned
 
@@ -3504,6 +3548,19 @@ ekbd:
   db Ir, Ig, Iy, Im
   db Ic, It, cap_C, cap_S
   db 0, 0, 0, 0
+  ; TODO added by adragomi so it has the same length
+;  db 0, 0, 0, 0
+;  db 0, 0, 0, 0
+;  db 0, 0, 0, 0
+
+;ekbd:
+;  db 15,  1, 13, 45  ; w  r  g  *
+;  db 12, 22, 16,  1  ; l  u  d  r
+;  db 35,  9, 10, 43  ; -  m  c  +
+;  db  0, 56, 58,  2  ;    S  C  t
+;  db  0,  0,  0,  0
+;  db  0,  0,  0,  0
+
 
 e0:
   DROP
@@ -3542,14 +3599,15 @@ eout:
   mov dword [anumber], nul
   mov byte [alpha0 + 4 * 4], 0
   mov dword [alpha0 + 4], nul0
-  mov dword [keyc], _yellow
-  jmp accept
+  mov dword [keyc], _yellow ; restore key color to yellow
+  jmp accept ; revert to command-line processing
 
+; insert, or paste
 destack:
-  mov edx, [trash]
-  cmp edx, buffer
-  jnz .0
-  ret
+  mov edx, [trash] ; grab what was left by last "cut" operation
+  cmp edx, buffer ; anything in there?
+  jnz .0 ; continue if so...
+  ret ; otherwise, 'insert' is already the default action so nothing to do
   .0:
     sub edx, byte 8
     mov ecx, [edx + 4]
@@ -3563,8 +3621,8 @@ destack:
     mov [trash], edx
 
 insert0:
-  mov ecx, [lcad]       ; room available?
-  add ecx, [words]
+  mov ecx, [lcad]  ; room available? get pointer to last source word
+  add ecx, [words] ; add to that the number of 32-bit words to be inserted
   xor ecx, [lcad]
   and ecx, -0x100
   jz insert1
@@ -3624,8 +3682,8 @@ format:
   ret
   .0:
     mov edx, eax
-    and edx, 0xfc000000
-    jz .1
+    and edx, 0xfc000000 ; check if we have room for tagbits, hexbit, sign bit
+    jz .1 ; continue if so
     cmp edx, 0xfc000000
     jne format2
   .1:
@@ -3635,9 +3693,9 @@ format:
     je .2
     xor al, 13q ; 8
   .2:
-    cmp dword [base], byte 10
-    je .3
-    xor al, 20q
+    cmp dword [base], byte 10 ; base 10 ?
+    je .3 ; continue if so...
+    xor al, 20q ; otherwise remove 'hex' bit
   .3:
     mov dword [words], 1
     jmp insert
@@ -3657,60 +3715,93 @@ format2:
     mov dword [words], 2
     jmp insert
 
+; delete, or cut, current word in editor (to the left of pacman cursor)
 del:
-  call enstack
-  mov edi, [pcad]
-  mov ecx, [lcad]
-  sub ecx, edi
-  shl edi, 2
-  push esi
-  mov esi, [cad]
-  shl esi, 2
-  rep movsd
-  pop esi
+  call enstack ; copy word(s) to be deleted into "trash" buffer
+  mov edi, [pcad] ; get page cursor address into EDI
+  mov ecx, [lcad] ; leftmost address of multi-word 'word'
+  sub ecx, edi ; subtract to get word count
+  shl edi, 2 ; multiply by 4 to get byte offset
+  push esi ; save data stack pointer
+  mov esi, [cad] ; get current cursor (end of word)
+  shl esi, 2 ; byte offset
+  rep movsd ; cover what we deleted
+  pop esi ; restore data stack pointer
   jmp mcur
 
+; copy source into "trash" buffer
 enstack:
-  DUP_
-  mov eax, [cad]
-  sub eax, [pcad]
-  jz .1
-  mov ecx, eax
-  xchg eax, edx
-  push esi
-  mov esi, [cad]
-  lea esi, [ - 4 + esi * 4]
-  mov edi, [trash]
+  DUP_ ; just to save TOS, we don't actually return anything
+  mov eax, [cad] ; get current cursor address
+  sub eax, [pcad] ; page cursor address, the first block word
+  jz .1 ; one and the same? skip it
+  mov ecx, eax ; otherwise, get word count of items to buffer
+  xchg eax, edx ; save the count in EDX  safer than a MOV in case EDX is being used for something
+  push esi ; save data stack pointer, we need it for "string" operations
+  mov esi, [cad] ; source address is current cursor address...
+  lea esi, [ - 4 + esi * 4] ; convert to a byte address, point to start of word
+  mov edi, [trash] ; destination address is "trash" buffer; get pointer into edit buffer
   .0:
-    std
-    lodsd
-    cld
-    stosd
-    NEXT .0
-    xchg eax, edx
-    stosd
-    mov [trash], edi
-    pop esi
+    std ; make string addresses work "backwards" in RAM
+    lodsd ; grab a 32-bit word
+    cld ; now store "forwards" in "trash" buffer
+    stosd ; store a 32-bit word
+    NEXT .0 ; loop for word count
+    xchg eax, edx ; get the count back...
+    stosd ; store it, too, at the end of the trash buffer
+    mov [trash], edi ; update the pointer
+    pop esi ; restore data stack pointer
   .1:
-    DROP
+    DROP ; restore TOS
     ret
 
+; 'pad' is called by a high-level program to define the keypad, followed by
+; 28 high-level compiled words that define the key vectors (actions), again
+; followed by the Huffman codes for the characters representing the keys
+
+; define keypad actions and representations
 pad:
-  pop edx
-  mov [vector], edx
-  add edx, 28 * 5 + 4 ; + 4 QWERTY
+  debug_print "called pad !!!", 0xa, 0x0
+  pop edx ; keypad data must immediately follow call...
+  ; there are 28 keys total, 12 on each side plus undefined keys (code 0),
+  ; "n", "space" and alt
+  ; we're popping the "return" address which is really the address of
+  ; the vector table
+  mov [vector], edx ; pointer to words for each possible keyhit
+  add edx, 28 * 5 + 4 ; + 4 QWERTY, 5 bytes to each "call" instruction
+  ; just past that is character data, one byte for the Huffman code of each
+  ; character that the physical keyboard represents ("r"=1, "t"=2, etc.)
+  ; but remember that "board" contains 4 less than that address, which means
+  ; that the first 4 must be those for keycode 0 and the "shift" keys
   mov [board], edx
-  sub edx, byte 4 * 4 + 4 ; +4 QWERTY
-  mov [shift], edx
+  ; now, the following makes no sense... subtracting 4*4 from an array of
+  ; 5-byte entries should point in the middle of an instruction (which
+  ; indeed it does). but the "shift" table is ordinarily an array of 4
+  ; longwords followed by the 4 character codes, so there's a method to
+  ; CM's madness
+  ; the 'keyboard' routine uses this address only for the 4 character codes
+  ; at the end of the table
+  sub edx, byte 4 * 4 + 4 ; +4 QWERTY, simulate the 4 longwords, can't really use them
+  mov [shift], edx ; this is only to point to the character codes
   .0:
     call pkey      ; pkey, QWERTY ; TODOKEY
-    mov edx, [vector]
-    add edx, eax
-    lea edx, [5 + eax * 4 + edx]
-    add edx, [edx - 4]
-    DROP
-    call edx
-    jmp .0
+    mov edx, [vector] ; load vector table into EDX
+    ; the following 3 instructions point to the appropriate vector for the key
+    ; it amounts to adding eax*5 to the start of the vector table
+    add edx, eax ; add keyvalue once
+    lea edx, [5 + eax * 4 + edx] ; add keyvalue 4 more times for total of 5...
+    ; plus an extra 5 bytes, which we explain next...
+    ; remember that a "call" instruction is e8xxxxxxxx, where the xxxxxxxx is
+    ; the offset to the address from the _end_ of the current instruction.
+    ; since by adding that extra 5 bytes we _are_ pointing to the end, adding
+    ; the 4-byte offset just preceding our address should point us to the
+    ; routine to be called. why not just push the address of the "jmp 0b"
+    ; below, then "jmp" to the address of the call instead?
+    ; guess it wouldn't be any clearer.
+    add edx, [edx - 4] ; point to the address of the routine to be called
+    DROP ; restore EAX from the data stack
+    call edx ; call the routine corresponding to keyhit
+    jmp .0 ; loop until "accept" code reached, which exits program
 
 ; the kernel gets 12 blocks - fill out to the end
 ;  times 12 * 1024 - ($ - $$) db 0
