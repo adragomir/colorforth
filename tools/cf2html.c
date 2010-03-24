@@ -86,6 +86,29 @@ int main () {
   pos = 0;
   printf ("<html>\n");
   printf ("<link rel=stylesheet type=\"text/css\" href=\"colorforth.css\">\n");
+  printf("  <style type=\"text/css\">\n");
+  printf("  body { margin-right:10%;}\n");
+  printf("  div.code {\n");
+  printf("    width:100%;\n");
+  printf("    padding:0.5em;\n");
+  printf("    background-color:black;\n");
+  printf("    font-size:xx-large;\n");
+  printf("    font-weight:bold;\n");
+  printf("    text-transform:lowercase;\n");
+  printf("  }\n");
+  printf("  code.define { color:red; }\n");
+  printf("  code.compile { color:#00ff00; }\n");
+  printf("  code.compilehex { color:green; }\n");
+  printf("  code.execute { color:yellow; }\n");
+  printf("  code.executehex { color:#c0c000; }\n");
+  printf("  code.compilemacro { color:#00ffff; }\n");
+  printf("  code.variable {color:#ff00ff; }\n");
+  printf("  code.text { color:white; }\n");
+  printf("  code.textcapitalized { color:white; text-transform:capitalize; }\n");
+  printf("  code.textallcaps { color:white; text-transform:uppercase; }\n");
+  printf("  </style>\n");
+
+  
   if (fread (&t, 4, 1, stdin) == 0) return 0;
   pos = 4;
   while (1) {

@@ -862,3 +862,10 @@ WARNING: Do not hit any keys while floppy is being written.
 
 **`yel`**
 :    Find yellow word.  See section 3 colorforth human interface.
+
+
+# Blocks changes #
+
+Block 74: 
+      def ekeys + 21
+      fkc ekeys + 22
