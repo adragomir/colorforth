@@ -869,3 +869,7 @@ WARNING: Do not hit any keys while floppy is being written.
 Block 74: 
       def ekeys + 21
       fkc ekeys + 22
+block 76 
+      csy ekeys + 20
+      csy ekeys + 33
+pkey called from e_1 and pad
