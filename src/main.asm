@@ -2650,7 +2650,7 @@ key0:
   pop esi
   ret
 
-; programmable keys. Scan code to colorforth character codes
+; programmable keys. Scan code to colorforth 27 key keymapping
 pkeys
   db 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  ; 0..7     . esc 1 2 3 4 5 6
   db 0 , 0 , 0 , 0 , 0 , 0 , 1 , 0  ; 8..f     7 8 9 0 - = bs tab
@@ -2660,9 +2660,9 @@ pkeys
   db 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  ; 28..2f   ' ` Lshift \ Z X C V
   db 0 , 0 , 18, 0 , 0 , 26, 0 , 0  ; 30..37   B N M , . / Rshift *
   db 3 , 2 , 0 , 4 , 5 , 6 , 7 , 8  ; 38..3f   Lalt space caps F1 F2 F3 F4 F5
-  db 9 , 10, 11, 12, 13, 0 , 0 , 16 ; 40..47   F6 F7 F8 F9 F10 numlock scrlock home(kp7)
-  db 17, 18, 19, 20, 21, 22, 23, 24 ; 48..4f   up(kP8) pgup(KP9) -(KP-) left(KP4) center(KP5) right(KP6) +(KP+) end(KP1)
-  db 25, 26, 27, 28, 0 , 0 , 0 , 14 ; 50..57   down(KP2) pgdn(KP3) ins(KP0) del(KP.) /(kp/) enter(kpenter) ?? F11
+  db 9 , 10, 11, 12, 13, 0 , 0 , 16 ; 40..47   F6 F7 F8 F9 F10 numlock scrlock home
+  db 17, 18, 19, 20, 21, 22, 23, 24 ; 48..4f   up pgup -(KP-) left center(KP5) right +(KP+) end
+  db 25, 26, 27, 28, 0 , 0 , 0 , 14 ; 50..57   down pgdn ins del /(kp/) enter(kpenter) ?? F11
   db 15                             ; 58       F12
 
 ; key handler for pad. Returns 0..27 for
@@ -2677,12 +2677,10 @@ pkey0:
   call getcfkey ; returns a virtual scan code - appendix 3
   cmp al, 59h ; al - 59h, 58h is the end of one byte raw keyboard scan codes - appendix 3
   jnc pkey0
-  mov al, [pkeys + eax]
+  mov al, byte [pkeys + eax]
   and al, al
-  debug_print "called pkey !!!", 0xa, 0x0
-  call debug_dumpregs
   jz pkey0
-  dec al
+  dec al ; we used the index in a table, which starts with 1. Decrement it to make it start from 0
   pop edi
   pop esi
   ret
@@ -3357,7 +3355,6 @@ ref1:
 
 ; The display-routine table
 
-
 ; Tag  Syntax Element      Color
 ; 
 ;  15  Commented Number    White
@@ -3529,15 +3526,16 @@ shadow:
 ; (27 keys in keyboard; 28 offsets in "ekeys" table)
 ; initial key functions in editor
 ekeys:
-  dd nul, eout, shadow, act3; 0-3 longword
-  dd act4, act1, actv, act7; 4-7 longword
-  dd act9, act10, act11, popblk; 8-11 longword, F8 should now be 'jump'
-  dd nul, nul, nul, hcur; 12-15 longword
-  dd mmcur, mblk, nul, mcur; 16-19 longword
-  dd nul, pcur, nul, shadow; 20-23 longword
+  dd nul, eout, shadow, act3    ; 0-3 longword
+  dd act4, act1, actv, act7     ; 4-7 longword
+  dd act9, act10, act11, popblk ; 8-11 longword, F8 should now be 'jump'
+  dd nul, nul, nul, hcur        ; 12-15 longword
+  dd mmcur, mblk, nul, mcur     ; 16-19 longword
+  dd nul, pcur, nul, shadow     ; 20-23 longword
 
+; these are the huffman encodings of the characters to display
 ekbd0:
-  dd ppcur, pblk, destack, del; 24-27 longword, used as dummy execution vectors for ekbd
+  dd ppcur, pblk, destack, del  ; 24-27 longword, used as dummy execution vectors for ekbd
   ;dd nul, nul, nul, nul; 24-27 longword
   db 0, cap_E,  Is ,  0 ; 28-31, initial control key map in editor (shift)
 
@@ -3553,6 +3551,19 @@ ekbd:
 ;  db 0, 0, 0, 0
 ;  db 0, 0, 0, 0
 
+;---------old ones
+;ekeys:
+;  dd nul, del, eout, destack ; n<space><alt>
+;  dd act1, act3, act4, shadow ; uiop=yrg*
+;  dd mcur, mmcur, ppcur, pcur ; jkl;=ludr
+;  dd mblk, actv, act7, pblk ; m,./=-mc+
+;  dd nul, act11, act10, act9 ; wer=SCt
+;  dd nul, nul, nul, nul ; df=fj (find and jump) not in this version
+;
+;ekbd0:
+;  dd nul, nul, nul, nul
+;  db 21, 37,  7,  0  ; x  .  i
+;
 ;ekbd:
 ;  db 15,  1, 13, 45  ; w  r  g  *
 ;  db 12, 22, 16,  1  ; l  u  d  r
@@ -3560,7 +3571,6 @@ ekbd:
 ;  db  0, 56, 58,  2  ;    S  C  t
 ;  db  0,  0,  0,  0
 ;  db  0,  0,  0,  0
-
 
 e0:
   DROP
@@ -3761,7 +3771,6 @@ enstack:
 
 ; define keypad actions and representations
 pad:
-  debug_print "called pad !!!", 0xa, 0x0
   pop edx ; keypad data must immediately follow call...
   ; there are 28 keys total, 12 on each side plus undefined keys (code 0),
   ; "n", "space" and alt
@@ -3785,6 +3794,7 @@ pad:
   mov [shift], edx ; this is only to point to the character codes
   .0:
     call pkey      ; pkey, QWERTY ; TODOKEY
+    ;debug_print "called pad !!!", 0xa, 0x0
     mov edx, [vector] ; load vector table into EDX
     ; the following 3 instructions point to the appropriate vector for the key
     ; it amounts to adding eax*5 to the start of the vector table
