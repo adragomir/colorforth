@@ -33,7 +33,7 @@ ALL_OBJECT_FILES:=$(strip $(addsuffix .o, $(basename $(call TO_OBJS,$(ALL_CODE_F
 ALL_HEADER_FILES:=$(strip $(foreach DIR,$(SRC_DIRS), $(wildcard $(DIR)/*.$(H_EXT))))
 ALL_SRC_FILES:=$(ALL_CODE_FILES) $(ALL_HEADER_FILES)
 
-.PHONY: world prebuild postbuild clean final run restore preproc sizes sdl ctest cf2html html doc
+.PHONY: world prebuild postbuild clean final run restore preproc sizes sdl ctest html doc testtool
 
 # Make everything in debug
 world: NASMFLAGS:=$(BASE_FLAGS) $(DEBUG_FLAGS)
@@ -73,11 +73,15 @@ sdl:
 ctest:
 	g++ -arch i386 -o build/ctest src/ctest.c
 
-cf2html:
-	gcc -arch i386 -o build/cf2html src/cf2html.c
-
 html:
 	for i in block_files/*.cf; do build/cf2html < $$i > $$i.html; done
+
+testtool:
+	./tools/colorforth_block_tool totext data/OkadWork.cf build/OkadWork.1.txt
+	./tools/colorforth_block_tool tocf build/OkadWork.1.txt build/OkadWork.1.cf
+	./tools/colorforth_block_tool totext build/OkadWork.1.cf build/OkadWork.2.txt
+	md5sum data/OkadWork.cf
+	md5sum build/OkadWork.1.cf
 
 postbuild:
 ifeq ($(GEN_RUN),yes)
