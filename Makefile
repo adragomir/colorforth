@@ -79,10 +79,10 @@ html:
 	for i in block_files/*.cf; do build/cf2html < $$i > $$i.html; done
 
 testtool:
-	./tools/colorforth_block_tool totext data/OkadWork.cf.af-ga4 build/OkadWork.1.txt
+	./tools/colorforth_block_tool totext data/OkadWork.cf build/OkadWork.1.txt
 	./tools/colorforth_block_tool tocf build/OkadWork.1.txt build/OkadWork.1.cf
 	./tools/colorforth_block_tool totext build/OkadWork.1.cf build/OkadWork.2.txt
-	md5sum data/OkadWork.cf.af-ga4
+	md5sum data/OkadWork.cf
 	md5sum build/OkadWork.1.cf
 
 postbuild:
