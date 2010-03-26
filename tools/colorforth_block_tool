@@ -18,6 +18,7 @@ fivebit_functions = {
   "hex_executeshort": functions.index('compilelong'),
   "hex_compileshort": functions.index('compileshort'),
   "hex_compilelong": functions.index('executeshort'),
+  "hex_commented_number": functions.index('commented_number')
 }
 
 accepted_functions = ' '.join(functions) + ' ' + ' '.join(fivebit_functions.keys())
@@ -108,33 +109,28 @@ class ParseTextToCFBlock:
     if f in ['hex_compilelong', 'hex_executelong', 'compilelong', 'executelong']:
       # two words
       tmp.append(tag)
-      print "%s, %s, %x" % (f, param, tag)
       if tag & 0b10000: # is hex ? 
         actual_number = int(param, 16) & mask
       else:
         actual_number = int(param, 10) & mask
       tmp.append(actual_number)
-      print "%s, %s, %x" % (f, param, actual_number)
-    elif f in ['compileshort', 'executeshort', 'hex_compileshort', 'hex_executeshort']:
+    elif f in ['compileshort', 'executeshort', 'hex_compileshort', 'hex_executeshort', 'commented_number', 'hex_commented_number']:
       if tag & 0b10000: # is hex ? 
         actual_number = int(param, 16) & mask
       else:
         actual_number = int(param, 10) & mask
       packed = ((actual_number << 5) & mask) + tag
       tmp.append(packed)
-      print "%s, %s, %x" % (f, param, packed)
     elif f == 'compileword' and self.in_variable == True:
       self.in_variable = False
       actual_number = int(param, 10) & mask
       tmp.append(actual_number)
-      print "%s, %s, %x" % (f, param, actual_number)
     else:
       extension_mode = False
       bits = 28
       idx = 0
       extension_mode = False
       while idx < len(param):
-        print "idx: " + str(idx) + ", " + str(len(param)) + ", " + str(bits)
         while 1:
           if bits <= 0 or idx >= len(param):
             break
@@ -166,7 +162,6 @@ class ParseTextToCFBlock:
                   shrinked = (shrinked >> 1)
                   hl -= 1
         if (bits != 28 and packed != 0):
-          print "adding to temp: %s, %s, %x" % (f, param, packed)
           self.finish_pack(tmp, packed, bits, (0 if extension_mode else tag))
           extension_mode = True
           bits = 28
@@ -199,7 +194,6 @@ class ParseCFBlockToText:
     self.out = ''
 
   def print_hex(self, i):
-    print "called print hex with %x" % i
     n, f = (8, 0)
     if i == 0:
       self.out += '0'
@@ -289,6 +283,9 @@ class ParseCFBlockToText:
               another_word = block_data[pos]
               self.print_hex_or_dec(another_word, word)
           elif tmp_tag in [6, 8]:
+            self.print_tags(end_word, word & 0xf, word & 0x10)
+            self.print_hex_or_dec(word >> 5, word)
+          elif tmp_tag == 0xf:
             self.print_tags(end_word, word & 0xf, word & 0x10)
             self.print_hex_or_dec(word >> 5, word)
           elif tmp_tag == 0xc:
