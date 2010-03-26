@@ -23,10 +23,10 @@ void print_text (unsigned int t) {
   }
 }
 
-char *function[] = {"", "execute", "execute", "define", "compile",
+char *function[] = {"extension", "execute", "execute", "define", "compile",
   "compile", "compile", "compilemacro", "execute",
   "text", "textcapitalized", "textallcaps",
-  "variable", "", "", "", "", "", "executehex", "",
+  "variable", "compiler_feedback", "display_macro", "commented_number", "", "", "executehex", "",
   "", "compilehex", "compilehex", "", "executehex"};
 
 void print_tags (int p, int t) {
@@ -133,7 +133,7 @@ int main () {
           else
             print_dec (n);
           break;
-        case 6: case 8:
+        case 6: case 8: case 0xf:
           print_tags (p, t & 0x1f);
           if (t & 0x10)
             print_hex (t >> 5);
