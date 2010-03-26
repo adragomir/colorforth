@@ -41,7 +41,7 @@ world: NASMLFLAGS:=$(BASE_LFLAGS) $(DEBUG_LFLAGS)
 world: prebuild $(TARGET) postbuild
 
 doc:
-	pandoc ./doc/doc.txt > ./doc/doc.html
+	pandoc --toc ./doc/doc.txt > ./doc/doc.html
 
 preproc:
 	yasm -e -I ./src/inc/ -f macho32 -g null -g null src/main.asm > build/main.preproc

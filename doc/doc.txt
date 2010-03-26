@@ -1,3 +1,5 @@
+# Okad 2.0 documentation #
+
 ## Windows Changes ##
 
 The first thing you will notice on booting 2.0a is that instead of reading 90 blocks into memory at boot time, the system reads 1440. Colorforth 1.0 read from between one to eighty cylinders from a floppy with nc, cylinders from a (native) floppy, set to 5 for loading 90 blocks to memory at boot.
@@ -864,12 +866,1142 @@ WARNING: Do not hit any keys while floppy is being written.
 :    Find yellow word.  See section 3 colorforth human interface.
 
 
-# Blocks changes #
+# Blocks changes to make work the fucked qwerty #
 
-Block 74: 
-      def ekeys + 21
-      fkc ekeys + 22
-block 76 
-      csy ekeys + 20
-      csy ekeys + 33
-pkey called from e_1 and pad
+    Block 74: 
+          def ekeys + 21
+          fkc ekeys + 22
+    block 76 
+          csy ekeys + 20
+          csy ekeys + 33
+    pkey called from e_1 and pad
+
+# arrayforth.com documentation #
+## colorForth tag reference ##
+
+    Tag  Syntax Element      Color
+
+     15  Commented Number    White
+     14  Display Macro       Blue
+     13  Compiler Feedback   Grey
+     12  Variable            Magenta
+
+     11  COMMENT (caps)      (White) Obsolete
+     10  Comment             (White) Obsolete
+      9  comment (lower)     White
+      8  Interpreted Number  Yellow
+
+      7  Compile macro call  Cyan
+      6  Compile number      Green
+      5  Compile big number  Green
+      4  Compile forth word  Green
+
+      3  Define forth word   Red
+      2  Interp big number   Yellow
+      1  Interp forth word   Yellow
+      0  Word extension      (color of preceding word)
+
+## colorForth Characters and Binary Representation ##
+
+The following table shows four values for each of the 48 colorForth character values. Character value zero is not an actual character; instead it denotes the end of a word.
+
+The first two columns are the Shannon coded binary value for the character. The third column shows the graphic for the character, and the fourth column is its internal numerical value when not Shannon coded. ASCII character codes are not used within colorForth; they are only used for communication with external systems.
+
+
+       0 000    0      10 000 s  8    1100 000 d 16
+       0 001 r  1      10 001 m  9    1100 001 v 17
+       0 010 t  2      10 010 c 10    1100 010 p 18
+       0 011 o  3      10 011 y 11    1100 011 b 19
+       0 100 e  4      10 100 l 12    1100 100 h 20
+       0 101 a  5      10 101 g 13    1100 101 x 21
+       0 110 n  6      10 110 f 14    1100 110 u 22
+       0 111 i  7      10 111 w 15    1100 111 q 23
+
+    1101 000 0 24    1110 000 8 32    1111 000 ; 40
+    1101 001 1 25    1110 001 9 33    1111 001 ' 41
+    1101 010 2 26    1110 010 j 34    1111 010 ! 42
+    1101 011 3 27    1110 011 - 35    1111 011 + 43
+    1101 100 4 28    1110 100 k 36    1111 100 @ 44
+    1101 101 5 29    1110 101 . 37    1111 101 * 45
+    1101 110 6 30    1110 110 z 38    1111 110 , 46
+    1101 111 7 31    1110 111 / 39    1111 111 ? 47
+
+## Recent Changes ##
+
+This document lists significant enhancements and other changes made to colorForth in each posted version. The most recent versions are shown first.
+
+**Up to September 2009**
+
+This is the first month in which GreenArrays, Inc. makes colorForth available publicly. Since we have done a great deal since the last public release, we will summarize major changes to the generic colorForth since then.
+
+**Generic Changes**
+
+* Basic Syntactic Elements: We have added blue words, which are executed when and where they are encountered during the display of a block, and grey words, which are used by the g18 compiler to record the memory address at which the grey word appears in the source when it was last compiled. The CAPITALIZED and "Camel" versions of comments have been deprecated and are obsolete. Kindly convert all such words to lowercase comments; these tags will be reused for something else in the future. To facilitate this conversion, the deprecated tags are converted to lowercase comments each time source code is compressed for storage. We have also added white numbers, so that it is now simple to comment a phrase that contains numbers.
+* Source Code Compression: When a source floppy image has the variable ns at the beginning of block 18 (followed by nblk and nc ), the image is capable of being compressed. save will write it out in compressed format, identified by a negative value for the variable ns as stored. Either uncompressed or compressed images may be used as boot media or as the working file for the Windows version, and either may be read by the audit utility for code reconciliation. To save an uncompressed working image on the Windows system, use retain .
+* Display of editor block number: This is now done with a watermark behind the listing. The block number is no longer carried on the stack. 
+
+## Terms elements and concepts ##
+
+This document contains concise definitions of key elements, terms, and concepts of colorForth. For a prose presentation refer to the tutorial documents.
+
+Character
+:    A member of the colorForth character set. 
+
+Compilation
+:    The process of interpreting a stream of color tagged words and numbers from a block in RAM. White (comment) and Blue (display functions) are ignored as are word extensions. Yellow words and numbers are interpreted immediately when encountered; for words, only the forth word list is searched. When a magenta word is encountered, a variable is added to the word list (forth must be selected) and its value is stored in the source code where the variable is defined; the current value of any active variable is visible when displaying its source. When a red word is encountered, that word is added to the forth or macro word list depending on which was selected most recently, and associated with the next available byte in the dictionary. When a green word is encountered, the macro word list is searched and if found that word is executed immediately. If not found a green word is next searched in the forth word list and if found a call to that word is compiled into the dictionary. Cyan is used to compile a call to a macro rather than to execute it. Grey words are ignored by the PC compiler but are updated by the g18 compiler to hold g18 memory addresses. Every colorForth program, except the kernel, is compiled from source when needed. No "object code" or other binary image format is saved or manipulated. 
+
+Editor
+:    The program which displays a block of colorForth source code along with a control panel for a custom keyboard interaction, and which is the main tool for maintaining the content of source code. 
+
+Interpretation
+:    The process of acting immediately by direction of words and numbers. When a number is encountered it is pushed onto the stack. When a word is encountered it is executed. This is what the Interpreter does with all input received from the keyboard. When loading a block, the interpreter processes yellow words and numbers in the same way. When other colors are encountered, they are handled as described above in Compilation. 
+
+Number
+:    A fixed point binary number in 32-bit, twos complement form. When used in the context of code or communications with g18 processors, only the low order 18 bits of a number are sent to the g18, and only 18 bits are received back. 
+
+Tag
+:    A number which is combined with the internal binary representation of a word to identify it syntactically. 
+
+Text Entry Mode
+:    A state of the system during which the keyboard is being used for entry of text, meaning words or numbers. When in this mode, one of two possible keyboard behaviors is active: QWERTY, or dvorak. Anything colorForth understands may be typed using either keyboard, but each has its own meanings for the keyboard buttons, each has a different protocol for indicating whether a word or a number is being entered, and each makes different use of the keyboard hint area of the display. 
+
+Word
+:    When referring to memory, a word is either 32 bits (on the PC platforms) or 18 bits (on the g18 computers.) When referring to colorForth words, a word is a string of one or more characters that are Shannon coded and tagged. 
+
+## Using the colorForth QWERTY Keyboard ##
+
+When you begin text entry mode with the QWERTY keyboard behavior selected, the hinting area displays the annunciator "qwer" and you may enter words or numbers, one at a time. The software is designed to behave as simply and naturally as feasible in the majority of cases.
+
+After typing a word or number you may enter it using the **space bar**, or alternatively the **enter** (some may know it as carriage return) key. The keyboard normally continues in text entry mode, expecting you to enter another word or number. However, when in the Interpreter, the word you just entered may run another application which can redefine keyboard operation until you return to the Interpreter, as we'll see later.
+
+To erase a word or number before you have *entered* it, use the **backspace** key. To exit *text entry* mode, use the **escape** key. This doesn't do anything in the Interpreter, but some applications, such as the Editor, can "call" the text entry mode and in those cases you need to indicate when you are through by using "escape".
+
+When you begin typing a word or number, the keyboard software needs to determine which you are entering. Like classical Forth, colorForth allows you to define words that start with numeric digits, or even words that consist entirely of numeric digits. The keyboard software makes its decision with the first key you strike:
+
+* if the key is a decimal digit 0..9 then you are entering a number; the key is interpreted as a digit, that digit is displayed on top of the stack, and a "num" annunciator is displayed in the hint area. Subsequent keystrokes must be digits and will be "shifted" into the displayed number using the current radix. The - key negates the number being entered and may be used repeatedly to toggle its sign.
+* If the key is any of the other 37 colorForth characters a..z !'*+ ,-./ ;?@ then you are entering a word; the character is displayed to the left of the hint area, a Shannon coded value consisting of that character is displayed on the top of the stack, and a "text" annunciator is displayed in the hint area. Subsequent keystrokes may be any colorForth character and will be appended to the displayed word to the left of the hint area as well as being added to the Shannon coded representation on the stack. If another number appears on the stack while you are typing, this informs you that the last character you typed caused the Shannon coded value to exceed one 32-bit number. That's all right, but is important to know about when creating Forth definitions. 
+
+The behavior above allows you to just type words and numbers naturally in the great majority of cases. There are only two situations that require you to do anything more:
+
+* Negative Numbers: The keyboard software considers the minus sign - to be an alphabetic character when it's the first keystroke seen. Thus, simply typing -123 is results in a word, not a number. To enter a negative number, the minus sign has to be entered some time after the first digit. So you can enter the value that was desired above as 123- .
+  We could have made it go the other way, but there are too many Forth words that start with a minus... beginning with the one's complement operator - ... to justify this.
+* Words that start with a digit: You can force the keyboard software into text mode by using the grave accent ` key. This is typically on a button immediately to the left of 1 . After pressing it, the "text" annunciator turns on in the hint area, and the next character entered will be taken to be the first character of a word. 
+
+### Decimal and Hexadecimal ###
+
+There is a persistent flag indicating whether the human interface is in decimal or hexadecimal mode.
+
+#### Decimal Mode ####
+
+By default the human interface is in decimal mode. The stack is displayed in decimal, each digit you key into a number is shifted into it using base 10, and the only keys accepted during number entry are zero through 9 and the minus sign.
+
+#### Switching Modes ####
+You may place the human interface in hexadecimal mode by pressing the F1 key. Actually this key toggles between decimal and hexadecimal mode. The F1 key is recognized any time the hint area shows just the "qwer" annunciator, or both "qwer" and "num". It instantly sets the other mode, affecting the stack display and subsequent digit entry.
+
+#### Hexadecimal Mode ####
+When in hexadecimal mode, the stack is displayed in unsigned hex. Each digit you key into a number is shifted into it using base 16. The first digit of a hex number must be one of the decimal digits 0..9 , but once number entry has begun any of the hex digits 0..9 a..f or the minus sign may be entered. Thus, to enter the hex equivalent of 255, type 0ff . 
+
+## The colorForth Editor ##
+
+To invoke the editor from the interpreter, first enter a block number; let's say, 18. When you have done this, the number 18 will appear at the top of the Interpreter's stack display. Do not attempt to edit blocks 0 through 17; these contain binaries and listing binaries can cause the windows version to trap.
+
+Now type `edit`.
+
+You will see the source code to block 18 and the number 0018 will be displayed in a faint background watermark on the screen, indicating the block being viewed and edited. The editor control panel hint map is displayed in the lower right part of the screen.
+
+### Operating the Editor ###
+
+The editor is operated by pressing buttons on a control panel. All control panels in colorForth are built from the same set of 27 keys; only the assignments differ. These keys are as follow:
+
+![colorForth keyboard](photo/keyboard.jpg)
+
+* The four fingers of the left hand are placed on the qwerty keys "ASDF" and are moved up one row or down one row. This is the standard keyboard "home" position for the left hand, and the left hand is responsible for the keys marked red in the above illustration.
+* The four fingers of the right hand are place on the qwerty keys "JKL;" and are moved up one row or down one row. This is also standard home position; keys are marked green.
+* The thumb(S) press the qwerty keys "N", "Spacebar", and "Alt", marked blue. 
+
+The editor control panel hint map, displayed in the lower right part of the screen, is as follows:
+
+![](photo/editkeys2.jpg)
+
+### colorForth editor commands ###
+
+    "s"  enter white comments all in the small font (Do not use, will go away!)
+    "c"  enter white comments with the first character in the small font and
+        the rest in the big font (Do not use, will go away!)
+    "t" enter white comment text in lower case only.
+    "y" enter yellow text.
+    "r" enter red word, then switch to green text.
+    "g" enter green text.
+    "x" toggle odd/even source/shadow code/comment blocks
+     
+    "c" cycle color white-yellow-green word before cursor
+    "d" Start find-function based on word before cursor.  If red or magenta, find reference.
+
+        If a number, edit that block.  Otherwise, find definition.
+    "f" repeat last 'find'
+    "j" jump to last edited block
+    "l" move cursor left
+    "u" move cursor up (eight left)
+    "d" move cursor down (eight right)
+    "r" move cursor right
+     
+    "a" enter grey address word
+    "b" enter blue word
+    "k" copy (similar to "x" cut but does not delete the word)
+    "-" decrement edited block number by two
+    "m" enter magenta text (variables)
+    "c" enter cyan text
+    "+" increment edited block number by two
+     
+    "X" delete the current word (cut for paste)
+    "." exit editor to Interpreter
+    "i" insert word (paste from buffer)
+
+### Exiting and re-entering the Editor ###
+
+To exit the Editor, returning control to the Interpreter, strike the space bar (. key). To return to the Editor, you may type `e` or enter a new block number and type `edit`. The editor may also be entered using the vocabulary for finding source, described later below.
+
+### Cursor Control ###
+
+When the editor is started for the first time the cursor will appear in the upper left corner of the block. If there is text there it will appear on top of the first character. If the cursor is moved to the right it will be placed in the first space to the right of the first word.
+
+![colorForth cursor](photo/cursor.jpg)
+
+The cursor resembles a pac-man character poised to munch the word to the left when the "X" (delete word) key is pressed. Strings of text can be cut by repeatedly pressing or holding the "X" key. The cursor can be moved to a different location on that block, or to a different block, and inserted with the "i" key.
+
+Left, Up, Down, and Right keys under the fingers of the right hand move the cursor. The cursor cannot be moved above the top of the screen but it can be moved below the bottom of the screen. If the cursor is not visible hold down the Up key. It should always appear eventually.
+
+    "l" move cursor left
+    "u" move cursor up (eight left)
+    "d" move cursor down (eight right)
+    "r" move cursor right
+
+Note that the Up and Down keys do not make precise up and down movements and only move eight words to the left or right respectively if possible.
+
+Words that have been deleted with the "X" key can be re-inserted with the "i" key after the cursor has been moved.
+
+### Text Entry Modes ###
+
+New text in any color can be inserted by pressing one of the Editor buttons that select color and enter text entry mode. To determine the current state of the keyboard, look in the hint area; if you see the editor control panel, buttons will be editor functions, whereas if you see text entry mode hints, you are entering text.
+
+To return to the Editor from any text entry mode, use the method defined by the keyboard in use.
+
+#### white comment entry ####
+
+Comments will appear in white when editing and will be ignored by the compiler. Comments may contain any of the colorForth characters. Comments can be entered in three ways:
+
+    "s" In old systems, enter CAPITALIZED white comments.
+       This feature has been deprecated, please do not use it.
+    "c" In old systems, enter Camelcase white comments.
+       This feature has been deprecated, please do not use it.
+    "t" enter white comments in lower case.
+
+In current colorForth systems, decimal and hex numbers may be entered as comments; this facilitates the commenting of most compiled or interpretive code if desired.
+
+When source is compressed using `save` the deprecated tags for capitalized and Camelcase comments are converted to lower case comments.
+
+#### yellow text and number entry ####
+
+Yellow text are words that are interpreted in colorForth when blocks are loaded. Red words are the names of new defined words, they are like the names that follow ":" in traditional Forth. Green words are words being compiled. Magenta words are variables, and cyan words are like "postponed" words in ANS Forth (calls to macros).
+
+Numbers can be entered in green or yellow mode. Numbers can be entered in decimal or hex mode. Hex numbers will appear in a darker green or darker yellow than decimal numbers, and may be italicized when the display medium permits.
+
+If one intends to enter a number but enters a character string that resembles a number instead, it cannot be visually distinguished from a decimal number as it will be the same shade of yellow or green. But when you load the block unless you have actually defined a red word or magenta variable with a name that can be confused for a number, which is generally not a good idea in the first place, you will get a compiler error message that it did not recognize the string (that looked like a number) as a defined name.
+
+There is a Forth wordlist and a macro wordlist in the colorForth compiler and the macro wordlist is searched first during compilation. Words in the macro wordlist act like "immediate" word in traditional Forth. Macros are executed at compile time when referenced in green. To compile a call to a macro, rather than to execute it at compile time, reference that macro with a cyan word.
+
+#### green text and number entry ####
+
+Green words like if are compiled, but because they are in the macro wordlist and act like immediate words, they are executed at compile time like words written explicitly in yellow.
+
+A transition from green words to yellow words and back to green words is interpreted by the compiler as follows: The transition from green to yellow marks the transition from compilation mode to interpretation mode as would be indicated by the ANS Forth word "[" and the transition from yellow to green is interpreted by the compiler to mean a transition from interpretation mode to compile mode, and the compilation of a literal as would be indicated by the ANS Forth phrase "] LITERAL"
+
+#### red name entry ####
+
+When the "r" key is pressed to enter a red word the text for the red name will be aligned on the left side of the screen. A red name is the name of the compiled code that follows it in green. The red name can then be used in green, yellow, cyan or white colors. A call or jump to the word can be compiled with green usage, the word can be interpreted with yellow usage, a defined macro can be postponed (compiled as a call, rather than executed at compile time) with cyan usage, and if written in white will always be a comment.
+
+After entering a red word the editor will change the color of the text or numbers being entered into green because the red word is the name of the compiled, green code that follows.
+
+#### magenta variable name entry ####
+
+*Magenta words are not used in G18 code. This section applies only to programming the host computer.*
+
+When selecting magenta, and a magenta variable name is added to a block, a green number with the value 0 will be added after the magenta name. The magenta word when executed places the address of the location of the green number on that block on the parameter stack. One interesting feature of colorForth is that this address is in fact the address of a cell in the source, specifically the cell from which the green zero is being displayed. The variable, and its value, are part of the source and when you save the source you also save the values of variables! Display a block containing a variable and change the variable using the interpreter. You will see the green number in the source display change immediately! Note: colorForth has historically required that references to variables must always be in yellow; the code compiled for a green variable reference is incorrect. We have not gotten around to fixing this yet.
+
+#### cyan entry ####
+
+Cyan words are not used in G18 code. This section applies only to programming the host computer.
+
+Cyan words are like postponed words in ANS Forth. A macro is executed immediately by the compiler when encountered as a green word. When a macro is referenced as a cyan word, the compiler does not execute the macro but compiles a call to it.
+
+#### blue entry ####
+
+Blue words are words that are executed at edit time. They can format the display with cr br indent etc. or execute custom commands while viewing a screen. The word seeb on block 648 is "see blue" and when yellow will execute at boot time and make blue words visible in the editor. If seeb on block 648 is white then blue words will not be visible but will execute when a block is displayed. After the system has booted, you may execute seeb at any time to toggle the display of blue words on or off.
+
+#### grey entry ####
+
+Grey words display an address wherever desired in G18 code. Any short word (four characters or less) may be used; the word itself does not matter nor is it ever displayed in its own right.
+
+### Other Editor Functions and Related Tools ###
+
+#### Cut, Copy and Paste ####
+
+The Editor has a buffer of finite size (about a block's worth) for holding code that has been "cut" or "copied" for later "pasting". The buffer works like a stack. The buttons that control this are:
+
+    "k" copy (similar to "x" cut but does not delete the word)
+    "X" delete the current word (cut for paste)
+    "i" insert word (paste from buffer)
+
+Each depression of the cut or copy button pushes a copy of the word or number to the left of the cursor into this stack buffer, leaving the cursor to the left of where the word or number is (or was before it was deleted.) Each depression of the paste button pops the top word or number from this stack buffer and inserts it at the cursor position, moving the cursor to the right.
+
+#### Block Navigation ####
+
+To begin editing some other arbitrary block, exit the editor and re-enter using edit as was described earlier. For local navigation the Editor supplies the following:
+
+    "x" toggle odd/even source/shadow code/comment blocks
+    "j" jump to last edited block
+    "-" decrement edited block number by two
+    "+" increment edited block number by two
+
+The "j" key alternates between the last two blocks that you edited with the word edit . The traditional variable blk contains the number of the current block being edited, and is unchanged when you exit the editor. blk 1 + is the number of the block that was current the last time edit was used. In addition to alternating the displayed block, the "j" key alternates these two values in blk .
+
+The "x" key toggles between odd and even blocks while editing. Even numbered blocks are intended for source code and odd numbered blocks, called shadows, are intended for documentation. Since odd numbered blocks are not normally compiled, red, yellow, green, cyan, or magenta words on those blocks are intended to be comments only and may be used as desired to enhance readability, with the understanding that shadow blocks are not normally loaded.
+
+The "+" and "-" keys on the editor keyboard map move two blocks up or two blocks down. The editor will not decrement the block number to be edited below 18. More advanced navigation is supplied by the Search Utility; see below.
+
+#### Copying Blocks ####
+
+To copy a source block and its shadow, first display the source block that you want to copy using the editor, so that its number is in the variable blk . Then, exit the editor; put a destination source block number on the stack, and type copy . The first block, and its accompanying shadow, will be copied to the destination. If you want to edit the copied block just type e as blk will now be set to the number of the destination block.
+
+#### Search Utility ####
+
+A resident set of utility functions, integrated with the Editor, facilitates searching the source in several practical and useful ways. When in the Interpreter, there are four words for starting a search, and one for continuing it. The words for starting the search are find def from literal .
+
+When a search is started, we begin at block 18 (except in the case of from ) and scan forward looking for the particular target. If it is not found, we remain silently in the Interpreter. If it is found, we enter the Editor with the cursor set at (immediately to the right of) the target.
+
+Once a search has been started, it may be continued from the point of the last target found by using the "f" control panel key, if in the Editor, or by typing f in the Interpreter. In either case, a successful find will display a block, while a failure to find will be as though you had done nothing at all.
+
+When continuation is begun using the word f in the Interpreter, searching resumes at the point of last find in that same search. When continuing using the "f" control panel button in the Editor, the search resumes at the current cursor position in the current block, so you have more control in this case.
+
+The searches continue up to the end of your disk image as defined by the three variables at the start of block 18. Do not attempt to change these variables at this point in your study!
+
+The searches automatically consider only blocks of the same sort (source or shadow) as the block in which the search was started or continued. Thus, searches normally start with source only; they will never consider shadows unless you force them to using the word from with an odd block number, or by using the Editor's "f" key while looking at a shadow. To search all shadows, start a search normally, then edit block 19 and use the Editor's "f" key to continue.
+
+##### Interpreter Search Words #####
+
+* `find` awaits a word from the keyboard and starts a new search for that word. It will find all instances of that word as a definition (red or magenta), reference (green, yellow, blue, or cyan), or any sort of comment.
+* `def` awaits a word from the keyboard and starts a new search for that word, as a definition (red or magenta) only.
+* `from` takes a number from the stack for use as starting block. It then awaits a word from the keyboard and starts a new search for that word, in any form as in find using this starting block.
+* `literal` takes a number from the stack and starts a new search for that value as a green or yellow number, matching its numerical value (regardless of whether displayed as decimal or as hex.)
+* `f` continues the most recently started search immediately after the point at which the last target was found in that search. 
+
+##### Editor Search Keys #####
+
+* "f" control panel key continues the most recently begun search, at the current editor cursor position. If the current block is source, only source will be searched; if it is a shadow, only shadows.
+* "d" control panel key starts a new search based on the word immediately preceding the cursor, as follows:
+    * If the word is a definition (red or magenta) then the new search will be for references (green, yellow, blue, or cyan) to that word.
+    * If the word is a reference or a white comment, then the new search will be for definitions of that word.
+    * If the word is a literal number, then we do not search as such but simply edit the block by that number. Handy for use in load blocks! 
+
+All of the above work in both Native and Windows systems.
+
+Written by Jeff Fox and friends. 
+
+## The colorForth Human Interface ##
+
+Your interaction with colorForth is accomplished by using a PC keyboard and a graphic display. As you will see, colorForth has unique human interfaces and we are continually experimenting with improvements to them. In fact, each colorForth application may define its own customized human interface if appropriate.
+
+Situational awareness is very important in colorForth! The meaning of pressing a given button on the keyboard varies as your actions change the system from one state to another. With this economy of motion comes the requirement that you maintain a heightened awareness of system state from keystroke to keystroke. With only a very few exceptions, the system state and the meanings of the keyboard buttons are apparent from a glance at the screen once you are familiar with colorForth. Until you are, however, use caution as you would when learning any other new psychomotor skill! For example, quickly drumming the keys in frustration would yield only laksjdf on a plain old text editor which could easily be un-done with backspaces. However, in the colorForth editor such non-deliberate use of keys can have truly amazing, unintended consequences, and by the time the actions have been taken you may have to audit your whole disk to find out what you have wrought! We recommend that you keep cats and small children away from your keyboard when colorForth is running.
+
+Most people find that once they have mastered this new skill it works well for them, and that with the simple but powerful set of tools in colorForth it's a pleasingly productive environment. Take your time getting accustomed to it, and it should serve you very well.
+
+We'll start with the Interpreter interface since it's the first thing you encounter and contains good examples of the common display elements. Here is what you see on booting arrayForth:
+
+![](photo/interp-0.png)
+
+The above display is composed of two major elements: The logo, with the "arrayforth" label, and the interpreter's feedback which is shown in the black areas at the bottom of the screen. The annunciator reading "qwer" is part of this feedback. The feedback is comprised of several distinct components that may be used in other applications' interfaces; these components are discussed below.
+
+The first of the two major elements, the logo, may be replaced during use of the system by other things such as the listing of a block. The interpreter simply displays this element, whatever it is, with the interpreter's feedback superimposed over it. The entire screen is refreshed, from whatever raw data each part is based on, each time you strike a key; thus, the effects of interpreter interaction may be seen right away when they occur.
+
+### Interpreter Feedback Area ###
+
+There are three main sections in this area; here is an example showing all three:
+
+![](photo/interp-1.png)
+
+The annunciators "qwer" and "text" are part of a keyboard / control panel hint rectangle at the lower right corner of the screen. The word "png" is feedback showing the word most recently typed; it changes as you key additional characters. The number 50389 shows the stack content; it is presently the only item on the stack. While you are typing a word or number, the binary value of that number or values(s) of the word are shown at the top of the stack (top is on the right.)
+
+Here is what you see if you have pushed five numbers, one through five, onto the stack and then typed png to capture the screen:
+
+![](photo/interp-2.png)
+
+*Caution: The stack display presently shows the entire content of the stack, no matter how large. If the stack doesn't fit on one line, the display wraps and another line is shown. If the stack is deep enough, the system will trap while displaying the stack.*
+
+If you type a word that the interpreter cannot find in the dictionary, a question mark is appended to the display of the most recently typed work. Here is an example resulting from trying to interpret an unknown word "poobah":
+
+![](photo/interp-3.png)
+
+### Keyboard / control panel hint area ###
+
+What you see in this area depends on the application with which you are interacting. Some applications are operated by pushing buttons on a keyboard "control panel" rather than by typing text; some examples of this are the flat layout display, the hardsim viewer, softsim, and in fact even the Editor. In other contexts, the keyboard is being used for input of text (words, numbers); examples are the Interpreter, and the editor when you have selected a color for text entry. Such cases are called text entry mode.
+
+In text entry mode, one of two possible keyboard behaviors is active: QWERTY, or dvorak. Anything colorForth understands may be typed using either keyboard, but each his its own meanings for the keyboard buttons, each has a different protocol for indicating whether a word or a number is being entered, and each makes different use of the keyboard hint area of the display.
+
+* **The QWERTY keyboard** is as close as practical to the behavior of a conventional typewriter keyboard and will be most familiar to those who have been trained as touch typists in that system.
+* **The dvorak keyboard** is a special keyboard developed by Chuck Moore to minimize the number of buttons and amount of hand movement required. Character assignments were made to facilitate the efficient typing of common words. With 24 character and three mode shift / control keys, typing of certain characters or digits requires multiple keystrokes. We call this keyboard dvorak but it differs from the commonly used Dvorak keyboard.
+
+### Selecting QWERTY or dvorak keyboard ###
+
+colorforth lets the user choose the historic dvorak keyboard setup for colorforth or a traditional qwerty setup. The system defaults to qwerty. To change the system to a dvorak keyboard type on the qwerty keyboard, 648 edit and begin editing block 648. Scroll down using the keys for right and down to place the cursor just after the word qwerty and press the key labeled "c" for color change. Make the phrase white instead of yellow to disable the qwerty keyboard setup at startup. Exit the editor with the spacebar and type save to save the system setup to default to dvorak keyboard use and/or type warm to restart using the dvorak keyboard setup. 
+
+# colorforth.com webpages # 
+
+## colorforth ##
+Forth has been a recognized programming language since the 1970's. ColorForth is a redesign of this classic language for the 21st century. It also draws upon a 20-year evolution of minimal instruction-set microprocessors. Now implemented to run under Windows, it can also stand-alone without an operating system. Currently being ported to GreenArrays' c18 computer core via the Haypress Creek board. Applications are recompiled from source with a simple optimizing compiler.
+
+### Features ###
+
+* Stand-alone! Includes operating system.
+* Compact! 2K bytes for core software.
+* Fast! Optimized object code.
+* Simple! Applications stored as source. No object library.
+* Innovative! Text compressed and pre-parsed.
+* Unique! 27-key Dvorak keyboard.
+
+### Status ###
+
+The latest status of colorForth and current projects. Others have been more active than I, so search the web.
+
+### Forth ###
+
+Distinctive for its use of 2 push-down stacks. The Return stack is used for subroutine return addresses, as usual. The Data stack holds parameters for and results of subroutine calls. This distinction between control and data minimizes the cost of subroutine calls. As a result, Forth code is typically highly factored into many tiny subroutines, called words. Referencing a word causes its code to be executed.
+
+These simple words are easily and thoroughly tested by typing them on the command line. The Edit/Compile/Test sequence is extremely fast, boosting programmer productivity. A philosophy of early binding helps to produce efficient, reliable code.
+
+A new word is defined by a string of previously-defined words ending with a semicolon. The only other syntax is that IF must be matched with THEN, and FOR with NEXT.
+
+In Forth, a new word is defined by a preceeding colon, words inside a definition are compiled, outside are executed. In colorForth a new word is red, green words are compiled, yellow executed. This use of color further reduces the syntax, or punctuation, needed. It also makes explicit how the computer will interpret each word.
+
+colorForth does not conform to the ANS Forth Standard. It is a dialect built upon the instruction set of my Forth microprocessor chips. The Pentium version implements those instructions as macros. And adds others as needed to optimize the resulting code.
+
+### Rationale ###
+
+Current software is shameful. Giant operating systems linger from the 1970's. Applications are team-produced with built-in obsolescence. User interfaces feature puzzle-solving.
+
+With the huge RAM of modern computers, an operating system is no longer necessary, if it ever was. colorForth includes multi-tasking, and drivers for essential devices. But that is hardly an operating system in the style of Windows or Linux.
+
+Megabytes of software may be required for historical compatibility, but sometimes we need a fresh start. ColorForth provides the necessary capability with kilobytes of code. At boot, it copies disk into RAM. Then compiles the macros that emulate the stack machine that Forth expects. As applications are requested, they are compiled.
+
+A Forth application can take 1% the code employed by the same application written in C.
+
+### Source ###
+
+Except for a small kernal, source is all there is. Object code is recompiled as needed, which takes no discernable time. This saves untold trouble in maintaining and linking object libraries.
+
+Rather than a string of 8-bit characters, colorForth interprets pre-parsed words. A word starts with 4 bits that indicate its color and function - text, number, etc. Then 28 bits of left-justified, Shannon-coded characters, averaging 5.2 bits each. Numbers are stored in binary. Each word occupies 1 or more 32-bit memory locations.
+
+This pre-parsed source makes instantaneous compile possible. A special text Editor is included that understands this format. The source can be un-parsed into a bit string for compression and security.
+
+Here is a sample of source code, the guts of the IDE hard-disk driver. Yes, that's all it takes. Below the line is a 'shadow block' of comments explaining the code.
+
+And here is a paper describing arithmetic for the GreenArrays' c18 computer. Lots of functions implemented with colorForth instructions.
+
+### Display ###
+
+Source code is organized in 256-word blocks. This helps factor code into a managable heirarchy. The code in a block is analogous to that in a C file. But considerably more compact.
+
+Blocks are numbered, some are named. They are displayed with 16x24pixel characters, arranged in a 40x24 format on a 1024x768 display. At the bottom, the contents of the Data stack, and the current word are displayed.
+
+This display format is also used by applications. The large characters are readable and help minimize clutter. Double-size characters are available, as are graphic shapes (triangle, box, hexagon, circle), images (JPEG, GIF), 3D shapes and anything else that's been coded.
+
+### Keyboard ###
+
+Continuing my experiments with keyboards, I currently prefer using 27 keys to provide the 48 characters needed. These are the home keys of a standard 101-key keyboard, allowing the other 74 to be ignored.
+
+The assignment of the keys changes, with the current one displayed on-screen at lower right. It's pleasantly easy to type while referring to the display. These keys minimize finger travel, as close to Dvorak's arrangement as 27 keys permit.
+
+They are used as function keys (menu selects) for applications. The only text that needs to be typed is when editing source code.
+
+Other arrangements are possible. Including, gulp, standard qwerty.
+
+### References ###
+
+Jeff Fox has written about Forth and colorForth. He also has videos of talks given at Forth meetings.
+
+Glen Haydon publishes literature about Forth. He has copies of Leo Brodie's best-selling book Starting Forth.
+
+The Forth Interest Group organizes meetings and has literature and libraries of Forth code. They are on a Webring that links to other Forth sites.
+
+Elizabeth Rather at Forth, Inc provides commercial-grade Forth systems and applications.
+
+Greg Bailey has information about the ANS Forth Standard and its Technical Committee J14. 
+
+## Status ##
+
+### Philosophy ###
+
+My attitude about software is that it expresses ideas that cannot be owned. Attempting to assert ownership is undesirable and impossible.
+
+So, although colorForth is infinitely valuable, I place it in the Public Domain to make it freely available to anyone for any purpose. There is plenty of money to be made by porting code, programming applications and teaching.
+
+I am having a fine time using colorForth. I won't spend much time promoting it. This site is my attempt to gauge the market. I will rigidly control the version I use.
+
+### Chuck ###
+
+This is what I'm working on, priority on top.
+
+* PPP/TCP
+* Go
+* Code colorForth in colorForth
+* PCI Audio: send data to the D/A, get samples from the A/D
+
+### Projects ###
+Here's a list of colorForth code I'd like to have. I'll post the best code with credit to the author.
+
+* Graphics
+      * Triangle
+      * Circle
+      * Cube
+      * Cylinder
+      * Sphere
+      * Modecules
+      * Star map
+      * Fractal tree
+      * Mandlebrot set
+      * Wood grain
+      * Grass
+      * Ray trace
+* Audio
+      * Play .wav
+      * Record voice
+      * Analyse voice - extract phonemes
+      * Recognize voice
+      * Identify voice
+      * Synthesize voice
+* Devices - Hardware interfaces require information not readily available. Intel publishes excellent specs. Others consider them proprietary. Agreeing to non-disclosure might prevent distributing source. Reverse-engineering Linux code seems the only way.
+      * Various graphic accelerators
+            + Frame swapping
+            + Transparent characters
+            + Solid rectangle
+            + Solid triangle
+            + Z buffer
+      * Various audio accelerators
+            + Play .wav
+            + Record
+      * Various modems
+* Protocols
+      * PPP connection
+            + Single ISP
+            + 2 blocks?
+      * TCP/IP
+            + 3 blocks?
+      * USB
+            + Keyboard
+            + Camera
+            + Disk
+            + 2 blocks + 1/device?
+      * JPEG decoder/encoder
+      * PNG
+            + Encoder - 3 blocks, Chuck Moore
+            + Decoder
+      * GIF decoder/encoder
+
+### Platforms ###
+
+Although I have no particular interest in other platforms, colorForth could easily be ported. The kernel that needs to be recoded is quite small. The major difficulty is gaining experience with the computer and its interfaces. These have been suggested:
+
+* Mac
+* Sun
+* Playstation 2
+* PDA 
+
+## Philosophy ##
+
+I used to love to solve puzzles: crossword, jigsaw, chess. Programming now gives me the endorphin lift of achievement. Call me a programming junkie.
+
+I believe in objective right and wrong. It applies to computer code. There is a single right way to balance all the conflicting demands. There is a solution to the puzzle. The challenge is to find it.
+
+colorForth is my latest attempt to define a computer environment. Satisfactory for me, the programmer, and me, the user. I've published it because I'm pleased with it. Here are some of the trade-offs:
+
+* It elminates object code, except for a small kernel. No need to manage object libraries, link modules, relocate code or allocate memory. Of course, I haven't done that for a long time.
+* It encourages small source modules, compiled on demand. Compiling these takes no perceptible time. Perhaps it's faster than needed. Perhaps it could be faster. In any case, it's satisfactory.
+* It encourages 2nd-order factoring into groups of related words, via 256-word blocks of code. Hopefully, a block can be reused in a different context. But principally, it organizes and clarifies the code.
+* The source code is pre-parsed into word-size chunks. This simplifies the interpreter and speeds search.
+* Each word has a tag that specifies its function and appearance. These properties need not be inferred from context. Thus simplifying the interpreter, reducing syntax and clarifying intention.
+* Huffman-coded characters reduce the cost of pre-parsed words. Code size is slightly smaller than a character string, even with added tags. I learned the value and limitations of this elegant loss-less compression.
+* A complex Editor is the price paid for a simple interpreter. In fact, total system complexity has probably increased. But time spent by the Editor is miniscule, compared with time spent by the interpreter.
+* Compiler macros provide a simple, efficient way of exploiting the hardware of a platform. They factor and document machine code, yet allow its use in a natural way. They make porting efficient software possible.
+
+The result, to my eye, is a nicely balanced system. It's not yet perfect and will continue to evolve. I deliberately sought to make colorForth different. I'm interested in unanticipated consequences. What happens when you change the balance of code size and compile time? What can a simple system do that a complex one cannot? What performance is sufficient to challenge the established paradigm?
+
+The Pentium platform is a bridge to my Forth chips. The code will be easy to port, or to cross-compile. I hate the Pentium, the PCI bus, the bizarre device interfaces. Yet this platform has driven hardware prices down and capability up. Focusing on software for USB and TCP/IP will render legacy hardware irrelevant.
+
+The strange keyboard employed by colorForth is an approximation of the one I want:
+
+* A 3-position switch for each finger
+* 15 buttons with 1 hand. One hand free
+* 27 buttons with 2 hands
+* Buttons labeled on the screen
+* Buttons reassignable
+* Remote keypad(s) for my recliner
+* Suitable for a wearable computer
+
+One day I'll make one from bits of brass. Till then, qwerty will have to do.
+
+### Legal ###
+
+After considering your comments and doing some diligence, I've decided to place colorForth in the Public Domain. Without explicitly doing that, it would have a default copyright.
+
+Public Domain allows anyone to use it for any purpose. Exactly my intention. The various licenses attach restrictions that are complicated and unenforcable.
+
+My motive is simple. colorForth offers a solution to the growing software crisis. I hope to encourage an alternative to bloatware. Besides, I'm not inclined to develop, market and distribute a product. If anyone is, more power to you.
+
+I've been here before: Forth entered the Public Domain around 1972. The issue wasn't copyright, but patent protection. No software patent had yet been issued and the effort required seemed great, so NRAO (the National Radio Astronomy Observatory) declined to pursue one. I don't recall a public statement placing Forth in the Public Domain, merely a presumption.
+
+### Authentication ###
+
+colorForth could be compressed for distribution. But maybe it shouldn't.
+
+It should be signed so you know you got the real thing. In time. 
+
+## Binding ##
+
+### Early Binding ###
+The interactive nature of Forth leads to recognition of 3 'times':
+
+* Edit time. The programmer is editing source code.
+* Compile time. Source code is being interpreted and compiled.
+* Run time. Compiled code is being executed.
+
+The earlier in this Edit/Compile/Run sequence a concept can be resolved, the more efficient the code. It is better to do arithmetic at Compile time, than repeat the calculation every Run time. It is better to factor code at Edit time than to expect a smart compiler to do so every Compile time.
+
+### Floating-point ###
+
+Floating-point arithmetic is a classic example of this. It is easy to implement floating-point in Forth, either hardware or software. I, for one, rarely do so.
+
+Fixed-point add is blindingly fast, with no shifting overhead. Fixed-point multiply avoids normalize and rounding cost. Multiplying by a ratio (*/ operator) accurately rescales integers. None of these needs FIX or FLOAT operators, or has to move data to a different stack. The only drawback is the need to choose units and use them consistently. For example, my VLSI simulator uses mV, uA, fC and uK. Multiplying and dividing these takes a little thought as to scale factors. This thought is done at Edit time!
+
+Floating-point would probably use V, A, C and K. These can be combined with formulas from some book. The computer will do the scaling, but does it at Run time! A gigaflop calculation will scale the results giga times. The is convenient and reasonable for prototyping. But insanity for production code.
+
+To repeat: resolve units early in the Edit/Compile/Run sequence.
+
+### Conditionals ###
+
+Another example concerns conditional statements - IF . . . THEN. Minimize them! A conditional is obviously executed at Run time. Let the programmer make the decision at Edit time. This might reduce the range or versatility of the code, but it also reduces testing and improves speed and reliability.
+
+An alternative is to use words like MAX, MIN, ABS that have conditionals built in. They're simple and have been thoroughly tested.
+
+Avoid like the plague, conditional compilation - conditionals at Compile time. These lead to code extremely difficult to read. And very easy to compile incorrectly. For different situations, simply have different versions of the program. In Forth, this usually means blocks with different LOAD sequences.
+
+### Portability ###
+
+Don't try for platform portability. Most platform differences concern hardware interfaces. These are intrinsically different. Any attempt to make them appear the same achieves the lowest common denominator. That is, ignores the features that made the hardware attractive in the first place.
+
+Achieve portability by factoring out code that is identical. Accept that different systems will be different.
+
+## 1 percent ##
+
+### 1% the code ###
+
+This is a provocative statement. It warrants some discussion.
+
+### C programs ###
+
+I've studied many C programs in the course of writing device drivers for colorForth. Some manufacturers won't make documentation available, instead referring to Linux open source.
+
+I must say that I'm appalled at the code I see. Because all this code suffers the same failings, I conclude it's not a sporadic problem. Apparently all these programmers have copied each others style and are content with the result: that complex applications require millions of lines of code. And that's not even counting the operating system required.
+
+Sadly, that is not an undesirable result. Bloated code does not just keep programmers employed, but managers and whole companies, internationally. Compact code would be an economic disaster. Because of its savings in team size, development time, storage requirements and maintainance cost.
+
+What's wrong with C programs?
+
+* Some problems are intrinsic to the C language:
+      * It has elaborate sytnax. Rules that are supposed to promote correctness, but merely create opportunity for error.
+      * It has considerable redundancy. This increases trivial errors that can be detected. And program size.
+      * It's strongly typed, with a bewildering variety of types to keep straight. More errors.
+      * As an infix language, it encourages nested parentheses. Sometimes to a ludicrous extent. They must be counted and balanced.
+      * It's never clear how efficiently source will be translated into machine language. Constructs are often chosen because the programmer knows they're efficient. Subroutine calls are expensive.
+      * Because of the elaborate compiler, object libraries must be maintained, distributed and linked. The only documentation usually addresses this (apparantly difficult) procedure.
+* Others are a matter of style:
+      * Code is scattered in a vast heirarchy of files. You can't find a definition unless you already know where it is.
+      * Code is indented to indicate nesting. As code is edited and processed, this cue is often lost or incorrect.
+      * Sometimes a line of code contains only a parenthesis, or semicolon. This reduces the density of the code, and the difficulty of reading it.
+      * There's no documentation. Except for the ubiquitous comments. These interrupt the code, further reducing density, but rarely conveying useful insight.
+      * Names tend to be hyphenated. This makes them unique and displays their position in the heirarchy. The significant portion of a name is hard to detect, slow to read.
+      * Constants, particularly fields within a word, are named. Even if used, the name rarely provides enough information about the function. And requires continual cross-reference to the definition.
+      * Preoccupation with contingencies. In a sense it's admirable to consider all possibilities. But the ones that never occur are never even tested. For example, the only need for software reset is to recover from software problems.
+      * Conditional compilation. More constants include or exclude code for particular platforms. More indentation. More difficulty fathoming which code is relevant.
+      * Hooks for future enhancements, or abandoned features, are abundant. This is useful only in understanding the programmer's ambitions.
+      * It is in a programmer's best interest to exaggerate the complexity of his program.
+* Another difficulty is the mindset that code must be portable across platforms and compatible with earlier versions of hardware/software. This is nice, but the cost is incredible. Microsoft has based a whole industry on such compatibility.
+
+### Forth ###
+
+colorForth does it differently. There is no syntax, no redundancy, no typing. There are no errors that can be detected. Forth uses postfix, there are no parentheses. No indentation. Comments are deferred to the documentation. No hooks, no compatibility. Words are never hyphenated. There's no heirarchy. No files. No operating system.
+
+Code is organized so that a block of related words fit on the screen. Names are short with a full semantic load. The definition of a word is typically 1 line. Machine code has a one-to-one correspondance with source.
+
+An application is organized into multiple user interactions, with unique display and keypad. Each is compiled when accessed. Its code is independent, names need not be unique. A background task is always running.
+
+### Comparison ###
+
+Yes, I could write a better C program that those I've seen. It wouldn't be nearly as good as Forth. I can't write an assembler program as good as Forth. No, I don't think Forth is the best possible language. Yet.
+
+But does this add up to 1% the code? Where is the C program I've recoded? No one has paid me to do that. One difficulty is comparing my Forth with the original C. I cheat. The 1% code merely starts an argument that they're not the same.
+
+For example, my VLSI tools take a chip from conception through testing. Perhaps 500 lines of source code. Cadence, Mentor Graphics do the same, more or less. With how much source/object code? They use schematic capture, I don't. I compute transistor temperature, they don't.
+
+But I'm game. Give me a problem with 1,000,000 lines of C. But don't expect me to read the C, I couldn't. And don't think I'll have to write 10,000 lines of Forth. Just give me the specs of the problem, and documentation of the interface.
+
+### My Conclusion ###
+
+colorForth's incredibly small applications provide new estimates of their overstated complexity. 
+
+## Pre-parsed word format ##
+
+    bits 31..........................4 3..0   function             color
+          characters                   0      extension            
+                                       1      execute              yellow
+                                       3      define               red
+                                       4      compile              green
+                                       7      compile              cyan
+                                       9      comment              white
+                                       a      Capitalized          white
+                                       b      all caps             white
+                                       c      variable             magenta
+                                       d      feedback             grey
+                                       e      display              blue
+                                       f      number               white
+
+Numbers have a bit for display format (decimal/hex). Those that fit in 27 bits (with sign extend) are stored
+
+		bits 31.........................5 4    3..0   function   color
+		     number                       hex  8      execute    yellow
+			                                     6      compile    green
+
+Larger numbers require 2 32-bit words
+		bits 31.........................5 4    3..0   function   color
+			                                hex  2      execute    yellow
+			                                     5      compile    green
+		bits 31..............................0
+		number
+
+### Functions ###
+
+A red word is defined: its name (1st word only) is placed in the next entry of a table of names. The current location in the dictionary is placed in a parallel table of locations. The name table will be searched backwards (from most recent to earliest). If a word is not found, a ? is displayed and the Editor points at the word in the source code.
+
+A yellow word is executed. Which means that the code it points to is called. Upon return, the Data stack may be different. A yellow number is pushed onto the Data stack.
+
+The word 'forth' selects the main dictionary. The word 'macro' selects another dictionary. Red words will now be defined here. A green word causes this to be searched. If found here, it is executed and presumably compiles some code. Otherwise the forth dictionary is searched and a call to the word's location is compiled. A green number compiles code that pushes it onto the Data stack.
+
+If a macro is cyan it is compiled, not executed. This allows nesting macros. An ordinary word could be cyan, but this is unnecessary and confusing. Should a macro be yellow, it will not be found.
+
+Yellow words within a definition will be executed, as expected. However, they should leave a (single) number on the stack. The transition from yellow to green words causes this number to be compiled. Thus numbers can be calculated inside definitions, which helps understand where they came from.
+
+A magenta word defines a variable. Its code is shared with other variables. The next word in the dictionary is used to point back to the source code, where the value of the variable is stored (initially 0). A yellow variable pushes its address onto the Data stack.
+
+The value of a variable is not disturbed by recompilation. It is saved with the source code and restored with the next boot. Its value is displayed by the Editor. These variables have the flavor of 'state variables'. Temporary variables are usually held on the stack.
+
+On the Pentium, yellow variables are preferred. At compile time, their address is returned and will be compiled as a literal at the yellow-green transition. (Remember, only 1 number is compiled per yellow-green transition.) A green variable compiles a call to code executed at run time to put the address on the stack.
+
+## Pentium colorForth ##
+
+Pentium colorForth
+Boots into 32-bit mode with a flat address space. Segment registers are based at zero; essentially unused. Interrupts off. Protections off.
+
+Data are addressed as 32-bit words, not bytes. But ESP and ESI hold byte addresses, for optimization. Instructions are optimized if agruments are literals.
+
+Registers are assigned:
+
+* 0 EAX: stack (1st number on Data stack)
+* 1 ECX: string counter, scratch
+* 2 EDX: address register A, I/O port, scratch
+* 3 EBX: unused
+* 4 ESP: byte pointer to top of Return stack
+* 5 EBP: unused
+* 6 ESI: byte pointer to 2nd number on Data stack
+* 7 EDI: dword pointer to next word to be interpreted
+
+27 chip primitives
+
+		Op      	 Word                                 	 Pentium                        	 Action
+		0       	 word ;                               	 jmp                            	 Jump to word; tail recursion
+		1       	 if                                   	 jz                             	 Jump to 'then' if zero
+		2       	 word                                 	 call                           	 Call word
+		3       	 -if                                  	 jns                            	 Jump to 'then' if not negative
+		6       	 ;                                    	 ret                            	 Return to calling word
+		8       	 @                                    	 mov EAX, [EAX*4]               	 Fetch from address on stack
+		                                                	 dup; mov EAX, a                	 Fetch from address in A; increment A 
+		9       	 @+                                   	 dup; mov EAX, [EDX*4]
+																											 inc edx                        	 
+		a       	 n                                    	 dup; mov EAX, n                	 Fetch number
+		b       	 @r                                   	                                	 Fetch from address in R
+		c       	 !                                    	 a!; mov [EDX*4], EAX; drop     	 Store to address on stack
+																											 mov a*4, EAX; drop
+																											 mov a*4, n
+		d
+		e       	 !+                                   	 mov [EDX*4], EAX; inc EDX      	 Store to address in A; increment A
+		f       	 !r                                   	                                	 Store to address in R; increment R
+		10      	 2*                                   	 shl EAX, 1                     	 Shift stack left
+		11      	 2/                                   	 sar EAX, 1                     	 Shift stack right, propagate sign
+		12      	 -                                    	 not EAX                        	 Ones complement stack
+		14      	 and                                  	 and EAX, [ESI]; nip            	 And to stack
+																											 and EAX, n
+		15      	 or                                   	 xor EAX, [ESI]; nip            	 Exclusive-or to stack
+																											 xor EAX, n
+		16      	 +                                    	 add EAX, [ESI]; nip            	 Add to stack
+																											 add EAX, n
+		17      	 *+                                   	                                	 Multiply step
+		18      	 push                                 	 push EAX; drop                 	 Push stack onto Return
+		19      	 a                                    	                                	 Load A register onto stack
+		1a      	 dup                                  	 lea ESI, ESI-4; mov [ESI], EAX 	 Duplicate stack
+		1b      	 over                                 	 dup; mov EAX, [ESI+4]          	 Load 2nd datum onto stack
+		1c      	 pop                                  	 dup; pop EAX                   	 Pop Return onto stack
+		1d      	 a!                                   	 mov EDX, EAX; drop             	 Store stack into A register
+		1e      	 drop                                 	 lodsd                          	 Discard stack
+		1f      	 nop                                  	 nop                            	 Do nothing
+
+Other Pentium macros:
+
+		Word                           	 Pentium                             	 Action
+		nip                            	 lea ESI, ESI+4                      	 Discard 2nd stack item; preserve flags
+		swap                           	 mov EDX, EAX;
+		                               	 mov EAX, [ESI]; mov [ESI], EDX      	 Exchange stack with 2nd number
+		+!                             	 a!; add [EDX], EAX; drop            	 Add to address on stack
+		                               	 add a*4, EAX; drop
+		                               	 add a*4, n
+		*                              	 imul EAX, [ESI]; nip                	 Multiply with stack
+		                               	 imul EAX, n
+		*/                             	 mov ECX, EAX; drop                  	 Multiply 2 numbers, divide by stack
+		                               	 imul [ESI]; idiv [ECX]; nip
+
+* The word - is the unary ones-complement, not the binary subtract. Its result is 1 less than negate, and much faster in hardware.
+* The word or is exclusive-or. Inclusive-or is rarely needed.
+* The word */ multiplies by a ratio, with a double-length intermediate product. It eliminates the need for floating-point.
+
+## Forth: the early years ##
+
+### Abstract ###
+
+Forth is a simple, natural computer language. It has achieved remarkable acceptance where efficiency is valued. It evolved in the 1960s on a journey from university through business to laboratory. This is the story of how a simple interpreter expanded its abilities to become a complete programming language/operating system.
+### Forward 1999 ###
+
+This paper was written for the HOPL II (History of programming languages) conference. It was summarily rejected, apparently because of its style. Much of the content was included in the accepted paper [Rather 1993].
+
+This HTML version was reformatted from the original typescript. Minimal changes were made to the text. Examples of source code were suggested by reviewer Phil Koopman. They've not yet been added.
+
+### Forth ###
+Forth evolved during the decade of the 60s, across America, within university, business and laboratory, amongst established languages. During this period, I was its only programmer and it had no name until the end. This account is retrieved from memory, prompted by sparse documentation and surviving listings.
+
+Forth is hardly original, but it is a unique combination of ingredients. I'm grateful to the people and organizations who permitted me to develop it - often unbeknownst to them. And to you, for being interested enough to read about it.
+
+Forth is a simple, natural computer language. Today it is accepted as a world-class programming language. That it has achieved this without industry, university or government support is a tribute to its efficiency, reliability and versatility. Forth is the language of choice when its efficiency outweighs the popularity of other languages. This is more often the case in real-world applications such as control and communication.
+
+A number of Forth organizations and a plethora of small companies provide systems, applications and documentation. Annual conferences are held in North America, Europe and Asia. A draft ANSI standard will soon be submitted [ANS 1991].
+
+None of the books about Forth quite capture its flavor. I think the best is still the first, Starting Forth by Leo Brodie [Brodie 1981]. Another window is provided by JFAR's invaluable subject and author index [Martin 1987].
+
+The classic Forth we are discussing provides the minimum support a programmer needs to develop a language optimized for his application. It is intended for a work-station environment: keyboard, display, computer and disk.
+
+Forth is a text-based language that is essentially context-free. It combines 'words' separated by spaces, to construct new words. About 150 such words constitute a system that provides (with date of introduction)
+
+
+      SAO  1958  Interpreter
+     SLAC  1961  Data stack
+      RSI  1966  Keyboard input
+                 Display output, OK
+                 Editor
+  Mohasco  1968  Compiler
+                 Return stack
+                 Dictionary
+                 Virtual memory (disk)
+                 Multiprogrammer
+     NRAO  1971  Threaded code
+                 Fixed-point arithmetic
+
+Such a system has 3-8K bytes of code compiled from 10-20 pages of source. It can easily be implemented by a single programmer on a small computer.
+
+This account necessarily follows my career. But it is intended to be the autobiography of Forth. I will discuss the features listed above; and the names of the words associated with them. The meaning of many words is obvious. Some warrant description and some are beyond the scope of this paper.
+
+That portion of the Forth dictionary to be mentioned is summarized here:
+
+		Interpreter
+				 WORD  NUMBER  INTERPRET  ABORT
+				 HASH  FIND  '  FORGET
+				 BASE  OCTAL  DECIMAL  HEX
+				 LOAD  EXIT  EXECUTE  (
+		Terminal
+				 KEY  EXPECT
+				 EMIT  CR  SPACE  SPACES  DIGIT  TYPE  DUMP
+		Data stack
+				 DUP  DROP  SWAP  OVER
+				 +  -  *  /  MOD  NEGATE
+				 ABS  MAX  MIN
+				 AND  OR  XOR  NOT
+				 0<  0=  =
+				 @  !  +!  C@  C!
+				 SQRT  SIN.COS  ATAN  EXP  LOG
+		Return stack
+				 :  ;  PUSH  POP  I
+		Disk
+				 BLOCK  UPDATE  FLUSH  BUFFER  PREV  OLDEST
+		Compiler
+				 CREATE  ALLOT  ,  SMUDGE
+				 VARIABLE  CONSTANT
+				 [  ]  LITERAL  ."  COMPILE
+				 BEGIN  UNTIL  AGAIN  WHILE  REPEAT
+				 DO  LOOP  +LOOP  IF  ELSE  THEN
+
+### MIT, SAO, 1958 ###
+
+October, 1957 was Sputnik - a most exciting time. I was a sophmore at MIT and got a part-time job with SAO (Smithsonian Astrophysical Observatory, 14 syllables) at Harvard.
+
+SAO was responsible for optical tracking of satellites - Moonwatch visual observations and Baker-Nunn tracking cameras. Caught off-guard by Sputnik, they hired undergraduates to compute predictions with Friden desk calculators. John Gaustad told me about MIT's IBM EDPM 704 and loaned me his Fortran II manual. My first program, Ephemeris 4, eliminated my job [Moore 1958].
+
+Now a Programmer, I worked with George Veis to apply his method of least-squares fitting to determine orbital elements, station positions and ultimately the shape of Earth [Veis 1960]. Of course, this part-time job was at least 40 hours, and yes, my grades went to hell.
+
+At MIT, John McCarthy taught an incredible course on LISP. That was my introduction to recursion, and to the marvelous variety of computer language. Wil Baden has noted that LISP is to Lambda Calculus as Forth is to Lukasewcleicz Postfix.
+
+APL was also a topical language, with its weird right-left parsing. Although I admire and emulate its operators, I'm not persuaded they constitute an optimal set.
+
+The programming environment in the 50s was more severe than today. My source code filled 2 trays with punch cards. They had to be carried about to be put through machines, mostly by me. Compile took 30 minutes (just like C) but limited computer time meant one run per day, except maybe 3rd shift.
+
+So I wrote this simple interpreter to read input cards and control the program. It also directed calculations. The five orbital elements each had an empirical equation to account for atmospheric drag and the non-spherical Earth. Thus I could compose different equations for the several satellites without re-compiling.
+
+These equations summed terms such as P2 (polynomial of degree 2) and S (sine). 36-bit floating-point dominated calculation time so overhead was small. A data stack was unnecessary, and probably unknown to me.
+
+The Forth interpreter began here with the words
+
+     WORD  NUMBER  INTERPRET  ABORT
+
+They weren't spelled that way because they were statement numbers.
+
+INTERPRET uses WORD to read words separated by spaces and NUMBER to convert a word to binary (in this case, floating-point). Such free-format input was unusual, but was more efficient (smaller and faster) and reliable. Fortran input was formatted into specific columns and typographic errors had caused numerous delays.
+
+This interpreter used an IF ... ELSE IF construct, coded in Fortran, finding a match on a single character. Error handling consisted of terminating the run. Then, as now, ABORT asked the user what to do. Since input cards were listed as they were read, you knew where the error was.
+
+### Stanford, SLAC, 1961 ###
+
+In 1961 I went to Stanford to study mathematics. Although Stanford was building its computer science department, I was interested in real computing. I was impressed that they could (dared?) write their own Algol compiler. And I fatefully encountered the Burroughs B5500 computer.
+
+I got another 'part-time' job at SLAC (Stanford Linear Accelerator Center, 12 syllables) writing code to optimize beam steering for the pending 2-mile electron accelerator. This was a natural application of my least-squares experience to phase-space. Hal Butler was in charge of our group and the program, TRANSPORT, was quite successful.
+
+Another application of least-squares was the program CURVE, coded in Algol (1964). It is a general-purpose non-linear differential-corrections data-fitting program. Its statistical rigor provides insight into agreement between model and data.
+
+The data format and model equations were interpreted and a push-down stack used to facilitate evaluation. CURVE was an impressive precursor to Forth. It introduced these words to provide the capability to fit models much more elaborate than simple equations:
+
+
+     +  -  *  NEGATE
+     IF  ELSE  THEN  <
+     DUP  DROP  SWAP
+     :  ;  VARIABLE  !  (
+     SIN  ATAN  EXP  LOG
+
+Spelling was quite different:
+
+
+     NEGATE  was  MINUS
+       DROP       ;
+       SWAP       .
+          !       <
+   VARIABLE       DECLARE
+          ;       END
+     ( ...)       COMMENT ...;
+
+The interpreter used IF ... ELSE IF to identify a 6-character input word called ATOM (from LISP). DUP DROP and SWAP are 5500 instructions; I'm surprised at the spelling change. The word : was taken from the Algol label format, flipped for left-right parsing (to prevent the interpreter encountering an undefined word):
+
+
+     Algol - LABEL:
+     CURVE - : LABEL
+
+In fact, : marked a position in the input string to be interpreted later. Interpretation was stopped by ; . A version of : was named DEFINE .
+
+The store operator ( ! ) appeared in connection with VARIABLE . But fetching ( @ ) was automatic. Note the input had become complex enough to warrant comments. The sometime-criticised postfix conditional dates from here:
+
+
+     Algol - IF expression THEN true ELSE false
+     CURVE - stack IF true ELSE false THEN
+
+True is interpreted if stack is non-zero. THEN provides unique termination, the lack of which always confused me in Algol. Such expressions were interpreted: IF would scan ahead for ELSE or THEN.
+
+The word < introduces the convention that relations leave a truth value on the stack, 1 for true and 0 for false. The transcendental functions are, of course, library calls.
+
+### Free-lance ###
+
+I left Stanford in 1965 to become a free-lance programmer in the New York City area. This was not unusual, and I found work programming in Fortran, Algol, Jovial, PL/I and various assemblers. I literally carried my card deck about and recoded it as necessary.
+
+Minicomputers were appearing, and with them terminals. The interpreter was ideal for teletype input, and soon included code to handle output. So we aquire the words
+
+
+     KEY  EXPECT
+     EMIT  CR  SPACE  SPACES  DIGIT  TYPE
+
+EXPECT is a loop calling KEY to read a keystroke. TYPE is a loop calling EMIT to display a character.
+
+With the TTY came paper-tape and some of the most un-friendly software imaginable - hours of editing and punching and loading and assembling and printing and loading and testing and repeating. I remember a terrible Sunday in a Manhattan skyscraper when I couldn't find splicing tape (nothing else works) and swore that 'There must be a better way'.
+
+I did considerable work for Bob Davis at Realtime Systems, Inc (RSI). I became a 5500 MCP guru to support his time-sharing service (remote input to a mainframe) and wrote a Fortran-Algol translator and file editing utilities. The translator taught me the value of spaces between words, not required by Fortran.
+
+The interpreter still accepted words with the first 6 characters significant (the 5500 had 48-bit words). The words
+
+
+     LIST  EDIT  BEGIN  AGAIN  EXIT
+
+appear, with BEGIN ... AGAIN spelled START ... REPEAT and used to bracket the editor commands
+
+
+     T  TYPE  I  INSERT  D  DELETE  F  FIND
+
+later used in NRAO's editor. The word FIELD was used in the manner of Mohasco and Forth, Inc's data-base management.
+
+One of Forth's distinctive features comes from here. The rule is that Forth acknowledge each line of input by appending OK when interpretation is complete. This may be difficult, for when input is terminated by CR a blank must be echoed, and the CR included with OK. At RSI, OK was on the next line, but it still conveyed friendly reassurance over an intimidating communications line:
+
+
+     56 INSERT ALGOL IS VERY ADAPTABLE
+     OK
+
+This postfix notation suggests a data stack, but it only had to be one deep.
+
+### Mohasco, 1968 ###
+
+In 1968 I transformed into a business programmer at Mohasco Industries, Inc in Amsterdam NY. They are a major home-furnishing company - carpets and furniture. I had worked with Geoff Leach at RSI and he persuaded me to follow him up-state. I had just married, and Amsterdam has a lovely small-town atmosphere to contrast with NYC.
+
+I rewrote my code in COBOL and learned the truth about business software. Bob Rayco was in charge of Corporate data processing and assigned me two relevant projects:
+
+He leased an IBM 1130 minicomputer with a 2250 graphic display. The object was to see if computer graphics helped design patterned carpets. The answer was 'not without color' and the 1130 went away.
+
+Meanwhile I had the latest minicomputer environment: 16-bit CPU, 8K RAM, disk (my first), keyboard, printer, card reader/punch, Fortran compiler. The reader/punch provided disk backup. I ported my interpreter again (back to Fortran) and added a cross-assembler to generate code for the 2250.
+
+The system was a great success. It could draw animated 3-D images when IBM could barely draw static 2-D. Since this was my first real-time graphics, I coded Spacewar, that first video game. I also converted my Algol chess program into Forth and was duely impressed how much simpler it became.
+
+The file holding the interpreter was labeled FORTH, for 4th (next) generation software - but the operating system restricted file names to 5 characters.
+
+This environment for programming the 2250 was far superior to the Fortran environment, so I extended the 2250 cross-assembler into an 1130 compiler. This introduced a flock of words
+
+
+     DO  LOOP  UNTIL
+     BLOCK  LOAD  UPDATE  FLUSH
+     BASE  CONTEXT  STATE  INTERPRET  DUMP
+     CREATE  CODE  ;CODE  CONSTANT  SMUDGE
+     @  OVER  AND  OR  NOT  0=  0< 
+
+They were still differently spelled
+
+
+					LOOP  was  CONTINUE
+				 UNTIL       END
+				 BLOCK       GET
+					LOAD       READ
+					TYPE       SEND
+		 INTERPRET       QUERY
+				CREATE       ENTER
+					CODE       the cent symbol
+
+The only use I've ever found for the cent symbol. The loop index and limit were on the data stack. DO and CONTINUE were meant to acknowledge Fortran.
+
+BLOCK manages a number of buffers to minimize disk access. LOAD reads source from a 1024-byte block. 1024 was chosen as a nice modular amount of disk, and has proven a good choice. UPDATE allows a block to be marked and later rewritten to disk, when its buffer is needed (or by FLUSH ). It implements virtual memory and is concealed in store ( ! ) words.
+
+BASE allows octal and hex numbers as well as decimal. CONTEXT was the first hint of vocabularies and served to isolate editor words. STATE distinguished compiling from interpreting. During compilation, the count and first 3 characters of a word were compiled for later interpretation. Strangely, words could be terminated by a special character, an aberration quickly abandoned. The fetch operator ( @ ) appeared in many guises, since fetching from variables, arrays and disk had to be distinguished. DUMP became important for examining memory.
+
+But most important, there was now a dictionary. Interpret code now had a name and searched a linked-list for a match. CREATE constructs the classic dictionary entry:
+
+
+     link to previous entry
+     count and 3 characters
+     code to be executed
+     parameters
+
+The code field was an important innovation, since an indirect jump was the only overhead, once a word had been found. The value of the count in distinguishing words, I learned from the compiler writers of Stanford.
+
+An important class of words appeared with CODE . Machine instructions followed in the parameter field. So any word within the capability of the computer could now be defined. ;CODE specifies the code to be executed for a new class of words, and introduced what are now called objects.
+
+SMUDGE avoided recursion during the interpretation of a definition. Since the dictionary would be searched from newest to oldest definitions, recursion would normally occur.
+
+Finally, the return stack appeared. Heretofor, definitions had not been nested, or used the data stack for their return address. Altogether a time of great innovation in the punctuated evolution of Forth.
+
+The first paper on Forth, an internal Mohasco report, was written by Geoff and me [Moore 1970]. It would not be out of place today.
+
+In 1970 Bob ordered a Univac 1108. An ambitious project to support a network of leased lines for an order-entry system. I had coded a report generator in Forth and was confident I could code order-entry. I ported Forth to the 5500 (standalone!) to add credibility. But corporate software was COBOL. The marvelous compromise was to install a Forth system on the 1108 that interfaced with COBOL modules to do transaction processing.
+
+I vividly recall commuting to Schenectady that winter to borrow 1107 time 3rd shift. My TR4-A lacked floor and window so it became a nightly survival exercise. But the system was an incredible success. Even Univac was impressed with its efficiency (Les Sharp was project liason). The ultimate measure was response time, but I was determined to keep it maintainable (small and simple). Alas, an economic downturn led Management to cancel the 1108. I still think it was a bad call. I was the first to resign.
+
+1108 Forth must have been coded in assembler. It buffered input and output messages and shared the CPU among tasks handling each line. Your classic operating system. But it also interpreted the input and PERFORMed the appropriate COBOL module. It maintained drum buffers and packed/unpacked records. The words
+
+
+     BUFFER  PREV  OLDEST
+     TASK  ACTIVATE  GET  RELEASE
+
+date from here. BUFFER avoided a disk read when the desired block was known empty. PREV (previous) and OLDEST are system variables that implement least-recently-used buffer management. TASK defines a task at boot time and ACTIVATE starts it when needed. GET and RELEASE manage shared resources (drum, printer). PAUSE is how a task relinquishes control of the CPU. It is included in all I/O operations and is invisible to transaction code. It allows a simple round-robin scheduling algorithm that avoids lock-out.
+
+After giving notice, I wrote an angry poem and a book that has never been published. It described how to develop Forth software and encouraged simplicity and innovation. It also described indirect-threaded code, but the first implementation was at NRAO.
+
+I struggled with the concept of meta-language, language that talks about language. Forth could now interpret an assembler, that was assembling a compiler, that would compile the interpreter. Eventually I decided the terminology wasn't helpful, but the term Meta-compile for recompiling Forth is still used.
+NRAO, 1971
+George Conant offered me a position at NRAO (National Radio Astronomy Observatory, 15 syllables). I had known him at SAO and he liked Ephemeris 4. So we moved to Charlottesville VA and spent summers in Tucson AZ when the radio-telescope on Kitt Peak was available for maintainance.
+
+The project was to program a Honeywell 316 minicomputer to control a new filter-bank for the 36' millimeter telescope. It had a 9-track tape and Tektronix storage-tube terminal. George gave me a free hand to develop the system, though he wasn't pleased with the result. NRAO was a Fortran shop and by now I was calling Forth a language. He was right in that organizations have to standardize on a single language. Other programmers now wanted their own languages.
+
+Anyhow, I had coded Forth in assembler on the IBM 360/50 mainframe. Then I cross-compiled it onto the 316. Then I re-compiled it on the 316 (Although I had a terminal on the 360, response time was terrible). The application was easy once the system was available. There were two modes of observing, continuum and spectral-line. Spectral-line was the most fun, for I could display spectra as they were collected and fit line-shapes with least-squares [Moore 1973].
+
+The system was well-received in Tucson, where Ned Conklin was in charge. It did advance the state-of-the-art in on-line data reduction. Astronomers used it to discover and map inter-stellar molecules just as that became hot research.
+
+Bess Rather was hired to provide on-site support. She had first to learn the Forth system and then explain and document it, with minimal help from me. The next year I reprogrammed the DDP-116 to optimize telescope pointing. The next, Bess and I replaced the 116 and 316 with a DEC PDP-11.
+
+The development that made all this possible was indirect-threaded code. It was a natural development from my work at Mohasco, though I later heard that DEC had used direct-threaded code in one of their compilers. Rather than re-interpret the text of a definition, compile the address of each dictionary entry. This improved efficiency for each reference required only 2 bytes and an address interpreter could sequence through a definition enormously faster. In fact, this interpreter was a 2-word macro on the 11:
+
+
+     : NEXT   IP )+ W MOV  W )+ ) JMP ;
+
+Now Forth was complete. And I knew it. I could write code more quickly that was more efficient and reliable. Moreover, it was portable. I proceeded to recode the 116 pointing the 300' Green Bank telescope, and the HP mini that was inaugurating VLBI astronomy. George gave me a ModComp and I did Fourier transforms for interferometry and pulsar search (64K data). I even demonstrated that complex multiply on the 360 was 20% faster in Forth than assembler.
+
+NRAO appreciated what I had wrought. They had an arrangement with a consulting firm to identify spin-off technology. The issue of patenting Forth was discussed at length. But since software patents were controversial and might involve the Supreme Court, NRAO declined to pursue the matter. Whereupon, rights reverted to me. I don't think ideas should be patentable. Hindsight agrees that Forth's only chance lay in the public domain. Where it has flourished.
+
+Threaded-code changed the structure words (such as DO LOOP IF THEN ). They acquired an elegant implementation with addresses on the data stack during compilation.
+
+Now each Forth had an assembler for its particular computer. It uses post-fix op-codes and composes addresses on the data stack, with Forth-like structure words for branching. The manufacturer's mnemonics are defined as word classes by ;CODE . Might take an afternoon to code. An example is the macro for NEXT above.
+
+Unconventional arithmetic operators proved their value
+
+
+     M*  */  /MOD  SQRT  SIN.COS  ATAN  EXP  LOG 
+
+M* is the usual hardware multiply of 2 16-bit numbers to a 32-bit product (arguments, of course, on the data stack). */ follows that with a divide to implement rational arithmetic. /MOD returns both quotient and remainder and is ideal for locating records within a file. SQRT produces a 16-bit result from a 32-bit argument. SIN.COS returns both sine and cosine as is useful for vector and complex arithmetic (FFT). ATAN is its inverse and has no quadrant ambiguity. EXP and LOG were base 2.
+
+These functions used fixed-point arithmetic - 14 or 30 bits right of a binary point for trig, 10 for logs. This became a characteristic of Forth since it's simpler, faster and more accurate than floating-point. But hardware and software floating-point are easy to implement.
+
+I'd like to applaud the invaluable work of Hart [Hart 1978] in tabulating function approximations with various accuracies. They have provided freedom from the limitations of existing libraries to those of us in the trenches.
+
+The word DOES> appeared (spelled ;: ). It defines a class of words (like ;CODE ) by specifying the definition to be interpreted when the word is referenced. It was tricky to invent, but particularly useful for defining op-codes.
+
+Nonetheless, I failed to persuade Charlottesville that Forth was suitable. I wasn't going to be allowed to program the VLA. Of any group, 25% like Forth and 25% hate it. Arguments can get violent and compromise is rare. So the friendlies joined forces and formed Forth, Inc. And that's another story.
+
+### Moral ###
+
+The Forth story has the making of a morality play: Persistant young programmer struggles against indifference to discover Truth and save his suffering comrades. It gets better: Watch Forth. Inc go head to head with IBM over a French banking system.
+
+I know Forth is the best language so far. I'm pleased at its success, especially in the ultra-conservative arena of Artificial Intelligence. I'm disturbed that people who should, don't appreciate how it embodies their own description of the ideal programming language.
+
+But I'm still exploring without license. Forth has led to an architecture that promises a wonderful integration of software and silicon. And another new programming environment.
+
+### References ###
+
+[ANS 1991] Draft Proposed ANS Forth, document number X3.215-199x, available from Global Engineering Documents, 2805 McGaw Ave., Irvine CA 92714.
+
+[Brodie, 1981] Brodie, Leo, Starting FORTH, Englewood Cliffs NJ: Prentice-Hall, 1981, ISBN 0 13 842930 8.
+
+[Hart, 1968] Hart, John F. et al, Computer Approximations. Malabar FL: Krieger, 1968; (Second Edition), 1978, ISBN 0 88275 642 7.
+
+[Martin, 1987] Martin, Thea, A Bibliography of Forth References, 3rd Ed, Rochester NY: Institute for Applied Forth Research, 1987, ISBN 0 914593 07 2.
+
+[Moore, 1958] Moore, Charles H. and Lautman, Don A., Predictions for photographic tracking stations - APO Ephemeris 4, in SAO Special Report No. 11, Schilling G. F., Ed., Cambridge MA: Smithsonian Astrophysical Observatory, 1958 March.
+
+[Moore, 1970] --- and Leach, Geoffrey C., FORTH - A Language for Interactive Computing, Amsterdam NY: Mohasco Industries, Inc. (internal pub.) 1970.
+
+[Moore, 1972] --- and Rather, Elizabeth D., The FORTH program for spectral line observing on NRAO's 36 ft telescope, Astronomy & Astrophysics Supplement Series, Vol. 15, No. 3, 1974 June, Proceedings of the Symposium on the Collection and Analysis of Astrophysical Data, Charlottesville VA, 1972 Nov. 13-15.
+
+[Moore, 1980] ---, The evolution of FORTH, an unusual language, Byte, 5:8, 1980 August.
+
+[Rather, 1993] Rather, Elizabeth D., Colburn, Donald R. and Moore, Charles H., The Evolution of Forth, in History of Programming Languages-II, Bergin T. J. and Gibson, R. G., Ed., New York NY: Addison-Wesley, 1996, ISBN 0-201-89502-1.
+
+[Veis, 1960] Veis, George and Moore, C. H., SAO differential orbit improvement program, in Tracking Programs and Orbit Determination Seminar Proceedings, Pasadena CA: JPL, 1960 February 23-26.
+
