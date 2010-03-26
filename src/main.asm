@@ -2538,21 +2538,21 @@ align 2
 
 keys
     db 00,00
-    dw 0ffffh, 2a19h, 2c1ah, 001bh ;  1  esc   !1      @2  #3
-    dw 001ch, 001dh, 001eh, 001fh   ;  5  $4    %5      ^6  &7
-    dw 2d20h, 0021h, 0018h, 0023h   ;  9  *8    (9      )0  _-
-    dw 2b00h, 0ffffh, 0000h, 1717h ;  d  +=    bs      tab Qq
-    dw 0f0fh, 0404h, 0101h, 0202h   ; 11  Ww    Ee      Rr  Tt
-    dw 0b0bh, 1616h, 0707h, 0303h   ; 15  Yy    Uu      Ii  Oo
-    dw 1212h, 0000h, 0000h, 0fefeh ; 19  Pp    {[      }]  ret
-    dw 0000h, 0505h, 0808h, 1010h   ; 1d  Lctrl Aa      Ss  Dd
-    dw 0e0eh, 0d0dh, 1414h, 2222h   ; 21  Ff    Gg      Hh  Jj
-    dw 2424h, 0c0ch, 2928h, 0000h   ; 25  Kk    Ll      :;  "'
-    dw 0000h, 0000h, 0000h, 2626h   ; 29  ~`    Lshift  |\  Zz
-    dw 1515h, 0a0ah, 1111h, 1313h   ; 2d  Xx    Cc      Vv  Bb
-    dw 0606h, 0909h, 002eh, 0025h   ; 31  Nn    Mm      <,  >.
-    dw 2f27h, 0000h, 2d2dh, 0fdfdh ; 35  ?/    Rshift  *   Lalt
-    dw 0fefeh   ; 39  space
+    dw 0ffffh, 2a19h, 2c1ah, 001bh ; 1   esc    !1      @2   #3
+    dw 001ch, 001dh, 001eh, 001fh  ; 5   $4     %5      ^6   &7
+    dw 2d20h, 0021h, 0018h, 0023h  ; 9   *8     (9      )0   _-
+    dw 2b00h, 0ffffh, 0000h, 1717h ; d   +=     bs      tab  Qq
+    dw 0f0fh, 0404h, 0101h, 0202h  ; 11  Ww     Ee      Rr   Tt
+    dw 0b0bh, 1616h, 0707h, 0303h  ; 15  Yy     Uu      Ii   Oo
+    dw 1212h, 0000h, 0000h, 0fefeh ; 19  Pp     {[      }]   ret
+    dw 0000h, 0505h, 0808h, 1010h  ; 1d  Lctrl  Aa      Ss   Dd
+    dw 0e0eh, 0d0dh, 1414h, 2222h  ; 21  Ff     Gg      Hh   Jj
+    dw 2424h, 0c0ch, 2928h, 0000h  ; 25  Kk     Ll      :;   "'
+    dw 0000h, 0000h, 0000h, 2626h  ; 29  ~`     Lshift  |\   Zz
+    dw 1515h, 0a0ah, 1111h, 1313h  ; 2d  Xx     Cc      Vv   Bb
+    dw 0606h, 0909h, 002eh, 0025h  ; 31  Nn     Mm      <,   >.
+    dw 2f27h, 0000h, 2d2dh, 0fdfdh ; 35  ?/     Rshift  *    Lalt
+    dw 0fefeh                      ; 39  space  
 
 ; There are twenty-eight ColorForth-specific key codes. The blue cells are for keys 
 ; you press with your right thumb; the green, for keys you press with the four 
@@ -2651,6 +2651,7 @@ key0:
   ret
 
 ; programmable keys. Scan code to colorforth 27 key keymapping
+; indexes in the array are the virtual scan codes (NOT host ones !!!)
 pkeys
   db 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  ; 0..7     . esc 1 2 3 4 5 6
   db 0 , 0 , 0 , 0 , 0 , 0 , 1 , 0  ; 8..f     7 8 9 0 - = bs tab
@@ -2680,7 +2681,7 @@ pkey0:
   mov al, byte [pkeys + eax]
   and al, al
   jz pkey0
-  dec al ; we used the index in a table, which starts with 1. Decrement it to make it start from 0
+  dec al ; values in pkeys are indexes in keys table, which starts with 1. Decrement it to make it start from 0
   pop edi
   pop esi
   ret
