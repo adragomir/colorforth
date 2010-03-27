@@ -2507,6 +2507,10 @@ getkey:
   ret
   
 getcfkey:
+  pushfd ; TODO without this, the function crashes
+  pushad
+  popad
+  popfd
   call getkey
   push eax
   xor eax,eax
@@ -2656,15 +2660,15 @@ pkeys
   db 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  ; 0..7     . esc 1 2 3 4 5 6
   db 0 , 0 , 0 , 0 , 0 , 0 , 1 , 0  ; 8..f     7 8 9 0 - = bs tab
   db 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  ; 10..17   Q W E R T Y U I
-  db 0 , 0 , 0 , 0 , 2 , 0 , 0 , 0  ; 18..1f   O P [ ] ret Lctrl A S
-  db 0 , 0 , 0 , 0 , 20, 17, 25, 22 ; 20..27   D F G H J K L ; 
+  db 0 , 0 , 0 , 0 , 3 , 0 , 0 , 0  ; 18..1f   O P [ ] ret Lctrl A S
+  db 0 , 0 , 0 , 0 , 0,  0,  0,  0 ; 20..27   D F G H J K L ; 
   db 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  ; 28..2f   ' ` Lshift \ Z X C V
-  db 0 , 0 , 18, 0 , 0 , 26, 0 , 0  ; 30..37   B N M , . / Rshift *
-  db 3 , 2 , 0 , 4 , 5 , 6 , 7 , 8  ; 38..3f   Lalt space caps F1 F2 F3 F4 F5
-  db 9 , 10, 11, 12, 13, 0 , 0 , 16 ; 40..47   F6 F7 F8 F9 F10 numlock scrlock home
-  db 17, 18, 19, 20, 21, 22, 23, 24 ; 48..4f   up pgup -(KP-) left center(KP5) right +(KP+) end
-  db 25, 26, 27, 28, 0 , 0 , 0 , 14 ; 50..57   down pgdn ins del /(kp/) enter(kpenter) ?? F11
-  db 15                             ; 58       F12
+  db 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  ; 30..37   B N M , . / Rshift *
+  db 0 , 3 , 0 , 5 , 6 , 7 , 14 , 15  ; 38..3f   Lalt space caps F1 F2 F3 F4 F5
+  db 18 ,19, 20, 2, 4, 0 , 0 , 0 ; 40..47   F6 F7 F8 F9 F10 numlock scrlock home
+  db 10, 13, 0, 9, 0 , 12, 0 , 0 ; 48..4f   up pgup -(KP-) left center(KP5) right +(KP+) end
+  db 11, 16, 0, 0, 0 , 0 , 0 , 0 ; 50..57   down pgdn ins del /(kp/) enter(kpenter) ?? F11
+  db 8                             ; 58       F12
 
 ; key handler for pad. Returns 0..27 for
 ; the 28 programmable keys.
@@ -2681,6 +2685,7 @@ pkey0:
   mov al, byte [pkeys + eax]
   and al, al
   jz pkey0
+  call debug_dumpregs
   dec al ; values in pkeys are indexes in keys table, which starts with 1. Decrement it to make it start from 0
   pop edi
   pop esi
@@ -3527,17 +3532,24 @@ shadow:
 ; (27 keys in keyboard; 28 offsets in "ekeys" table)
 ; initial key functions in editor
 ekeys:
-  dd nul, eout, shadow, act3    ; 0-3 longword
-  dd act4, act1, actv, act7     ; 4-7 longword
-  dd act9, act10, act11, popblk ; 8-11 longword, F8 should now be 'jump'
-  dd nul, nul, nul, hcur        ; 12-15 longword
-  dd mmcur, mblk, nul, mcur     ; 16-19 longword
-  dd nul, pcur, nul, shadow     ; 20-23 longword
+;  dd nul, eout, shadow, act3    ; 0-3 longword
+;  dd act4, act1, actv, act7     ; 4-7 longword
+;  dd act9, act10, act11, popblk ; 8-11 longword, F8 should now be 'jump'
+;  dd nul, nul, nul, hcur        ; 12-15 longword
+;  dd mmcur, mblk, nul, mcur     ; 16-19 longword
+;  dd nul, pcur, nul, shadow     ; 20-23 longword
+
+  dd nul, del, eout, destack    ; 0-3 longword
+  dd act1, act3, act4, shadow     ; 4-7 longword
+  dd mcur, mmcur, ppcur, pcur ; 8-11 longword, F8 should now be 'jump'
+  dd mblk, actv, act7, pblk        ; 12-15 longword
+  dd nul, act11, act10, act9     ; 16-19 longword
+  dd nul, nul, nul, nul     ; 20-23 longword
 
 ; these are the huffman encodings of the characters to display
 ekbd0:
-  dd ppcur, pblk, destack, del  ; 24-27 longword, used as dummy execution vectors for ekbd
-  ;dd nul, nul, nul, nul; 24-27 longword
+  ;dd ppcur, pblk, destack, del  ; 24-27 longword, used as dummy execution vectors for ekbd
+  dd nul, nul, nul, nul        ; 24-27 longword
   db 0, cap_E,  Is ,  0 ; 28-31, initial control key map in editor (shift)
 
 ; note that there are 4 db per line, so it stays word aligned
@@ -3547,7 +3559,7 @@ ekbd:
   db Ir, Ig, Iy, Im
   db Ic, It, cap_C, cap_S
   db 0, 0, 0, 0
-  ; TODO added by adragomi so it has the same length
+; TODO added so it has the same length
 ;  db 0, 0, 0, 0
 ;  db 0, 0, 0, 0
 ;  db 0, 0, 0, 0
