@@ -23,11 +23,17 @@ void print_text (unsigned int t) {
   }
 }
 
-char *function[] = {"extension", "execute", "execute", "define", "compile",
-  "compile", "compile", "compilemacro", "execute",
-  "text", "textcapitalized", "textallcaps",
-  "variable", "compiler_feedback", "display_macro", "commented_number", "", "", "executehex", "",
-  "", "compilehex", "compilehex", "", "executehex"};
+char *function[] = {
+	"extension", "execute", "execute", "define", 
+	"compile", "compile", "compile", "compilemacro", 
+	"execute", "text", "textcapitalized", "textallcaps",
+  "variable", "compiler_feedback", "display_macro", "commented_number", 
+	"", "", "executehex", "",  
+	"", "compilehex", "compilehex", "", 
+	"executehex", "", "", "", 
+	"", "", "", "commented_number"
+
+};
 
 void print_tags (int p, int t) {
   if (p) {
@@ -106,6 +112,9 @@ int main () {
   printf("  code.text { color:white; }\n");
   printf("  code.textcapitalized { color:white; text-transform:capitalize; }\n");
   printf("  code.textallcaps { color:white; text-transform:uppercase; }\n");
+  printf("  code.display_macro { color:#0000FF; }\n");
+  printf("  code.compiler_feedback { color:grey; }\n");
+  printf("  code.commented_number { color:white; }\n");
   printf("  </style>\n");
 
   
@@ -140,7 +149,7 @@ int main () {
           else
             print_dec (t >> 5);
           break;
-        case 0xc:
+        case 0xc: // variable
           print_tags (p, t & 0xf);
           print_text (t & 0xfffffff0);
           if (w == 0)
