@@ -1,9 +1,0 @@
-#!/bin/bash
-gcc -g -o glcf main.c mem.s -L /usr/X11R6/lib -lGL -lX11
-as -o color.o color.s
-if test -a color.o; then
-cp color.com blocks
-ld --oformat binary -Ttext `nm glcf | awk '/ xcf$/ {print "0x" $1}'` -o color.com color.o
-dd if=blocks of=color.com bs=1024 seek=12 skip=12
-rm blocks color.o
-fi
