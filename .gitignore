@@ -2,3 +2,4 @@ build
 ____
 doc/doc.html
 block_files/*.html
+tools/cf2html
