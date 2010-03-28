@@ -1164,6 +1164,7 @@ load:
 ; do it.)
 inter:
   mov edx, [edi * 4]      ; get next longword from block
+  call debug_dumpregs
   inc edi                 ; then point to the following one
   and edx, byte 15        ; get only low 4 bits, the type tag
   call [spaces + edx * 4] ; call the routine appropriate to this type
@@ -1533,7 +1534,7 @@ forth_words_addresses:
   dd offset_ ; offset
   dd host_notimpl ; tic
   dd winver; winver (- t | f)
-  dd host_notimpl ; aper
+  dd aper_ ; aper
   dd host_notimpl ; vesa
   dd trash_ ; trash
   dd host_notimpl ; hsvv
@@ -1799,6 +1800,12 @@ pcad_:
 cad_:
   DUP_
   mov eax, cad
+  shr eax, 2
+  ret
+
+aper_:
+  DUP_
+  mov eax, frame
   shr eax, 2
   ret
 
