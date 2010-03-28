@@ -186,6 +186,8 @@ _main:
 
   call host_alloc_buffers
   call host_alloc_display
+  mov dword[board], ekbd
+  mov edi, [board]
   jmp start1
 
 host_notimpl:
@@ -2203,11 +2205,6 @@ octant:
 ; four chars at addr + 12, space, four chars at addr.
 ; IN: edi = addr - 4
 ; OUT: edi = addr
-eight:
-  add edi, byte 12
-  call four
-  call space
-  sub edi, byte 16
 
 fkeys:
   call four
@@ -2215,9 +2212,14 @@ fkeys:
   call four
   call space
 
+eight:
+  add edi, byte 12
+  call four
+  call space
+  sub edi, byte 16
+
 four:
   mov ecx, 4
-
 ; display ECX chars from EDI + 4, incrementing EDI with each char.
 nchars:
   push ecx
@@ -2257,26 +2259,31 @@ keyboard:
   mov eax, [keyc]
   call color
   ; left margin = keyboard_hud_x
-  mov dword [lm], screen_width - 30 * char_width - 3
-  mov dword [rm], horizontal_chars * char_width
-  mov dword [xy], (screen_width - 30 * char_width - 3) * 0x10000 + screen_height - 2 * char_height - 3
+  ;left_margin equ screen_width - 30 * char_width - 3
+  mov dword [lm], keyboard_hud_x
+  mov dword [rm], horizontal_chars * char_width ; right-most part of screen
+  mov dword [xy], keyboard_hud_x * 0x10000 + keyboard_hud_y
   ; display finger keys
   mov edi, [board]
-  test   edi,edi  ; QWERTY
-  jz     .0 ; QWERTY
-  call   fkeys ; QWERTY
+  test edi,edi  ; QWERTY
+  jz .0 ; QWERTY
+  call eight
+  call eight
+  call eight
   .0:
     ; display thumb keys (leave a blank line, move 4 chars in).
     call cr
-    add dword [xy], 25 * char_width * 0x10000
+    add dword [xy], 4 * char_width * 0x10000
     mov edi, [shift]
     add edi, byte 16
     mov ecx, 3
     call nchars
+    
     ; display top element of stack (if any), at left.
     mov dword [lm], char_padding
     mov word [xy + 2], char_padding
     call stack
+    
     ; display input history just to the left of keyboard display
     mov word [xy + 2], screen_width - char_padding - (history_size + keyboard_hud_width) * char_width
     lea edi, [history]
@@ -2303,6 +2310,7 @@ keyboard:
 ; (Say when each of the four tables is active, e.g., what keys have to be held down
 ; or pressed.)
 
+align 4
 keyboard_layout_alpha:
   ; right hand
   db Ig, Ic, Ir, Il         ; top
@@ -2349,14 +2357,14 @@ keyboard_layout_octals:
 ; foo1 is used for the rest
 alpha0:
   dd nul0, nul0, number, nul0  ; handler routines
-  db 0, I9, Itimes, 0   ; and icons for display
+  db I9, Itimes, Idot, 0   ; and icons for display
 
 alpha1:
   dd word0, x, lj, nul0
   db Ix, Idot, Itimes, 0
 
 ;graph0:
-;  dd nul0, nul0, nul0, alph0
+;  dd nul0, nul0, nul0, alpha0
 ;  db 0, 0, Ia, 0
 ;
 ;graph1:
@@ -2731,14 +2739,15 @@ keyboard_hud_width  equ 9
 keyboard_hud_height equ 4
 
 ; location of keyboard display (bottom right)
-keyboard_hud_x: dd screen_width - keyboard_hud_width * char_width + char_padding 
-keyboard_hud_y: dd screen_height - keyboard_hud_height * char_height + char_padding
+keyboard_hud_x equ screen_width - keyboard_hud_width * char_width + char_padding 
+keyboard_hud_y equ screen_height - keyboard_hud_height * char_height + char_padding
 
+;align 4
 ; pointer to data structure of four offsets to key handling routines
 ; followed by four bytes: the characters to print as the keyboard
 ; guide in the lower-right corner of the screen.
 ; [Refs: keyboard, letter, accept1, decimal, hex, graph, e, pad]
-board: dd 0;keyboard_layout_alpha - 4  ; current keyboard (finger keys)
+board: dd ekbd;keyboard_layout_alpha - 4  ; current keyboard (finger keys)
 ; Shift generally points to one of the following tables:
 ; alpha0, alpha1, graph0, graph1, numb0, numb1.
 shift: dd alpha0;alpha1 ; current shift (thumb) keys
@@ -2773,7 +2782,7 @@ accept:
 ; "shift" is pointing to, and jump to the address in the table.
 
 accept1:
-  mov dword [board], edi
+  ;mov dword [board], edi ; TODO this fucks up initial display of board
 
 accept2:
   call key ; TODOKEY
@@ -3564,6 +3573,7 @@ shadow:
   xor dword [esi], byte 1 ; change odd to even and vice versa
   ret
 
+align 4
 ; (27 keys in keyboard; 28 offsets in "ekeys" table)
 ; initial key functions in editor
 ekeys:
@@ -3584,13 +3594,14 @@ ekbd0:
 
 ; characters to display in the key map (keyboard only displays the 12 function keys) (board)
 ekbd:
-  db Ir, Ig, Iy, Im
-  db Ic, It, cap_C, cap_S
+  ; right hand
   db 0, 0, 0, 0
-; TODO added so it has the same length
-;  db 0, 0, 0, 0
-;  db 0, 0, 0, 0
-;  db 0, 0, 0, 0
+  db 0, 0, 0, 0
+  db 0, 0, 0, 0
+  ; left hand
+  db Iq, Iw, Ie, Ir
+  db 0, 0, 0, 0
+  db 0, 0, 0, 0
 
 ;---------old ones
 ;ekeys:

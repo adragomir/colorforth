@@ -66,6 +66,15 @@ TODO
 
 Implement a bunch of kernel words.
 
+Fix keyboard handling: 
+	- separate drawing and actions
+	- make full keyboard map
+
+ekbd, ekbd0: used only in edit
+board: used in keyboard, pad, and e
+shift used in keyboard, letter, accept, accept2, acmdk, word1, decimal, hex, number3, number1, alph, first
+
+
 CREDITS
 =======
 
