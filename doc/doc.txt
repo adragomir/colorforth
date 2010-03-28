@@ -2192,4 +2192,35 @@ To copy a block first get the block number that you want to copy in the variable
 If you want to edit the copied block just type "e " as "blk" will now be set to the number of the destination block.
 
 
+# Keystroke commands in colorForth # 
+
+It's been years since I last wrote a keystroke driven Colorforth program, so I was trawling through the documentation and old code hoping it would jog my memory. It turns out that one word, pad (guessing it's short for 'keypad'), is all that it takes.
+
+Under normal circumstances, that is, when the CF system is in interpretive mode, keystrokes get picked up by a kernel word called accept which is responsible for assembling characters into strings for interpretation. However, pad has the effect of circumventing accept and the interpreter. It enters an infinite loop inside which each incoming key code is treated as an index into a dispatch table. It is up to the application programmer to fill this table with routines that users might need to call.
+
+In all likelihood, the user will eventually need to quit the application's pad loop and escape back into the CF interpreter. This can be provided for by including accept as an entry in the dispatch table.
+
+Before getting into the specifics of programming with pad, it is necessary to know a little about key codes. As CF users are aware — and all the more so, those of us using the Dvorak keyboard configuration — the system pretends that it is hooked up to a pad of 27 keys arranged in two banks of 12 each, plus a smaller group of 3 keys. Keys are mapped to the Qwerty keyboard like this:
+
+![](photo/keystroke_command/cf-keyboard.png)
+
+The numbers 1 to 27 in this diagram are the key codes. There is an additional code, zero, that seems to be assigned to all the remaining keys, a catch-all code of sorts.
+
+So how is `pad` used? The call to `pad` must be followed by a dispatch table, in the form of a sequence of 28 words corresponding to key codes from zero up to 27. To leave any key unmapped, put a word that does nothing into that key's slot. Conveniently, there is a predefined do-nothing word called `nul`. Finally, `pad` needs some additional data specifying the appearance of the hinting area. I'll get back to this final point after showing an example:
+
+![](photo/keystroke_command/cf-keydemo.png)
+
+Here `keydemo`, obviously a contrived application, places 100 on the stack and enters a pad loop where pressing the F key decrements the stacked value while J increments it. (Changes to the stack will be displayed in real time provided that CF's graphic task calls `keyboard`, as it normally would do.) Hitting space quits the application.
+
+Those yellow numbers in the source represent characters in the *hinting area*. That's the bottom right section of the screen where the prevailing keyboard map is displayed. (The map is supposed to show single-character mnemonic labels for the keys, arranged in the 12+12+3 layout of the earlier diagram.) Here's what the bottom of the screen looks like while `keydemo` is running. Plus/minus signs are meant to denote the increment/decrement keys, while the dot labels the quit key:
+
+![](photo/keystroke_command/cf-keydemo-hinting-area.png)
+
+Characters comprising the hinting area are required to appear in the *compiled code* straight after the dispatch table. So it is necessary to colour the dictionary insertion operators (commas) yellow to dictate compile time execution.
+
+CF doesn't use ASCII coding, and there are some inconsistencies in the coding tables that I found online. The 4 character codes relevant to keydemo are 0 for space, hex 23 for minus, 2b for plus and hex 25 for full stop. For the definitive codes look no further than the built in icons utility (whose own source code is worth reading as it uses pad).
+
+In general, pad expects the hinting area characters to be listed in key code order. The first 3 characters label keys 1 to 3. However, the fourth character is an anomaly: it seems to be completely ignored. The fifth and subsequent characters are labels for keys 4 and up.
+
+Now these 28 8-bit character codes could be typed into the source block individually and inserted into the dictionary using the 1, (one-comma) word, but it would be more in keeping with CF's general brevity to group the codes in fours, in little-endian order, and insert them using the plain comma word. keydemo uses the more wordy form for thumb key labels and the brief form for the rest.
 

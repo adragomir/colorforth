@@ -2375,6 +2375,7 @@ numb1:
 ; either an undefined key (code=0), the N key (code=1), the spacebar (code=2), or
 ; either Alt key (code=3), then letter replaces the key code with [edx+eax] =
 ; [board+code]. Otherwise, letter returns the key code unchanged.
+; We have to change this because in the qwerty keyboard, we do NOT use the keyboard to compute the actual key
 ;letter:
   ;cmp al, 4
   ;js .9 ; if al < 4, that is 0, 1, 2, 3
@@ -2657,18 +2658,18 @@ key0:
 ; programmable keys. Scan code to colorforth 27 key keymapping
 ; indexes in the array are the virtual scan codes (NOT host ones !!!)
 pkeys
-  db 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  ; 0..7     . esc 1 2 3 4 5 6
-  db 0 , 0 , 0 , 0 , 0 , 0 , 1 , 0  ; 8..f     7 8 9 0 - = bs tab
-  db 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  ; 10..17   Q W E R T Y U I
-  db 0 , 0 , 0 , 0 , 3 , 0 , 0 , 0  ; 18..1f   O P [ ] ret Lctrl A S
-  db 0 , 0 , 0 , 0 , 0,  0,  0,  0 ; 20..27   D F G H J K L ; 
-  db 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  ; 28..2f   ' ` Lshift \ Z X C V
-  db 0 , 0 , 0 , 0 , 0 , 0 , 0 , 0  ; 30..37   B N M , . / Rshift *
-  db 0 , 3 , 0 , 5 , 6 , 7 , 14 , 15  ; 38..3f   Lalt space caps F1 F2 F3 F4 F5
-  db 18 ,19, 20, 2, 4, 0 , 0 , 0 ; 40..47   F6 F7 F8 F9 F10 numlock scrlock home
-  db 10, 13, 0, 9, 0 , 12, 0 , 0 ; 48..4f   up pgup -(KP-) left center(KP5) right +(KP+) end
-  db 11, 16, 0, 0, 0 , 0 , 0 , 0 ; 50..57   down pgdn ins del /(kp/) enter(kpenter) ?? F11
-  db 8                             ; 58       F12
+  db 0  , 0  , 0  , 0 , 0 , 0  , 0  , 0  ; 0..7     . esc 1 2 3 4 5 6
+  db 0  , 0  , 0  , 0 , 0 , 0  , 1  , 0  ; 8..f     7 8 9 0 - = bs tab
+  db 0  , 0  , 0  , 0 , 0 , 0  , 0  , 0  ; 10..17   Q W E R T Y U I
+  db 0  , 0  , 0  , 0 , 3 , 0  , 0  , 0  ; 18..1f   O P [ ] ret Lctrl A S
+  db 0  , 0  , 0  , 0 , 0 , 0  , 0  , 0  ; 20..27   D F G H J K L                                                  ; 
+  db 0  , 0  , 0  , 0 , 0 , 0  , 0  , 0  ; 28..2f   ' ` Lshift \ Z X C V
+  db 0  , 0  , 0  , 0 , 0 , 0  , 0  , 0  ; 30..37   B N M , . / Rshift *
+  db 0  , 3  , 0  , 5 , 6 , 7  , 14 , 15 ; 38..3f   Lalt space caps F1 F2 F3 F4 F5
+  db 18 , 19 , 20 , 2 , 4 , 0  , 0  , 0  ; 40..47   F6 F7 F8 F9 F10 numlock scrlock home
+  db 10 , 13 , 0  , 9 , 0 , 12 , 0  , 0  ; 48..4f   up pgup -(KP-) left center(KP5) right +(KP+) end
+  db 11 , 16 , 0  , 0 , 0 , 0  , 0  , 0  ; 50..57   down pgdn ins del /(kp/) enter(kpenter) ?? F11
+  db 8                                   ; 58       F12
 
 ; key handler for pad. Returns 0..27 for
 ; the 28 programmable keys.
@@ -2685,11 +2686,45 @@ pkey0:
   mov al, byte [pkeys + eax]
   and al, al
   jz pkey0
-  call debug_dumpregs
   dec al ; values in pkeys are indexes in keys table, which starts with 1. Decrement it to make it start from 0
   pop edi
   pop esi
   ret
+
+pkeys_default
+  db 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  ; 0..7     . esc 1 2 3 4 5 6
+  db 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  ; 8..f     7 8 9 0 - = bs tab
+  db 16 , 17 , 18 , 19 , 0  , 0  , 4  , 5  ; 10..17   Q W E R T Y U I
+  db 6  , 7  , 0  , 0  , 3  , 0  , 20 , 21 ; 18..1f   O P [ ] ret Lctrl A S
+  db 22 , 23 , 0  , 0  , 8  , 9  , 10 , 11 ; 20..27   D F G H J K L                                                  ; 
+  db 0  , 0  , 0  , 0  , 24 , 25 , 26 , 27 ; 28..2f   ' ` Lshift \ Z X C V
+  db 0  , 1  , 12 , 13 , 14 , 15 , 0  , 0  ; 30..37   B N M , . / Rshift *
+  db 3  , 2  , 0  , 0  , 0  , 0  , 0  , 0  ; 38..3f   Lalt space caps F1 F2 F3 F4 F5
+  db 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  ; 40..47   F6 F7 F8 F9 F10 numlock scrlock home
+  db 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  ; 48..4f   up pgup -(KP-) left center(KP5) right +(KP+) end
+  db 0  , 0  , 0  , 0  , 0  , 0  , 0  , 0  ; 50..57   down pgdn ins del /(kp/) enter(kpenter) ?? F11
+  db 0                                     ; 58       F12
+; For programmable pad calls, we need a default pkeys table
+; key handler for pad. Returns 0..27 for
+; the 28 programmable keys.
+pkey_default:
+  DUP_
+  push esi
+  push edi
+pkey0_default:
+  xor eax, eax
+  call dopause
+  call getcfkey ; returns a virtual scan code - appendix 3
+  cmp al, 59h ; al - 59h, 58h is the end of one byte raw keyboard scan codes - appendix 3
+  jnc pkey0_default
+  mov al, byte [pkeys_default + eax]
+  and al, al
+  jz pkey0_default
+  dec al ; values in pkeys are indexes in keys table, which starts with 1. Decrement it to make it start from 0
+  pop edi
+  pop esi
+  ret
+
 
 ; keyboard display is 9 chars wide, 4 high
 keyboard_hud_width  equ 9
@@ -2707,7 +2742,7 @@ board: dd 0;keyboard_layout_alpha - 4  ; current keyboard (finger keys)
 ; Shift generally points to one of the following tables:
 ; alpha0, alpha1, graph0, graph1, numb0, numb1.
 shift: dd alpha0;alpha1 ; current shift (thumb) keys
-; ColorForth displays numbers in one of two formats â decimal and hexadecimal. 
+; ColorForth displays numbers in one of two formats - decimal and hexadecimal. 
 ; Decimal stores 10 here; hex stores 16 here. 
 ; Therefore routines with "cmp base, 10 : jz base10" fall into handling hexadecimal. 
 base: dd 10
@@ -3532,13 +3567,6 @@ shadow:
 ; (27 keys in keyboard; 28 offsets in "ekeys" table)
 ; initial key functions in editor
 ekeys:
-;  dd nul, eout, shadow, act3    ; 0-3 longword
-;  dd act4, act1, actv, act7     ; 4-7 longword
-;  dd act9, act10, act11, popblk ; 8-11 longword, F8 should now be 'jump'
-;  dd nul, nul, nul, hcur        ; 12-15 longword
-;  dd mmcur, mblk, nul, mcur     ; 16-19 longword
-;  dd nul, pcur, nul, shadow     ; 20-23 longword
-
   dd nul, del, eout, destack    ; 0-3 longword
   dd act1, act3, act4, shadow     ; 4-7 longword
   dd mcur, mmcur, ppcur, pcur ; 8-11 longword, F8 should now be 'jump'
@@ -3806,7 +3834,7 @@ pad:
   sub edx, byte 4 * 4 + 4 ; +4 QWERTY, simulate the 4 longwords, can't really use them
   mov [shift], edx ; this is only to point to the character codes
   .0:
-    call pkey      ; pkey, QWERTY ; TODOKEY
+    call pkey_default      ; pkey, QWERTY ; TODOKEY
     ;debug_print "called pad !!!", 0xa, 0x0
     mov edx, [vector] ; load vector table into EDX
     ; the following 3 instructions point to the appropriate vector for the key
