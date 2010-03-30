@@ -366,7 +366,8 @@ userve: dd 0
 ; return-stack pointer of the incoming task) is to be taken. Unpause also adds four
 ; (the size of the variable) to the return address, so that it returns to the instruction
 ; immediately following the variable.
-round:  call resume
+round:
+  call resume
 
 main: dd 0
   call resume
@@ -570,7 +571,8 @@ execute:
 
 ; abort execution or load operation
 abort:
-  debug_print "called ABORT !!!!!!!!!!!!!", 0xa, 0x0
+  cmp edi, 0x1200
+  js abort1
   mov [curs], edi ; store pointer to last source word encountered
 
   ; get block number from word pointer
@@ -2392,7 +2394,7 @@ alpha1:
   db Ix, Idot, Itimes, 0
 
 ;graph0:
-;  dd nul0, nul0, nul0, alpha0
+;  dd nul0, nul0, nul0, alph0
 ;  db 0, 0, Ia, 0
 ;
 ;graph1:
@@ -2544,13 +2546,13 @@ getkey:
   ret
   
 getcfkey:
-  pushfd ; TODO without this, the function crashes
-  pushad
-  popad
-  popfd
+  ;pushfd ; TODO without this, the function crashes
+  ;pushad
+  ;popad
+  ;popfd
   call getkey
   push eax
-  xor eax,eax
+  xor eax, eax
   mov [shifted], eax
   test dword [event.key.keysym.mod], KMOD_LSHIFT | KMOD_RSHIFT
   jz .not_shift
@@ -2674,8 +2676,9 @@ keys
 ; sets flags according to al
 key:
   DUP_
-  push esi
-  push edi
+  push_all esi, edi, ebx, ecx, edx
+  ;push esi
+  ;push edi
 key0:
   xor eax, eax
   call dopause
@@ -2687,8 +2690,9 @@ key0:
   mov al, [keys + eax]  ; index into keys
   and al, al
   jz key0  ; repeat if zero
-  pop edi
-  pop esi
+  pop_all esi, edi, ebx, ecx, edx
+  ;pop edi
+  ;pop esi
   ret
 
 ; programmable keys. Scan code to colorforth 27 key keymapping
@@ -2711,8 +2715,9 @@ pkeys
 ; the 28 programmable keys.
 pkey:
   DUP_
-  push esi
-  push edi
+  push_all esi, edi, ebx, ecx, edx
+  ;push esi
+  ;push edi
 pkey0:
   xor eax, eax
   call dopause
@@ -2723,8 +2728,9 @@ pkey0:
   and al, al
   jz pkey0
   dec al ; values in pkeys are indexes in keys table, which starts with 1. Decrement it to make it start from 0
-  pop edi
-  pop esi
+  ;pop edi
+  ;pop esi
+  pop_all esi, edi, ebx, ecx, edx
   ret
 
 pkeys_default
@@ -2745,8 +2751,9 @@ pkeys_default
 ; the 28 programmable keys.
 pkey_default:
   DUP_
-  push esi
-  push edi
+  push_all esi, edi, ebx, ecx, edx
+  ;push esi
+  ;push edi
 pkey0_default:
   xor eax, eax
   call dopause
@@ -2757,8 +2764,9 @@ pkey0_default:
   and al, al
   jz pkey0_default
   dec al ; values in pkeys are indexes in keys table, which starts with 1. Decrement it to make it start from 0
-  pop edi
-  pop esi
+  ;pop edi
+  ;pop esi
+  pop_all esi, edi, ebx, ecx, edx
   ret
 
 
@@ -3409,7 +3417,6 @@ refresh:
   call show
   call blank
   call plist
-
 
 plist:
   call text1
