@@ -89,7 +89,7 @@ host_flip_screen:
 
 host_alloc_display:
   __SDL_Init SDL_INIT_VIDEO
-  __SDL_SetVideoMode screen_width, screen_height, screen_depth * 8, SDL_FULLSCREEN
+  __SDL_SetVideoMode screen_width, screen_height, screen_depth * 8, SDL_SWSURFACE
   mov [surface], eax
   mov edx, [eax + 20]
   mov [frame], edx
@@ -523,6 +523,29 @@ ffind:
   repne scasd ; continue moving until we hit a match
   cld         ; clear direction flag again
   pop edi     ; no longer need this, can tell from ECX where match was found
+  ret
+
+; TODO check corectness
+word_till_zero:  
+  dec dword [words]
+  jz .9
+  DROP
+  jmp short word_till_zero
+  .9:   
+    ret
+
+tic:  
+  call _word
+  call word_till_zero
+  call find
+  jnz abort
+  mov eax, [forth_dictionary_addresses + ecx * 4]
+  ret
+
+itick:  
+  and eax, byte -16                            ; Mask out color bits (bits 0..3).
+  call find
+  mov eax, [forth_dictionary_addresses + ecx * 4]
   ret
 
 ; execute word (full name on top of stack).
@@ -1164,7 +1187,6 @@ load:
 ; do it.)
 inter:
   mov edx, [edi * 4]      ; get next longword from block
-  call debug_dumpregs
   inc edi                 ; then point to the following one
   and edx, byte 15        ; get only low 4 bits, the type tag
   call [spaces + edx * 4] ; call the routine appropriate to this type
@@ -1532,7 +1554,7 @@ forth_words_addresses:
   dd h_ ; h
   dd host_notimpl ; buffe(r)
   dd offset_ ; offset
-  dd host_notimpl ; tic
+  dd tic ; tic
   dd winver; winver (- t | f)
   dd aper_ ; aper
   dd host_notimpl ; vesa
@@ -1551,10 +1573,10 @@ forth_words_addresses:
   dd pcad_; pcad
   dd displ_; displ(ay)
   dd host_notimpl ; actc
-  dd host_notimpl ; +list
-  dd host_notimpl ; itick
-  dd host_notimpl ; lis
-  dd host_notimpl ; +e
+  dd plist ; +list
+  dd itick ; itick
+  dd lis ; lis
+  dd e ; +e
   dd retain; retain()
   dd keych_; keych
   dd host_notimpl; utime
@@ -1806,7 +1828,6 @@ cad_:
 aper_:
   DUP_
   mov eax, frame
-  shr eax, 2
   ret
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; include 'gen.asm'
@@ -3371,10 +3392,26 @@ nw2:
   mov eax, edx
   jmp [bas]
 
+greyw:  
+  mov edx, [ - 4 + edi * 4]
+  sar edx, 5
+  DUP_
+  mov eax, _white
+  cmp dword [bas], dot10
+  jz short .0
+  mov eax, _silver
+	.0:    
+		jmp short nw2
+
 ; Refresh
+lis:
 refresh:
   call show
   call blank
+  call plist
+
+
+plist:
   call text1
   DUP_                  ; counter
   mov eax, [lcad] ; pointer to end of screen source
@@ -3409,6 +3446,7 @@ ref1:
   call [display + edx * 4] ; call the appropriate display routine
   jmp ref1
 
+; TODO: plist seems to be a refactoring of refresh
 
 ; The display-routine table
 
@@ -3440,7 +3478,7 @@ display:
   dd type0, ww, nw, rw
   dd gw, gnw, gsw, mw
   dd sw, text, cap, caps
-  dd var, nul, nul, nul
+  dd var, nul, nul, greyw
 
 tens:
   dd 10, 100, 1000, 10000, 100000, 1000000
