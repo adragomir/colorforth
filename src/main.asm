@@ -69,12 +69,6 @@ extern _printf, _open, _mmap, _read, _malloc, _write, _realloc
 
 global _main                ; make the main function externally visible
 
-; (r >> format->Rloss) << format->Rshift | (g >> format->Gloss) << format->Gshift | (b >> format->Bloss) << format->Bshift | format->Amask;
-; 16 bit: 
-; format->Rloss : 3 ; format->Gloss : 2 ; format->Bloss : 3 ; format->Rshift : 11 ; format->Gshift : 5 ; format->Bshift : 0 ; format->Amask: 0
-; 32 bit: 
-; format->Rloss : 0 ; format->Gloss : 0 ; format->Bloss : 0 ; format->Rshift : 16 ; format->Gshift : 8 ; format->Bshift : 0 ; format->Amask: 0
-
 %define sdl_rgb32(r, g, b) dword (r << 16) | (g << 8) | b | -16777216
 %define sdl_rgbsingle32(rgb) (( ((rgb >> 16) & 0xff) << 16) | (((rgb >> 8) & 0xff) << 8) | (rgb & 0xff)  | -16777216)
 
@@ -186,7 +180,7 @@ _main:
 
   call host_alloc_buffers
   call host_alloc_display
-  mov dword[board], ekbd
+  mov dword[board], keyboard_layout_alpha
   mov edi, [board]
   jmp start1
 
@@ -1848,7 +1842,7 @@ displ_:
   shr eax, 2
   ret
 
-; change 8:8:8 bit format to 5:6:5
+; change 8:8:8 bit to 5:6:5
 rgb: 
   ror eax, 8 ; rotate blue bits into upper word
   shr ax, 2 ; drop two low bits of green
@@ -2339,57 +2333,97 @@ keyboard:
 ;
 ; (Say when each of the four tables is active, e.g., what keys have to be held down
 ; or pressed.)
+; a keyboard layout has db times 4 three rows for right hand, and then the left hand
 
 align 4
+;keyboard_layout_alpha:
+;  ; right hand
+;  db Ig, Ic, Ir, Il         ; top
+;  db Ih, It, In, Is         ; center
+;  db Ib, Im, Iw, Iv ; bottom
+;  ; left hand
+;  db Ip, Iy, If, Ii ; top
+;  db Ia, Io, Ie, Iu ; center
+;  db Iq, Ik, Ix, Id ; bottom
+;
+;keyboard_layout_graphics:
+;  db I1, I2, I3, 0
+;  db I4, I5, I6, I0
+;  db I7, I8, I9, Iquestion
+;
+;  db Icolon, Isemi, Istore, Ifetch
+;  db Iz, Ij, Idot, Icomma
+;  db Itimes, Islash, Iplus, Iminus
+;
+;keyboard_layout_numbers:
+;  db I1, I2, I3, 0
+;  db I4, I5, I6, I0
+;  db I7, I8, I9, 0
+;
+;  db 0, 0, 0, 0
+;  db 0, 0, 0, 0
+;  db 0, 0, 0, 0
+;
+;keyboard_layout_octals:
+;  db I1, I2, I3, 0
+;  db I4, I5, I6, I0
+;  db I7, I8, I9, 0
+;
+;  db 0, Ia, Ib, Ic
+;  db 0, Id, Ie, If
+;  db 0, 0, 0, 0
+
 keyboard_layout_alpha:
   ; right hand
-  db Ig, Ic, Ir, Il         ; top
-  db Ih, It, In, Is         ; center
-  db Ib, Im, Iw, Iv ; bottom
+  db 0, 0, 0, 0
+  db It, Ie, Ix, It         ; center
+  db 0, 0, 0, 0
   ; left hand
-  db Ip, Iy, If, Ii ; top
-  db Ia, Io, Ie, Iu ; center
-  db Iq, Ik, Ix, Id ; bottom
+  db Iq, Iw, Ie, Ir ; top
+  db 0, 0, 0, 0
+  db 0, 0, 0, 0
 
-keyboard_layout_graphics:
-  db I1, I2, I3, 0
-  db I4, I5, I6, I0
-  db I7, I8, I9, Iquestion
-
-  db Icolon, Isemi, Istore, Ifetch
-  db Iz, Ij, Idot, Icomma
-  db Itimes, Islash, Iplus, Iminus
+;keyboard_layout_graphics:
+;  db 0, 0, 0, 0
+;  db Ig, Ir, Ia, If
+;  db 0, 0, 0, 0
+;
+;  db Iq, Iw, Ie, Ir ; top
+;  db 0, 0, 0, 0
+;  db 0, 0, 0, 0
 
 keyboard_layout_numbers:
-  db I1, I2, I3, 0
-  db I4, I5, I6, I0
-  db I7, I8, I9, 0
-
   db 0, 0, 0, 0
+  db 0, In, Iu, Im
+  db 0, 0, 0, 0
+
+  db Iq, Iw, Ie, Ir ; top
   db 0, 0, 0, 0
   db 0, 0, 0, 0
 
 keyboard_layout_octals:
-  db I1, I2, I3, 0
-  db I4, I5, I6, I0
-  db I7, I8, I9, 0
-
-  db 0, Ia, Ib, Ic
-  db 0, Id, Ie, If
+  db 0, 0, 0, 0
+  db 0, In, Iu, Im
   db 0, 0, 0, 0
 
+  db Iq, Iw, Ie, Ir ; top
+  db 0, Ih, Ie, Ix
+  db 0, 0, 0, 0
+
+
 ; -- 6 tables, pointed to by shift -- these deal only with the "shift" keys,
-; 0=undefined key, 1=N, 2=space, 3=alt -- db bytes are CF char codes --
+; 0=undefined key, 1=esc/backspace, 2=space/cr, 3=lalt/ralt -- db bytes are CF char codes --
 
 ; layouts for the thumb (shift) keys
 ; these sort of go in pairs:
-; foo0 is for the first character of a word
+; After the first character is inserted the thumb layout changes to 1
 ; foo1 is used for the rest
-alpha0:
+thumb_layout_alpha0:
+  ; esc nothing, space / enter nothing, alt number
   dd nul0, nul0, number, nul0  ; handler routines
   db I9, Itimes, Idot, 0   ; and icons for display
 
-alpha1:
+thumb_layout_alpha1:
   dd word0, x, lj, nul0
   db Ix, Idot, Itimes, 0
 
@@ -2401,12 +2435,12 @@ alpha1:
 ;  dd word0,   x, lj, alph
 ;  db Ix, Idot, Ia, 0
 
-numb0:
+thumb_layout_number0:
   dd nul0, minus, alphn, octal
   db Iminus, Ia, If, 0
 
-numb1:
-  dd number0, xn,  endn, number0
+thumb_layout_number1:
+  dd number0, xn, endn, number0
   db Ix, Idot, 0, 0
 
 ; Letter is passed a ColorForth key code (pulled from keys). If the key pressed is
@@ -2426,7 +2460,7 @@ letter:
   ;  flags according to al
   and al, al
   js .9
-  cmp dword [shift], numb0  ; numbers?
+  cmp dword [shift], thumb_layout_number0  ; numbers?
   jc .2    ; yes
   cmp dword [current], decimal  ; decimal?
   jz .0    ;  yes
@@ -2473,21 +2507,21 @@ sdl_scancode_to_raw:
   db 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09 
   ;  9     0
   db 0x0A, 0x0B
-  ;   enter = 40
-  ;   esc = 41
-  ;   backspace = 42
-  ;   tab = 43
-  ;   space = 44
+  ;  enter = 40
+  ;  esc = 41
+  ;  backspace = 42
+  ;  tab = 43
+  ;  space = 44
   ;  cr    ESC   bksp  tab   space
   db 0x1c, 0x01, 0x0e, 0x0f, 0x39
-  ;   - = 45
-  ;   = = 46
-  ;   [ = 47
-  ;   ] = 48
-  ;   \ = 49
-  ;   ; = 51
-  ;   ' = 52
-  ;   top left weird key - 53
+  ;  - = 45
+  ;  = = 46
+  ;  [ = 47
+  ;  ] = 48
+  ;  \ = 49
+  ;  ; = 51
+  ;  ' = 52
+  ;  top left weird key - 53
   ;  -_    =+    [{    ]}    \|    na     ;:    '"    weird left
   db 0x0c, 0x0d, 0x1a, 0x1b, 0x2b, 0x00,  0x27, 0x28, 0x00
   ;   , = 54
@@ -2769,7 +2803,6 @@ pkey0_default:
   pop_all esi, edi, ebx, ecx, edx
   ret
 
-
 ; keyboard display is 9 chars wide, 4 high
 keyboard_hud_width  equ 9
 keyboard_hud_height equ 4
@@ -2783,10 +2816,10 @@ keyboard_hud_y equ screen_height - keyboard_hud_height * char_height + char_padd
 ; followed by four bytes: the characters to print as the keyboard
 ; guide in the lower-right corner of the screen.
 ; [Refs: keyboard, letter, accept1, decimal, hex, graph, e, pad]
-board: dd ekbd;keyboard_layout_alpha - 4  ; current keyboard (finger keys)
+board: dd keyboard_layout_alpha; current keyboard (finger keys)
 ; Shift generally points to one of the following tables:
-; alpha0, alpha1, graph0, graph1, numb0, numb1.
-shift: dd alpha0;alpha1 ; current shift (thumb) keys
+; thumb_layout_alpha0, thumb_layout_alpha1, graph0, graph1, thumb_layout_number0, thumb_layout_number1.
+shift: dd thumb_layout_alpha0;thumb_layout_alpha1 ; current shift (thumb) keys
 ; ColorForth displays numbers in one of two formats - decimal and hexadecimal. 
 ; Decimal stores 10 here; hex stores 16 here. 
 ; Therefore routines with "cmp base, 10 : jz base10" fall into handling hexadecimal. 
@@ -2809,7 +2842,7 @@ nul0:
   jmp short accept2
 
 accept:
-  mov dword [shift], alpha0
+  mov dword [shift], thumb_layout_alpha0
   ;lea edi, [keyboard_layout_alpha - 4]; TODO NONQWERTY
   xor edi, edi ; QWERTY skip display of command key map
 
@@ -2822,10 +2855,10 @@ accept1:
 
 accept2:
   call key ; TODOKEY
-  ;cmp al, 4
-  ;jns near first
-  ;mov edx, [shift]
-  ;jmp [edx + eax * 4]
+  ;cmp al, 4 ; one of the shift keys?
+  ;jns near first ; nope, it's the first character of a word
+  ;mov edx, [shift] ; otherwise get the "shift" value
+  ;jmp [edx + eax * 4] ; jump to corresponding longword pointer
   js acmdk
   add dword [shift], 20
   call word_
@@ -2940,20 +2973,20 @@ word0:
 
 decimal:
   mov dword [base], 10
-  mov dword [shift], numb0
-  ;mov dword [board], keyboard_layout_numbers - 4
+  mov dword [shift], thumb_layout_number0
+  mov dword [board], keyboard_layout_numbers
   ret
 
 hex:
   mov dword [base], 16
-  mov dword [shift], numb0
-  ;mov dword [board], keyboard_layout_octals - 4
+  mov dword [shift], thumb_layout_number0
+  mov dword [board], keyboard_layout_octals
   ret
 
 octal:
   xor dword [current], decimal;(decimal - start1) ^ (hex - start1)
   xor dword [current], hex;(decimal - start1) ^ (hex - start1)
-  xor byte [numb0 + 18], 41q ^ 16q ; '9' xor 'f'
+  xor byte [thumb_layout_number0 + 18], 41q ^ 16q ; '9' xor 'f'
   call [current]
   jmp short number0
 
@@ -2987,7 +3020,7 @@ number:
 number3:
   call key ; TODOKEY
   call letter
-  jns .0
+  jns .0 ; Jump short if not sign (SF=0).
   neg al; QWERTY
   mov edx, [shift]
   jmp dword [edx + eax * 4]
@@ -3006,7 +3039,7 @@ number3:
 
 number2:
   DROP
-  mov dword [shift], numb1
+  mov dword [shift], thumb_layout_number1
   jmp number3
 
 endn:
@@ -3020,11 +3053,11 @@ alphn:
   jmp accept
 
 alph:
-  mov dword [shift], alpha1
+  mov dword [shift], thumb_layout_alpha1
   jmp word0
 
 ;alph0:
-;  mov dword [shift], alpha0
+;  mov dword [shift], thumb_layout_alpha0
 ;  lea edi, [keyboard_layout_alpha - 4]
 ;  jmp short star1
 ;
@@ -3037,7 +3070,7 @@ alph:
 ;  jmp accept1
 ;
 ;alph:
-;  mov dword [shift], alpha1
+;  mov dword [shift], thumb_layout_alpha1
 ;  lea edi, [keyboard_layout_alpha - 4]
 ;  jmp short graphb
 ;
@@ -3045,7 +3078,8 @@ alph:
 ;  mov dword [shift], graph1
 ;  lea edi, [keyboard_layout_graphics - 4]
 ;
-;graphb: mov dword [board], edi
+;graphb:
+;  mov dword [board], edi
 ;  jmp word0
 
 first:
@@ -3648,7 +3682,7 @@ ekbd0:
 ekbd:
   ; right hand
   db 0, 0, 0, 0
-  db 0, 0, 0, 0
+  db Ie, Id, Ii, It
   db 0, 0, 0, 0
   ; left hand
   db Iq, Iw, Ie, Ir
@@ -3692,8 +3726,8 @@ e:
   DUP_
   mov eax, [blk]
   mov dword [anumber], format
-  mov byte [alpha0 + 16], Idot
-  mov dword [alpha0 + 4], e0
+  mov byte [thumb_layout_alpha0 + 16], Idot
+  mov dword [thumb_layout_alpha0 + 4], e0
   call refresh
 e_1: 
   mov dword [shift], ekbd0
@@ -3711,8 +3745,8 @@ eout:
   DROP
   mov dword [aword], exword
   mov dword [anumber], nul
-  mov byte [alpha0 + 4 * 4], 0
-  mov dword [alpha0 + 4], nul0
+  mov byte [thumb_layout_alpha0 + 4 * 4], 0
+  mov dword [thumb_layout_alpha0 + 4], nul0
   mov dword [keyc], _yellow ; restore key color to yellow
   jmp accept ; revert to command-line processing
 
