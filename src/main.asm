@@ -1867,11 +1867,13 @@ switch_:
   ;pop edi
   ;pop esi
   pushad
+  pushfd
   ;push esi
   ;push edi
   call host_flip_screen
   ;pop edi
   ;pop esi
+  popfd
   popad
   ret
 
@@ -2612,14 +2614,12 @@ special_key_mod_num:
 key:
   DUP_
   push_all esi, edi, ebx, ecx, edx
-key0:
   xor eax, eax
   call dopause
+key0:
   call getcfkey ; returns a virtual scan code - appendix 3
-  ;cmp al, 0x3b  ; limit to 39, including f1
-  ;jnc key0
-  ; HACK for state
-  ; weird left key pressed ? force text
+  cmp al, 0x3c  ; limit to 39, including f1
+  jnc key0
   add eax, eax  ; double to account for shifted characters
   add eax, [shifted]  ; +1 if shifted
   mov al, [keys + eax]  ; index into keys
@@ -2632,7 +2632,7 @@ key0:
   je .text
   cmp dword [board], key_layout_num
   je .num
-  ; else, key_layout_unknown
+    ; else, key_layout_unknown
     ; accept f1, `
     mov al, byte [special_key_mod_unknown + eax - 1]
     jmp .finish
