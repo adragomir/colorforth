@@ -2343,7 +2343,7 @@ key_layout_num:
 ; foo1 is used for the rest
 thumb_layout_unknown:
   ; esc nothing, space / enter nothing, alt number
-  dd nul0, nul0, alph, octal  ; handler routines
+  dd nul0, nul0, alph, octal_unknown  ; handler routines
   db I9, Itimes, Idot, 0   ; and icons for display
 
 ; can only enter, delete or escape
@@ -2353,7 +2353,7 @@ thumb_layout_text:
 
 ; minus, enter/space, backspace, f1
 thumb_layout_num:
-  dd number0, xn, endn, octal
+  dd number0, xn, endn, octal_number
   db Iminus, Ia, If, 0
 
 ; Letter is passed a ColorForth key code (pulled from keys). If the key pressed is
@@ -2774,6 +2774,7 @@ nul0:
 accept:
   mov dword [board], key_layout_unknown
   mov dword [shift], thumb_layout_unknown
+  call add_hex_to_key_layout
 accept1:
 accept2:
   call key
@@ -2789,9 +2790,9 @@ accept2:
   ;call letter
   jmp number
   .1:
-    call debug_dumpregs
     mov dword [board], key_layout_text
     mov dword [shift], thumb_layout_text
+    call add_hex_to_key_layout
     call word_
     call [aword]
     jmp accept
@@ -2905,23 +2906,32 @@ word01:
 
 decimal:
   mov dword [base], 10
-  mov dword [board], key_layout_num
-  mov dword [shift], thumb_layout_num
+  ;mov dword [board], key_layout_num
+  ;mov dword [shift], thumb_layout_num
   call add_hex_to_key_layout
   ret
 
 hex:
   mov dword [base], 16
-  mov dword [board], key_layout_num
-  mov dword [shift], thumb_layout_num
+  ;mov dword [board], key_layout_num
+  ;mov dword [shift], thumb_layout_num
   call add_hex_to_key_layout
   ret
 
 octal:
-  xor dword [current], decimal;(decimal - start1) ^ (hex - start1)
-  xor dword [current], hex;(decimal - start1) ^ (hex - start1)
+  xor dword [current], decimal
+  xor dword [current], hex
   xor byte [thumb_layout_num + 18], 41q ^ 16q ; '9' xor 'f'
   call [current]
+  ret
+
+octal_unknown:
+  call octal
+  DROP
+  jmp accept
+
+octal_number:
+  call octal
   jmp short number0
 
 xn:
@@ -2947,6 +2957,8 @@ number0:
   jmp short number3
 
 number:
+  mov dword [board], key_layout_num
+  mov dword [shift], thumb_layout_num
   call [current]
   mov byte [sign], 0
   ;xor eax, eax ; TOS=entered number(initialized to 0)
@@ -2991,6 +3003,7 @@ alphn:
 alph:
   mov dword [board], key_layout_text
   mov dword [shift], thumb_layout_text
+  call add_hex_to_key_layout
   DROP
   jmp accept1
 
