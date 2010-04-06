@@ -23,11 +23,11 @@ section .bss
 ; indicates the data stack.  Thus 'top_draw_return_stack' and 'top_draw_data_stack' are the tops of
 ; the return and data stacks, respectively, for the draw task.
 
-return_stack_size equ 256 * 4 * 3   ; size of return stacks (3 blocks)
-data_stack_size equ 256 * 4 * 6 ; size of data stacks (6 blocks)
-forth_dict_size equ 2048 * 4  ; size of forth dictionary (2048 words, 8 blocks)
-        ; we have two arrays like this: names and addrs.
-bufsize equ 18 * 1024 ; size of floppy buffer.
+return_stack_size equ 256 * 4 * 3 ; size of return stacks (3 blocks)
+data_stack_size equ 256 * 4 * 6   ; size of data stacks (6 blocks)
+forth_dict_size equ 2048 * 4      ; size of forth dictionary (2048 words, 8 blocks)
+                                  ; we have two arrays like this: names and addrs.
+bufsize equ 18 * 1024             ; size of floppy buffer.
 
 ;   100000 dictionary
 ;    a0000 return stack (main)
@@ -46,18 +46,16 @@ bufsize equ 18 * 1024 ; size of floppy buffer.
 ; 0 the colorforth kernel
     times ((3 * (return_stack_size + data_stack_size) + bufsize + 2 * forth_dict_size) / 4) dd 0
 
-;dictionary  equ 0x100000 ; TODO get rid of this
-
 top_main_return_stack equ $; gods
 top_main_data_stack equ top_main_return_stack - return_stack_size ; godd
 top_draw_return_stack equ top_main_data_stack - data_stack_size
 top_draw_data_stack equ top_draw_return_stack - return_stack_size
-top_serve_return_stack  equ top_draw_data_stack - data_stack_size
-top_serve_data_stack  equ top_serve_return_stack - return_stack_size
+top_serve_return_stack equ top_draw_data_stack - data_stack_size
+top_serve_data_stack equ top_serve_return_stack - return_stack_size
 end_of_stacks equ top_serve_data_stack - data_stack_size  ; end of stacks
-buffer  equ end_of_stacks - bufsize
-forth_dictionary_addresses  equ buffer - forth_dict_size
-forth_dictionary_names  equ forth_dictionary_addresses - forth_dict_size
+buffer equ end_of_stacks - bufsize
+forth_dictionary_addresses equ buffer - forth_dict_size
+forth_dictionary_names equ forth_dictionary_addresses - forth_dict_size
 ; ...
 
 trash_adr times 64 db 'T'
@@ -180,7 +178,7 @@ _main:
 
   call host_alloc_buffers
   call host_alloc_display
-  mov dword[board], keyboard_layout_alpha
+  mov dword[board], key_layout_unknown
   mov edi, [board]
   jmp start1
 
@@ -194,7 +192,7 @@ host_notimpl:
 ; Segment registers are based at zero; essentially unused. Interrupts off. Protections off. 
 ; Data are addressed as 32-bit words, not bytes. 
 ; But esp and esi hold byte addresses, for optimization. 
-; Instructions are optimized if agruments are literals. 
+; Instructions are optimized if arguments are literals. 
 ; Registers are assigned:
 ; 0 eax:
 ;    stack (1st number on Data stack) 
@@ -212,11 +210,6 @@ host_notimpl:
 ;    byte pointer to 2nd number on Data stack 
 ; 7 edi:
 ;    dword pointer to next word to be interpreted
-
-; the Pentium manual recommends not using "complex instructions"
-; like LOOP.  However, it IS used in the boot sector where space
-; is at a premium.
-
 
 ; the Pentium manual recommends not using "complex instructions"
 ; like LOOP.  However, it IS used in the boot sector where space
@@ -270,7 +263,6 @@ _white  equ sdl_rgbsingle32(0xffffff)
 _blue equ sdl_rgbsingle32(0x8080ff)
 _dkblue equ sdl_rgbsingle32(0x4040ff)
 
-; icons are 16x24 pixels
 icon_width  equ 16
 icon_height equ 24
 ; a character is an icon with 3 pixels of padding all round.
@@ -285,15 +277,12 @@ vertical_chars  equ screen_height / char_height       ; 768 / 30 = 25 (remainder
 hexbit equ 20q  ; that's octal, bit 4 set to indicate hexadecimal display
 tagbits equ 17q ; octal again, low 4 bits (0-3) indicate type tag
 
-
 warm:
   DUP_
   jmp start1.0
 
 start1:
   ; TODO: setup arrays
-  ;mov [top_serve_data_stack - 12], dword 8
-  ;mov [top_serve_data_stack - 16], dword 90
   mov esi, top_main_data_stack
 
   .0:
@@ -415,7 +404,7 @@ to_serve:
   mov edx, top_serve_data_stack - 4
   mov ecx, top_serve_return_stack - 4
   pop dword [ecx]
-  lea ecx, [ecx - 4] ; TODO XXX PROBLEM
+  lea ecx, [ecx - 4]
   mov [ecx], edx
   mov [serv], ecx
   ret
@@ -520,7 +509,6 @@ ffind:
   pop edi     ; no longer need this, can tell from ECX where match was found
   ret
 
-; TODO check corectness
 word_till_zero:  
   dec dword [words]
   jz .9
@@ -1208,18 +1196,18 @@ inter:
 ; f null
 
 align 4
+
 ; these are the compiler actions for the various type tags
 spaces:
-  dd qignore, execute, num        ; colors 0..2: 0 = extension, 1=execute, 2=executelong
-; 3=define, either in macro dictionary or forth dictionary
-adefine: ; where definitions go, either in macrod (dictionary) or forthd
-  dd forthd          ; color 3 ; TODO is forthd + 5
-    ; This is altered by sdefine, which stores the
-    ; address of either macrod (to define a MACRO
-    ; word) or forthd (to define a FORTH word) here.
-  dd qcompile, cnum, cshort, compile    ; colors 4..7: 4 = green, 5 = long, 6 = short, 7 = cyan
-  dd short_, nul, nul, nul        ; colors 8..11: 8 = executeshort
-  dd variable, nul, nul, nul      ; colors 12..15: 12 = variable
+  dd qignore, execute, num           ; colors 0..2: 0 = extension, 1=execute, 2 = executelong
+adefine:                             ; where definitions go, either in macrod (dictionary) or forthd
+  dd forthd                          ; 3=define, either in macro dictionary or forth dictionary
+                                     ; forthd is altered by sdefine, which stores the
+                                     ; address of either macrod (to define a MACRO
+                                     ; word) or forthd (to define a FORTH word) here.
+  dd qcompile, cnum, cshort, compile ; colors 4..7: 4 = green, 5 = long, 6 = short, 7 = cyan
+  dd short_, nul, nul, nul           ; colors 8..11: 8 = executeshort
+  dd variable, nul, nul, nul         ; colors 12..15: 12 = variable
 
 ; Other variables
 ;
@@ -1599,22 +1587,25 @@ forth_words_addresses:
 
 ; General-purpose routines
 
+; ( -- ) switches to qwerty mode. we only do qwerty in this version
 qwerty:
   ret
  
+; ( -- ) saves the image
 retain:
   pushad
   call host_write_blocks_file
   popad
   ret
 
+; ( -- n ) sets 1 if winver, which we are 
 winver:
   DUP_
   mov eax, 1
   or eax, eax
   ret
 
-;( b n -- ) Erase n blocks, starting with block b.
+; ( b n -- ) erase n blocks, starting with block b.
 erase:
   mov ecx, eax
   shl ecx, 8
@@ -1633,7 +1624,7 @@ erase:
   DROP
   ret
 
-;( n -- ) Copy current block to block n, and make that block the current block
+; ( n -- ) copy current block to block n, and make that block the current block
 copy:
   cmp eax, byte 12          ; can't overwrite machine-code blocks...
   jc abort1                 ; so if we're asked to, abort the operation
@@ -1655,8 +1646,7 @@ copy:
   DROP                      ; no longer need the block number
   ret
 
-; move dwords
-; ( sa da n -- )    
+; ( sa da n -- ) move dwords
 move:
   mov ecx, eax
   DROP
@@ -1669,26 +1659,23 @@ move:
   rep movsd
   ret
 
-; (?)Print four numbers --
-; show current machine state
+; (?) print four numbers -- show current machine state
 debug:
   ; locate character output two lines above bottom
   mov dword [xy], char_padding * 0x10000 + (vertical_chars - 2) * char_height + char_padding
   DUP_
   mov eax, [main]
   push dword [eax]
-  call dot
+  call dot16
   DUP_
   pop eax
-  call dot
+  call dot16
   DUP_
   mov eax, [draw]
-  call dot
+  call dot16
   DUP_
   mov eax, esi ; data stack pointer
-  jmp dot
-
-align 4; TODO ? is this needed ?
+  jmp dot16
 
 ; Screen variables
 ;
@@ -1715,6 +1702,8 @@ align 4; TODO ? is this needed ?
 ; main memory. This is probably another case of Chuck Moore tightly fitting his code
 ; to his own hardware his video card maps its onboard RAM (displ) to main-memory
 ; address 0xF0000000 and starts scanlines at addresses 0xF0010000, 0xF0020000, etc.
+
+align 4
 
 nc: dd 9
 xy: dd char_padding * 0x10000 + char_padding
@@ -1827,8 +1816,8 @@ aper_:
   ret
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; include 'gen.asm'
-align 4; TODO is this needed ?
 
+align 4
 ;displ: dd 0x0
 frame: dd 0x0
 fore: dd _yellow
@@ -1842,7 +1831,7 @@ displ_:
   shr eax, 2
   ret
 
-; change 8:8:8 bit to 5:6:5
+; ( n -- n ) change 8:8:8 bit to 5:6:5
 rgb: 
   ror eax, 8 ; rotate blue bits into upper word
   shr ax, 2 ; drop two low bits of green
@@ -1890,11 +1879,7 @@ switch:
   call switch_
   jmp dopause
 
-; was called clip
-; set EDI, xc, and yc from xy.
-; ensure that neither xc nor yc is negative.
-; convert xy to pointer (edi) into 'frame' clipped to screen width/height
-; ( -- )
+; ( -- ) set edi, xc, and yc from xy, ensuring that neither xc nor yc is negative. 
 pen_addr:
   mov edi, [xy]
   mov ecx, edi
@@ -1914,10 +1899,7 @@ pen_addr:
     add edi, [frame]
     ret
 
-; display word as 16 pixels
-; edi=>location in frame
-; edx=color
-; currently unused!!!
+; display word as 16 pixels, edi = location in frame, edx = color
 bit16:
   lodsw
   xchg al, ah
@@ -1931,10 +1913,7 @@ bit16:
     NEXT .0
     ret
 
-; display byte as 32 pixels
-; edi=>location in frame
-; edx=color
-
+; display byte as 16 pixels, edi = location in frame, edx = color
 bit32:
   lodsw
   xchg al, ah
@@ -1951,8 +1930,7 @@ bit32:
     NEXT .0
     ret
 
-; ( c -- ) emit
-; paint a character on the screen
+; ( c -- ) paint a character on the screen
 emit:
   call qcr ; issue CRLF if at end of line
   push esi ; save registers we need...
@@ -1981,8 +1959,7 @@ space:
   add dword [xy], char_width * 0x10000
   ret
 
-; display a double - size character.
-; : 2emit ( c -- )
+; ( c -- ) display a double - size character.
 emit2:
   push esi
   push edi
@@ -2012,9 +1989,7 @@ text1:
   mov dword [rm], horizontal_chars * char_width
   jmp top
 
-; ( x len -- )
-; draw a horizontal line LEN pixels long, starting
-; X pixels to the left of the current pen position.
+; ( x len -- ) draw a horizontal line len pixels long, starting x pixels to the left of the current pen position.
 line:
   call pen_addr
   mov ecx, [esi]
@@ -2097,8 +2072,7 @@ history_size  equ 11
 history:
   times history_size db 0
 
-; : echo ( ch -- )
-; add character to history
+; ( ch -- ) add character to history
 echo:
   push esi
   mov ecx, history_size - 1
@@ -2110,8 +2084,7 @@ echo:
   DROP
   ret
 
-; : right ( -- )
-; zero history
+; ( -- ) zero history
 right:
   DUP_
   mov ecx, history_size
@@ -2155,7 +2128,7 @@ blank:
 ; sets cursor position to top-left corner.
 top:
   mov ecx, [lm] ; get left margin in pixels
-  shl ecx, 16 ; shift to X of XY doubleword
+  shl ecx, 16 ; move to X of XY doubleword
   add ecx, byte 3 ; add 3 pixels for top (Y) margin
   mov [xy], ecx ; update XY
   mov [xycr], ecx ; update XYCR (unused? [jc])
@@ -2266,7 +2239,7 @@ stack:
   .0:
     mov edx, [main]
     cmp [edx], edi
-    jae .9 ; return if greater or equal  TODO is jnc in others
+    jnc .9 ; return if greater or equal
     DUP_
     mov eax, [edi]
     sub edi, byte 4
@@ -2314,8 +2287,7 @@ keyboard:
     mov ecx, history_size
     jmp nchars
 
-
-; Editor
+; Editor and interpreter
 ;
 ; Keyboard handling
 ;
@@ -2334,82 +2306,33 @@ keyboard:
 ; (Say when each of the four tables is active, e.g., what keys have to be held down
 ; or pressed.)
 ; a keyboard layout has db times 4 three rows for right hand, and then the left hand
+; left hand goes first, then right hand
 
 align 4
-;keyboard_layout_alpha:
-;  ; right hand
-;  db Ig, Ic, Ir, Il         ; top
-;  db Ih, It, In, Is         ; center
-;  db Ib, Im, Iw, Iv ; bottom
-;  ; left hand
-;  db Ip, Iy, If, Ii ; top
-;  db Ia, Io, Ie, Iu ; center
-;  db Iq, Ik, Ix, Id ; bottom
-;
-;keyboard_layout_graphics:
-;  db I1, I2, I3, 0
-;  db I4, I5, I6, I0
-;  db I7, I8, I9, Iquestion
-;
-;  db Icolon, Isemi, Istore, Ifetch
-;  db Iz, Ij, Idot, Icomma
-;  db Itimes, Islash, Iplus, Iminus
-;
-;keyboard_layout_numbers:
-;  db I1, I2, I3, 0
-;  db I4, I5, I6, I0
-;  db I7, I8, I9, 0
-;
-;  db 0, 0, 0, 0
-;  db 0, 0, 0, 0
-;  db 0, 0, 0, 0
-;
-;keyboard_layout_octals:
-;  db I1, I2, I3, 0
-;  db I4, I5, I6, I0
-;  db I7, I8, I9, 0
-;
-;  db 0, Ia, Ib, Ic
-;  db 0, Id, Ie, If
-;  db 0, 0, 0, 0
 
-keyboard_layout_alpha:
-  ; right hand
+key_layout_unknown:
   db 0, 0, 0, 0
-  db It, Ie, Ix, It         ; center
   db 0, 0, 0, 0
-  ; left hand
-  db Iq, Iw, Ie, Ir ; top
+  db 0, 0, 0, 0
+  db Iq, Iw, Ie, Ir
   db 0, 0, 0, 0
   db 0, 0, 0, 0
 
-;keyboard_layout_graphics:
-;  db 0, 0, 0, 0
-;  db Ig, Ir, Ia, If
-;  db 0, 0, 0, 0
-;
-;  db Iq, Iw, Ie, Ir ; top
-;  db 0, 0, 0, 0
-;  db 0, 0, 0, 0
+key_layout_text:
+  db 0, 0, 0, 0
+  db It, Ie, Ix, It
+  db 0, 0, 0, 0
+  db Iq, Iw, Ie, Ir
+  db 0, 0, 0, 0
+  db 0, 0, 0, 0
 
-keyboard_layout_numbers:
+key_layout_num:
   db 0, 0, 0, 0
   db 0, In, Iu, Im
   db 0, 0, 0, 0
-
-  db Iq, Iw, Ie, Ir ; top
+  db Iq, Iw, Ie, Ir
   db 0, 0, 0, 0
   db 0, 0, 0, 0
-
-keyboard_layout_octals:
-  db 0, 0, 0, 0
-  db 0, In, Iu, Im
-  db 0, 0, 0, 0
-
-  db Iq, Iw, Ie, Ir ; top
-  db 0, Ih, Ie, Ix
-  db 0, 0, 0, 0
-
 
 ; -- 6 tables, pointed to by shift -- these deal only with the "shift" keys,
 ; 0=undefined key, 1=esc/backspace, 2=space/cr, 3=lalt/ralt -- db bytes are CF char codes --
@@ -2418,30 +2341,20 @@ keyboard_layout_octals:
 ; these sort of go in pairs:
 ; After the first character is inserted the thumb layout changes to 1
 ; foo1 is used for the rest
-thumb_layout_alpha0:
+thumb_layout_unknown:
   ; esc nothing, space / enter nothing, alt number
-  dd nul0, nul0, number, nul0  ; handler routines
+  dd nul0, nul0, alph, octal  ; handler routines
   db I9, Itimes, Idot, 0   ; and icons for display
 
-thumb_layout_alpha1:
+; can only enter, delete or escape
+thumb_layout_text:
   dd word0, x, lj, nul0
   db Ix, Idot, Itimes, 0
 
-;graph0:
-;  dd nul0, nul0, nul0, alph0
-;  db 0, 0, Ia, 0
-;
-;graph1:
-;  dd word0,   x, lj, alph
-;  db Ix, Idot, Ia, 0
-
-thumb_layout_number0:
-  dd nul0, minus, alphn, octal
+; minus, enter/space, backspace, f1
+thumb_layout_num:
+  dd number0, xn, endn, octal
   db Iminus, Ia, If, 0
-
-thumb_layout_number1:
-  dd number0, xn, endn, number0
-  db Ix, Idot, 0, 0
 
 ; Letter is passed a ColorForth key code (pulled from keys). If the key pressed is
 ; either an undefined key (code=0), the N key (code=1), the spacebar (code=2), or
@@ -2460,26 +2373,26 @@ letter:
   ;  flags according to al
   and al, al
   js .9
-  cmp dword [shift], thumb_layout_number0  ; numbers?
+  cmp dword [shift], thumb_layout_num  ; numbers?
   jc .2    ; yes
   cmp dword [current], decimal  ; decimal?
   jz .0    ;  yes
-  cmp al, 04h    ;  no check for hex
+  cmp al, 04h    ; e ?  no check for hex
   jz .2
-  cmp al, 05h
+  cmp al, 05h    ; a ?
   jz .2
-  cmp al, 0ah
+  cmp al, 0ah    ; c ?
   jz .2
-  cmp al, 0eh
+  cmp al, 0eh    ; f ?
   jz .2
-  cmp al, 10h
+  cmp al, 10h    ; d ?
   jz .2
-  cmp al, 13h
+  cmp al, 13h    ; b ?
   jz .2
   .0:
-    cmp al, 18h
+    cmp al, 18h  ; 0 ?
     jc .1
-    cmp al, 22h
+    cmp al, 22h  ; 9 ?
     jc .2
   .1:
     xor eax, eax
@@ -2523,7 +2436,7 @@ sdl_scancode_to_raw:
   ;  ' = 52
   ;  top left weird key - 53
   ;  -_    =+    [{    ]}    \|    na     ;:    '"    weird left
-  db 0x0c, 0x0d, 0x1a, 0x1b, 0x2b, 0x00,  0x27, 0x28, 0x00
+  db 0x0c, 0x0d, 0x1a, 0x1b, 0x2b, 0x00,  0x27, 0x28, 0x29
   ;   , = 54
   ;   . = 55
   ;   / = 56
@@ -2613,6 +2526,15 @@ align 2
     ; -1 for backspace/esc, -2 for return/space
     ; and -3 for alt.
 
+; ff = -1
+; fe = -2
+; fd = -3
+; fc = -4
+; esc = -1
+; backspace = -1
+; enter/space = -2
+; ~ = -3
+; f1 = -4
 keys
     db 00,00
     dw 0ffffh, 2a19h, 2c1ah, 001bh ; 1   esc    !1      @2   #3
@@ -2625,11 +2547,20 @@ keys
     dw 0000h, 0505h, 0808h, 1010h  ; 1d  Lctrl  Aa      Ss   Dd
     dw 0e0eh, 0d0dh, 1414h, 2222h  ; 21  Ff     Gg      Hh   Jj
     dw 2424h, 0c0ch, 2928h, 0000h  ; 25  Kk     Ll      :;   "'
-    dw 0000h, 0000h, 0000h, 2626h  ; 29  ~`     Lshift  |\   Zz
+    dw 0fdfdh, 0000h, 0000h, 2626h ; 29  ~`     Lshift  |\   Zz
     dw 1515h, 0a0ah, 1111h, 1313h  ; 2d  Xx     Cc      Vv   Bb
     dw 0606h, 0909h, 002eh, 0025h  ; 31  Nn     Mm      <,   >.
-    dw 2f27h, 0000h, 2d2dh, 0fdfdh ; 35  ?/     Rshift  *    Lalt
+    dw 2f27h, 0000h, 2d2dh, 0000h  ; 35  ?/     Rshift  *    Lalt
     dw 0fefeh                      ; 39  space  
+    dw 0000h                       ; 3A  caps 
+    dw 0fcfch, 0000h, 0000h, 0000h ; 3B  f1     f2      f3   f4
+    dw 0000h, 0000h, 0000h, 0000h  ; 3F  f5     f6      f7   f8
+    dw 0000h, 0000h, 0000h, 0000h  ; 43  f9     f10     num  scrl
+    dw 0000h, 0000h, 0000h, 0000h  ; 47  home   up      pgup -
+    dw 0000h, 0000h, 0000h, 0000h  ; 4b  left   center  rght +
+    dw 0000h, 0000h, 0000h, 0000h  ; 4F  end    down    pgdn ins
+    dw 0000h, 0000h, 0000h, 0000h  ; 53  del    /       entr ??
+    dw 0000h, 0000h               ; 57  F11    f12
 
 ; There are twenty-eight ColorForth-specific key codes. The blue cells are for keys 
 ; you press with your right thumb; the green, for keys you press with the four 
@@ -2648,53 +2579,6 @@ keys
 ; 8 J     18  E
 ; 9 K     19  R
 ;
-; So we can see what characters are produced for each of the four keyboard modes. In 
-; alpha mode, the keyboard looks like this (the large character is the one produced 
-; by the key; the small character is the one printed on the key; the gray cells 
-; indicate keys that don't produce any characters): 
-;
-; y f i     g c r l
-; Q W E R T Y U I O P
-;
-; o e u     h t n s
-; A S D F G H J K L ; 
-;
-; k x d     b m w v
-; Z X C V B N M < > ?
-; 
-; In graphics mode, the keyboard looks like this: 
-;
-; ; ! @     1 2 3
-; Q W E R T Y U I O P
-;
-; J . ,     4 5 6 0
-; A S D F G H J K L ; 
-;
-; / + -     7 8 9 ?
-; Z X C V B N M < > ?
-; 
-; In numbers mode, the keyboard looks like this: 
-;
-;    1 2 3
-; Q W E R T Y U I O P
-;
-;    4 5 6 0
-; A S D F G H J K L ; 
-;
-;    7 8 9  
-; Z X C V B N M < > ?
-; 
-; In hexadecimal mode, the keyboard looks like this: 
-;
-; a b c     1 2 3
-; Q W E R T Y U I O P
-;
-; d e f     4 5 6 0
-; A S D F G H J K L ; 
-;
-;    7 8 9  
-; Z X C V B N M < > ?
-; 
 ; Key waits for a key, then returns the key code (a number in the range 0..27). It
 ; first calls pause to let the other task run, then checks the key port to see if a
 ; key has been pressed. If not, key keeps calling pause and checking the key port
@@ -2708,26 +2592,62 @@ keys
 ; returns huffman coded chars or -1 (Esc), -2 (spacebar or Enter) or -3 (Alt)
 ; zero is filtered
 ; sets flags according to al
+
+; esc = -1
+; backspace = -1
+; enter/space = -2
+; ~ = -3
+; f1 = -4
+
+special_key_mod_unknown:
+  ; allow only f1 and ~
+  db 0x00, 0x00, 0xfe, 0xfd
+special_key_mod_text:
+  ; allow only esc, backspace, enter/space
+  db 0xff, 0xfe, 0x00, 0x00
+special_key_mod_num:
+  ; allow only esc, backspace, enter/space, f1
+  db 0xff, 0xfe, 0x00, 0xfd
+
 key:
   DUP_
   push_all esi, edi, ebx, ecx, edx
-  ;push esi
-  ;push edi
 key0:
   xor eax, eax
   call dopause
   call getcfkey ; returns a virtual scan code - appendix 3
-  cmp al, 3ah  ; limit to 39
-  jnc key0
+  ;cmp al, 0x3b  ; limit to 39, including f1
+  ;jnc key0
+  ; HACK for state
+  ; weird left key pressed ? force text
   add eax, eax  ; double to account for shifted characters
   add eax, [shifted]  ; +1 if shifted
   mov al, [keys + eax]  ; index into keys
   and al, al
-  jz key0  ; repeat if zero
-  pop_all esi, edi, ebx, ecx, edx
-  ;pop edi
-  ;pop esi
-  ret
+  jns .finish
+
+  neg al
+  ; handling:
+  cmp dword [board], key_layout_text
+  je .text
+  cmp dword [board], key_layout_num
+  je .num
+  ; else, key_layout_unknown
+    ; accept f1, `
+    mov al, byte [special_key_mod_unknown + eax - 1]
+    jmp .finish
+  .text:
+    mov al, byte [special_key_mod_text + eax - 1]
+    jmp .finish
+  .num:
+    mov al, byte [special_key_mod_num + eax - 1]
+    jmp .finish
+
+  .finish:
+    and al, al
+    jz key0  ; repeat if zero
+    pop_all esi, edi, ebx, ecx, edx
+    ret
 
 ; programmable keys. Scan code to colorforth 27 key keymapping
 ; indexes in the array are the virtual scan codes (NOT host ones !!!)
@@ -2750,8 +2670,6 @@ pkeys
 pkey:
   DUP_
   push_all esi, edi, ebx, ecx, edx
-  ;push esi
-  ;push edi
 pkey0:
   xor eax, eax
   call dopause
@@ -2762,8 +2680,6 @@ pkey0:
   and al, al
   jz pkey0
   dec al ; values in pkeys are indexes in keys table, which starts with 1. Decrement it to make it start from 0
-  ;pop edi
-  ;pop esi
   pop_all esi, edi, ebx, ecx, edx
   ret
 
@@ -2786,8 +2702,6 @@ pkeys_default
 pkey_default:
   DUP_
   push_all esi, edi, ebx, ecx, edx
-  ;push esi
-  ;push edi
 pkey0_default:
   xor eax, eax
   call dopause
@@ -2798,8 +2712,6 @@ pkey0_default:
   and al, al
   jz pkey0_default
   dec al ; values in pkeys are indexes in keys table, which starts with 1. Decrement it to make it start from 0
-  ;pop edi
-  ;pop esi
   pop_all esi, edi, ebx, ecx, edx
   ret
 
@@ -2811,15 +2723,14 @@ keyboard_hud_height equ 4
 keyboard_hud_x equ screen_width - keyboard_hud_width * char_width + char_padding 
 keyboard_hud_y equ screen_height - keyboard_hud_height * char_height + char_padding
 
-;align 4
+align 4
 ; pointer to data structure of four offsets to key handling routines
 ; followed by four bytes: the characters to print as the keyboard
 ; guide in the lower-right corner of the screen.
-; [Refs: keyboard, letter, accept1, decimal, hex, graph, e, pad]
-board: dd keyboard_layout_alpha; current keyboard (finger keys)
+board: dd key_layout_unknown; current keyboard (finger keys)
 ; Shift generally points to one of the following tables:
-; thumb_layout_alpha0, thumb_layout_alpha1, graph0, graph1, thumb_layout_number0, thumb_layout_number1.
-shift: dd thumb_layout_alpha0;thumb_layout_alpha1 ; current shift (thumb) keys
+; thumb_layout_unknown, thumb_layout_text, graph0, graph1, thumb_layout_num, thumb_layout_hex.
+shift: dd thumb_layout_unknown;thumb_layout_text ; current shift (thumb) keys
 ; ColorForth displays numbers in one of two formats - decimal and hexadecimal. 
 ; Decimal stores 10 here; hex stores 16 here. 
 ; Therefore routines with "cmp base, 10 : jz base10" fall into handling hexadecimal. 
@@ -2828,46 +2739,67 @@ base: dd 10
 current: dd decimal
 ; current key color?
 keyc: dd _yellow
-chars:  dd 1
+chars: dd 1
 ; "after word" - when you finish entering a word, this is called.
-aword:  dd exword
+aword: dd exword
 ; after number
 anumber: dd nul
 ; how many cells on top of the stack hold huffman - encoded characters?
 words: dd 1
 shifted: dd 0 ; QWERTY
 
+add_hex_to_key_layout:
+  push eax
+  cmp dword [base], byte 16 ; is current base hex ?
+  jne .0 ; no
+  mov eax, dword [board]
+  mov byte [eax + 1], Ih
+  mov byte [eax + 2], Ie
+  mov byte [eax + 3], Ix
+  pop eax
+  ret
+  .0:
+    mov eax, dword [board]
+    mov byte [eax + 1], 0
+    mov byte [eax + 2], 0
+    mov byte [eax + 3], 0
+  pop eax
+  ret
+
 nul0:
   DROP
   jmp short accept2
 
+; accepts keyboard input
 accept:
-  mov dword [shift], thumb_layout_alpha0
-  ;lea edi, [keyboard_layout_alpha - 4]; TODO NONQWERTY
-  xor edi, edi ; QWERTY skip display of command key map
-
-; "Key" returns in AL a number 0..27. If number is 4..27, jump to first -- otherwise
-; convert AL into an offset into whichever of the six tables [each with four DD's]
-; "shift" is pointing to, and jump to the address in the table.
-
+  mov dword [board], key_layout_unknown
+  mov dword [shift], thumb_layout_unknown
 accept1:
-  ;mov dword [board], edi ; TODO this fucks up initial display of board
-
 accept2:
-  call key ; TODOKEY
-  ;cmp al, 4 ; one of the shift keys?
-  ;jns near first ; nope, it's the first character of a word
-  ;mov edx, [shift] ; otherwise get the "shift" value
-  ;jmp [edx + eax * 4] ; jump to corresponding longword pointer
+  call key
   js acmdk
-  add dword [shift], 20
-  call word_
-  call [aword]
-  jmp accept
+  ; here, we have something
+  cmp dword [board], key_layout_text
+  je .1
+  cmp al, 18h  ; less than 0 ?
+  jl .1
+  cmp al, 21h  ; more than 9 ?
+  jg .1
+  ; we have a number
+  ;call letter
+  jmp number
+  .1:
+    call debug_dumpregs
+    mov dword [board], key_layout_text
+    mov dword [shift], thumb_layout_text
+    call word_
+    call [aword]
+    jmp accept
 acmdk:
+  ; f1? move to hex
   neg al; QWERTY
   mov edx, [shift]
-  jmp dword [edx+eax*4] ; jump to corresponding longword pointer
+  jmp dword [edx + eax * 4] ; jump to corresponding longword pointer
 
 ; Pre-parsing words
 ;
@@ -2888,36 +2820,36 @@ pack0:
   jmp short pack1 ; continue below
 
 pack:
-  cmp al, 20q      ; 0b00010000 ; character code greater than 16?
-  jnc pack0        ; if so, it's a 7-bitter, see above
-  mov cl, 4        ; otherwise assume it's a 4-bit code
-  test al, 10q     ; 10q = 0b00001000, character code more than 7?
+  cmp al, 20q  ; 0b00010000, character code greater than 16?
+  jnc pack0    ; if so, it's a 7-bitter, see above
+  mov cl, 4    ; otherwise assume it's a 4-bit code
+  test al, 10q ; 10q = 0b00001000, character code more than 7?
   jz pack1     ; if so, it's a 5-bit Huffman code
-  inc ecx    ; make the 4 into a 5
-  xor al, 30q   ; 30q = 0b00011000, and change prefix to 10xxx
+  inc ecx      ; make the 4 into a 5
+  xor al, 30q  ; 30q = 0b00011000, and change prefix to 10xxx
 
 ; common entry point for 4, 5, and 7-bit Huffman codes
 pack1: 
-  mov edx, eax ; copy Huffman code into EDX
-  mov ch, cl ; copy Huffman-code bitcount into 8-bit CH register
-  .0:
-    cmp [bits_], cl ; do we have enough bits left in the word?
-    jnc .1 ; if so, continue on
-    shr al, 1 ; low bit of character code set?
-    jc full ; if so, word is full, need to start an extension word instead
-    dec cl ; subtract one from bitcount
-    jmp .0 ; keep going; as long as we don't find any set bits, it'll fit
-  .1:
-    shl dword [esi], cl ; shift over just the amount of bits necessary
-    xor [esi], eax ; 'or' or 'add' would have worked as well (and clearer?)
-    sub [bits_], cl ; reduce remaining bitcount by what we just used
-    ret
+  mov edx, eax        ; copy Huffman code into EDX
+  mov ch, cl          ; copy Huffman-code bitcount into 8-bit CH register
+.0:
+  cmp [bits_], cl     ; do we have enough bits left in the word?
+  jnc .1              ; if so, continue on
+  shr al, 1           ; low bit of character code set?
+  jc full             ; if so, word is full, need to start an extension word instead
+  dec cl              ; subtract one from bitcount
+  jmp .0              ; keep going, as long as we don't find any set bits, it'll fit
+.1:
+  shl dword [esi], cl ; move just the amount of bits necessary
+  xor [esi], eax      ; 'or' or 'add' would have worked as well (and clearer?)
+  sub [bits_], cl     ; reduce remaining bitcount by what we just used
+  ret
 
 ; left-justification routine packs Huffman codes into the MSBs of the word, so that the leftmost bit is in bit 31.
 lj0:
-  mov cl, [bits_] ; bits remaining into CL register
-  add cl, 4 ; add to that the 4 reserved bits for type tag
-  shl dword [esi], cl ; shift packed word into MSBs
+  mov cl, [bits_]     ; bits remaining into CL register
+  add cl, 4           ; add to that the 4 reserved bits for type tag
+  shl dword [esi], cl ; move packed word into MSBs
   ret
 
 ; this is just the high-level entry point to the above routine
@@ -2928,12 +2860,12 @@ lj:
 
 ; the packed word is full, so finish processing
 full:
-  call lj0 ; left-justify the packed word
-  inc dword [words] ; bump the count
+  call lj0             ; left-justify the packed word
+  inc dword [words]    ; bump the count
   mov byte [bits_], 28 ; 32 - 4 reset bit count, still saving 4 bits for tag
-  ; we were processing a character when we found the word full, so add it in
-  sub [bits_], ch ; subtract saved bitcount of this Huffman code
-  mov eax, edx ; restore top-of-stack with partial packed word
+                       ; we were processing a character when we found the word full, so add it in
+  sub [bits_], ch      ; subtract saved bitcount of this Huffman code
+  mov eax, edx         ; restore top-of-stack with partial packed word
   DUP_
   ret
 
@@ -2953,9 +2885,8 @@ word_:
   mov byte [bits_], 28
 
 word1:
-  call letter
-  jns .0
-  neg al; QWERTY
+  jns .0 ; if we got a real key, jump lower
+  neg al ; QWERTY
   mov edx, [shift]
   jmp dword [edx + eax * 4]
   .0:
@@ -2968,25 +2899,28 @@ word1:
 
 word0:
   DROP
+word01:
   call key
   jmp word1
 
 decimal:
   mov dword [base], 10
-  mov dword [shift], thumb_layout_number0
-  mov dword [board], keyboard_layout_numbers
+  mov dword [board], key_layout_num
+  mov dword [shift], thumb_layout_num
+  call add_hex_to_key_layout
   ret
 
 hex:
   mov dword [base], 16
-  mov dword [shift], thumb_layout_number0
-  mov dword [board], keyboard_layout_octals
+  mov dword [board], key_layout_num
+  mov dword [shift], thumb_layout_num
+  call add_hex_to_key_layout
   ret
 
 octal:
   xor dword [current], decimal;(decimal - start1) ^ (hex - start1)
   xor dword [current], hex;(decimal - start1) ^ (hex - start1)
-  xor byte [thumb_layout_number0 + 18], 41q ^ 16q ; '9' xor 'f'
+  xor byte [thumb_layout_num + 18], 41q ^ 16q ; '9' xor 'f'
   call [current]
   jmp short number0
 
@@ -3015,10 +2949,12 @@ number0:
 number:
   call [current]
   mov byte [sign], 0
-  xor eax, eax ; TOS=entered number(initialized to 0)
+  ;xor eax, eax ; TOS=entered number(initialized to 0)
+  mov al, [digit - 4 + eax]
 
 number3:
-  call key ; TODOKEY
+  call key
+number4:
   call letter
   jns .0 ; Jump short if not sign (SF=0).
   neg al; QWERTY
@@ -3039,7 +2975,7 @@ number3:
 
 number2:
   DROP
-  mov dword [shift], thumb_layout_number1
+  ;mov dword [shift], thumb_layout_hex
   jmp number3
 
 endn:
@@ -3053,41 +2989,11 @@ alphn:
   jmp accept
 
 alph:
-  mov dword [shift], thumb_layout_alpha1
-  jmp word0
+  mov dword [board], key_layout_text
+  mov dword [shift], thumb_layout_text
+  DROP
+  jmp accept1
 
-;alph0:
-;  mov dword [shift], thumb_layout_alpha0
-;  lea edi, [keyboard_layout_alpha - 4]
-;  jmp short star1
-;
-;star0:
-;  mov dword [shift], graph0
-;  lea edi, [keyboard_layout_graphics - 4]
-;
-;star1:
-;  DROP
-;  jmp accept1
-;
-;alph:
-;  mov dword [shift], thumb_layout_alpha1
-;  lea edi, [keyboard_layout_alpha - 4]
-;  jmp short graphb
-;
-;graph:
-;  mov dword [shift], graph1
-;  lea edi, [keyboard_layout_graphics - 4]
-;
-;graphb:
-;  mov dword [board], edi
-;  jmp word0
-
-first:
-  add dword [shift], byte 4 * 4 + 4   ; move to next shift table
-  call word_
-  call [aword]
-  jmp accept
-  
 ; Printing numbers
 
 ; Character codes for the sixteen hexadecimal digits.
@@ -3139,7 +3045,7 @@ hdot1:
   ret
 
 ; Print 32-bit number onto screen as hexadecimal number without leading zeroes.
-dot:
+dot16:
   mov ecx, 7
   .0:
     call odig
@@ -3159,11 +3065,10 @@ dot:
     inc ecx      ; (Go from handling leading zeroes
     jmp .2        ;    to handling nonzero digits.)
 
-; Print 32-bit number onto screen without leading zeroes as a decimal or a
-; hexadecimal number, depending on the current base.
+; print 32-bit number onto screen without leading zeroes as a decimal/hexadecimal number, depending on base
 qdot:
   cmp dword [base], byte 10 ; is current base decimal?
-  jne dot ; display as hex if not
+  jne dot16 ; display as hex if not
   ; otherwise fall through to dot10 routine
 
 ; (?)Prints a decimal number.
@@ -3388,7 +3293,7 @@ type3:
 ; Green short word (27 bits)
 gsw:
   mov edx, [ - 4 + edi * 4]
-  sar edx, 5 ; shift into position
+  sar edx, 5 ; move into position
   jmp short gnw1
 
 ; Variable word (magenta)
@@ -3442,8 +3347,8 @@ greyw:
   cmp dword [bas], dot10
   jz short .0
   mov eax, _silver
-	.0:    
-		jmp short nw2
+  .0:    
+    jmp short nw2
 
 ; Refresh
 lis:
@@ -3481,7 +3386,7 @@ ref1:
   mov dword [bas], dot10
   test dl, 20q ; TODO hexbit
   jz .1 ; not set, so skip ahead
-  mov dword [bas], dot ; display as hex
+  mov dword [bas], dot16 ; display as hex
 .1:
   and edx, byte 0xf ; get typetag bits as index into display vector
   call [display + edx * 4] ; call the appropriate display routine
@@ -3663,18 +3568,16 @@ align 4
 ; (27 keys in keyboard; 28 offsets in "ekeys" table)
 ; initial key functions in editor
 ekeys:
-  dd nul, del, eout, destack    ; 0-3 longword
-  dd act1, act3, act4, shadow     ; 4-7 longword
+  dd nul, del, eout, destack  ; 0-3 longword
+  dd act1, act3, act4, shadow ; 4-7 longword
   dd mcur, mmcur, ppcur, pcur ; 8-11 longword, F8 should now be 'jump'
-  dd mblk, actv, act7, pblk        ; 12-15 longword
-  dd nul, act11, act10, act9     ; 16-19 longword
-  dd nul, nul, nul, nul     ; 20-23 longword
-
-; these are the huffman encodings of the characters to display
+  dd mblk, actv, act7, pblk   ; 12-15 longword
+  dd nul, act11, act10, act9  ; 16-19 longword
+  dd nul, nul, nul, nul       ; 20-23 longword
+                              ; these are the huffman encodings of the characters to display
 ekbd0:
-  ;dd ppcur, pblk, destack, del  ; 24-27 longword, used as dummy execution vectors for ekbd
-  dd nul, nul, nul, nul        ; 24-27 longword
-  db 0, cap_E,  Is ,  0 ; 28-31, initial control key map in editor (shift)
+  dd nul, nul, nul, nul       ; 24-27 longword
+  db 0, cap_E,  Is ,  0       ; 28-31, initial control key map in editor (shift)
 
 ; note that there are 4 db per line, so it stays word aligned
 
@@ -3726,15 +3629,15 @@ e:
   DUP_
   mov eax, [blk]
   mov dword [anumber], format
-  mov byte [thumb_layout_alpha0 + 16], Idot
-  mov dword [thumb_layout_alpha0 + 4], e0
+  mov byte [thumb_layout_unknown + 16], Idot
+  mov dword [thumb_layout_unknown + 4], e0
   call refresh
 e_1: 
   mov dword [shift], ekbd0
   mov dword [board], ekbd; QWERTY - 4
   mov dword [keyc], _yellow
   .0:
-    call pkey ; TODO pkey
+    call pkey
     call near [ekeys + eax * 4] ; index into ekeys
     DROP
     jmp .0
@@ -3745,8 +3648,8 @@ eout:
   DROP
   mov dword [aword], exword
   mov dword [anumber], nul
-  mov byte [thumb_layout_alpha0 + 4 * 4], 0
-  mov dword [thumb_layout_alpha0 + 4], nul0
+  mov byte [thumb_layout_unknown + 4 * 4], 0
+  mov dword [thumb_layout_unknown + 4], nul0
   mov dword [keyc], _yellow ; restore key color to yellow
   jmp accept ; revert to command-line processing
 
