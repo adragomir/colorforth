@@ -2948,6 +2948,13 @@ digit:
 
 sign: db 0
 
+negate_number:
+  mov edx, [esi]
+  ;imul edx, dword [base]
+  neg edx
+  mov [esi], edx
+  ret
+
 minus:
   mov [sign], al
   jmp short number2
@@ -2966,6 +2973,11 @@ number:
 
 number3:
   call key
+  cmp al, 23h
+  jne number4
+  call negate_number
+  jmp number0
+  ;je minus
 number4:
   call letter
   jns .0 ; Jump short if not sign (SF=0).
