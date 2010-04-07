@@ -2603,7 +2603,7 @@ keys
 
 special_key_mod_unknown:
   ; allow only f1 and ~
-  db 0xff, 0x00, 0xfe, 0xfd
+  db 0xff, 0x00, 0xfe, 0xfd ; TODO: we can change this dynamically so that esc is sent only from the editor
 special_key_mod_text:
   ; allow only esc, backspace, enter/space
   db 0xff, 0xfe, 0x00, 0x00
