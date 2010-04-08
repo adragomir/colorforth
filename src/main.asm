@@ -626,22 +626,22 @@ forthd:
 
 forthdd:
   mov edx, [ - 4 + edi * 4] ; grab pre-parsed word, load the packed word from source block
-  and edx, byte -16 ; Clear color bits (bits 0..3).
-  mov [ecx], edx ; store the "naked" word in the dictionary
-  mov edx, [H] ; HERE pointer, place available for new compiled code
-  mov [ecx + eax], edx ;   into wordlist's address array.
-  lea edx, [ecx + eax]        ; get address of address-array cell.
-  shr edx, 2      ; convert it into DWORD address.
-  mov [last], edx      ; store it (to allow optimization).
+  and edx, byte -16         ; Clear color bits (bits 0..3).
+  mov [ecx], edx            ; store the "naked" word in the dictionary
+  mov edx, [H]              ; HERE pointer, place available for new compiled code
+  mov [ecx + eax], edx      ; into wordlist's address array.
+  lea edx, [ecx + eax]      ; get address of address-array cell.
+  shr edx, 2                ; convert it into DWORD address.
+  mov [last], edx           ; store it (to allow optimization).
   pop eax
-  mov [list], esp      ; ?
-  mov dword [lit], adup      ; ?
-  ; for CLASS stuff, search web for moore01a.pdf
-  test dword [class], -1      ; is CLASS set for C18 compilation?
-  jz .9          ; return if not
-  jmp [class] ; otherwise do C18 compilation
+  mov [list], esp           ; ?
+  mov dword [lit], adup     ; ?
+                            ; for CLASS stuff, search web for moore01a.pdf
+  test dword [class], -1    ; is CLASS set for C18 compilation?
+  jz .9                     ; return if not
+  jmp [class]               ; otherwise do C18 compilation
   .9:
-    ret ; otherwise simply return.
+    ret                     ; otherwise simply return.
 
 ; ColorForth's compiler works by adding bytes of machine code to the end of a buffer called
 ; the dictionary. (This buffer starts at address 0x100000 - the one-megabyte mark - and
@@ -1614,9 +1614,9 @@ erase:
   mov edi, eax
 
   ; TODO: check correct access
-  sub    edi, 18
-  shl    edi, 2+8
-  add    edi, [blocks_address]
+  sub edi, 18
+  shl edi, 2+8
+  add edi, [blocks_address]
 
   xor eax, eax
   rep stosd
@@ -2264,7 +2264,7 @@ keyboard:
   mov dword [xy], keyboard_hud_x * 0x10000 + keyboard_hud_y
   ; display finger keys
   mov edi, [board]
-  test edi,edi  ; QWERTY
+  test edi, edi  ; QWERTY
   jz .0 ; QWERTY
   call eight
   call eight
@@ -3389,13 +3389,13 @@ plist:
   mov [cad], eax        ; for curs beyond end
 
   ; TODO
-  mov    eax, [blk] ; get current block, which is being edited
-  sub    eax, 18
-  shl    eax, 10-2 ; multiply by 256 longwords per block
-  mov    ebx, [blocks_address]
-  shr    ebx, 2
-  add    eax, ebx
-  mov    edi, eax
+  mov eax, [blk] ; get current block, which is being edited
+  sub eax, 18
+  shl eax, 10-2 ; multiply by 256 longwords per block
+  mov ebx, [blocks_address]
+  shr ebx, 2
+  add eax, ebx
+  mov edi, eax
 
   xor eax, eax
   mov [pcad], edi  ; for curs=0 (page cursor address)
