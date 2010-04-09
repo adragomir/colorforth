@@ -3435,7 +3435,7 @@ plist:
   ; TODO
   mov eax, [blk] ; get current block, which is being edited
   sub eax, 18
-  shl eax, 10-2 ; multiply by 256 longwords per block
+  shl eax, 8 ; multiply by 256 longwords per block
   mov ebx, [blocks_address]
   shr ebx, 2
   add eax, ebx
