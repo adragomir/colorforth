@@ -3010,9 +3010,9 @@ number4:
     test al, al
     jz number0
     mov al, [digit - 4 + eax]
-    test byte [sign], 37q
-    jz .1
-    neg eax
+    ;test byte [sign], 37q
+    ;jz .1
+    ;neg eax
   .1:
     mov edx, [esi]
     imul edx, dword [base]
