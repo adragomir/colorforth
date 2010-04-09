@@ -559,22 +559,43 @@ execute:
     jmp [forth_dictionary_addresses + ecx * 4] ; jump to low-level code of Forth word or macro
 
 ; abort execution or load operation
+;abort:
+;  cmp edi, 0x1200
+;  js abort1
+;  mov [curs], edi ; store pointer to last source word encountered
+;
+;  ; get block number from word pointer
+;  shl edi, 2
+;  sub edi, [blocks_address] 
+;  shr edi, 10
+;  add edi, 18
+;
+;  mov [blk], edi ; update BLK
+;  ; this way, E will begin editing at point of failure
+
 abort:
-  cmp edi, 0x1200
-  js abort1
-  mov [curs], edi ; store pointer to last source word encountered
+  sub edi, 4009200h
+  jb short abort0
+  add edi, 1200h
+  mov eax, edi
+  and eax, 0FFh
+  shr edi, 8
+  cmp edi, 5A0h
+  jnb short abort0
+  mov [curs], eax
+  mov [blk], edi
+  call nul
 
-  ; get block number from word pointer
-  shl    edi, 2
-  sub    edi, [blocks_address] 
-  shr    edi, 10
-  add    edi, 18
-
-  mov [blk], edi ; update BLK
-  ; this way, E will begin editing at point of failure
+abort0:    
+  mov ebx, holder
+  mov esp, [ebx + 4]
+  cld
+  cmp esi, top_main_data_stack
+  jb short abort1
+  mov esi, top_main_data_stack
 
 abort1: 
-  mov esp, top_main_return_stack ; [RST] reset return stack pointer
+  ;mov esp, top_main_return_stack ; [RST] reset return stack pointer
   mov dword [adefine], forthd
   mov dword [adefine + 4], qcompile
   mov dword [adefine + 8], cnum
