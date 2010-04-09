@@ -1856,6 +1856,7 @@ cad_:
 aper_:
   DUP_
   mov eax, frame
+  shr eax, 2
   ret
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; include 'gen.asm'
