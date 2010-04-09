@@ -1967,8 +1967,8 @@ emit2:
   push edi
   push edx
   imul eax, byte icon_width * icon_height / 8
-  mov    esi, [icons_address]
-  add    esi, eax
+  mov esi, [icons_address]
+  add esi, eax
   call pen_addr
   mov edx, [fore]
   mov ecx, icon_height
