@@ -277,12 +277,19 @@ vertical_chars  equ screen_height / char_height       ; 768 / 30 = 25 (remainder
 hexbit equ 20q  ; that's octal, bit 4 set to indicate hexadecimal display
 tagbits equ 17q ; octal again, low 4 bits (0-3) indicate type tag
 
+holder: 
+  times 40 dd 0
+
 warm:
   DUP_
   jmp start1.0
 
 start1:
   ; TODO: setup arrays
+
+  mov ebx, holder
+  mov [ebx+4], esp
+
   mov esi, top_main_data_stack
 
   .0:
@@ -1153,7 +1160,7 @@ jump:
 ; ( b -- ) Interprets pre-parsed words in the block given.
 load:
   sub eax, 18               ; block, delete 18, because we don't have binary content
-  shl eax, 10-2             ; multiply by 256 longwords, same as 1024 bytes
+  shl eax, 8                ; multiply by 256 longwords, same as 1024 bytes
   mov ebx, [blocks_address] ; ebx contains the ADDRESS of the block contents
   shr ebx, 2                ; divide the address by 4
   add eax, ebx
@@ -1604,6 +1611,21 @@ winver:
   mov eax, 1
   or eax, eax
   ret
+
+noret:  
+  pop ecx
+  mov ebx, holder
+  mov esp, [ebx + 4]
+  jmp ecx
+
+rque:  
+  DUP_
+  mov ebx, holder
+  mov eax, [ebx + 4]
+  sub eax, esp
+  shr eax, 1
+  shr eax, 1
+  retn
 
 ; ( b n -- ) erase n blocks, starting with block b.
 erase:
