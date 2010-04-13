@@ -83,8 +83,8 @@ host_alloc_display:
   __SDL_Init SDL_INIT_VIDEO
   __SDL_SetVideoMode screen_width, screen_height, screen_depth * 8, SDL_SWSURFACE
   mov [surface], eax
-  mov edx, [eax + 20]
-  mov [frame], edx
+  mov eax, [eax + 20]
+  mov [frame], eax
 
   __SDL_EnableKeyRepeat 125, 50 
   string color_forth, "colorForth for MacOSX", 0x0
