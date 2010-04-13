@@ -7,8 +7,8 @@ OBJS:=$(OUT)/obj
 #BASE_FLAGS:=-Wall -I/usr/local/include/SDL -mfpmath=sse -msse3 -mssse3
 #BASE_FLAGS:=-Wall -I/usr/local/include/SDL -O3 -ffast-math -ftree-vectorize
 BASE_FLAGS:=-I ./src/inc/ -f macho32 -g null
-BASE_LFLAGS:=-e _main -arch i386 -lc -framework ApplicationServices
-BASE_LFLAGS:= -segprot __TEXT rwx rwx -e _main -arch i386 -L/usr/local/lib -lSDL -lSDL_image -lSDL_ttf -lSDLMain -framework ApplicationServices -lc #-framework OpenGL -lm
+BASE_LFLAGS:=-e _initial -arch i386 -lc -framework ApplicationServices
+BASE_LFLAGS:= -segprot __TEXT rwx rwx -e _initial -arch i386 -L/usr/local/lib -lSDL -lSDL_image -lSDL_ttf -lSDLMain -framework ApplicationServices -lc #-framework OpenGL -lm
 DEBUG_FLAGS:=-g null
 DEBUG_LFLAGS:=
 
