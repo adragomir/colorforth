@@ -169,7 +169,7 @@ host_alloc_buffers:
   mov [H], eax
   ret
 
-_main:
+_initial:
   mov eax, 1
   test eax, 2
 
