@@ -33,7 +33,7 @@ ALL_OBJECT_FILES:=$(strip $(addsuffix .o, $(basename $(call TO_OBJS,$(ALL_CODE_F
 ALL_HEADER_FILES:=$(strip $(foreach DIR,$(SRC_DIRS), $(wildcard $(DIR)/*.$(H_EXT))))
 ALL_SRC_FILES:=$(ALL_CODE_FILES) $(ALL_HEADER_FILES)
 
-.PHONY: world prebuild postbuild clean final run restore preproc sizes sdl ctest html doc testtool
+.PHONY: world prebuild postbuild clean final run restore preproc sizes sdl ctest html doc testtool blocks
 
 # Make everything in debug
 world: NASMFLAGS:=$(BASE_FLAGS) $(DEBUG_FLAGS)
@@ -45,6 +45,7 @@ doc:
 
 preproc:
 	yasm -e -I ./src/inc/ -f macho32 -g null -g null src/main.asm > build/main.preproc
+
 # Make everything go away (be clean)
 clean:
 	$(RM) run
@@ -75,8 +76,12 @@ ctest:
 
 cf2html:
 	gcc -arch i386 -o tools/cf2html tools/cf2html.c
+
 html:
 	for i in block_files/*.cf; do build/cf2html < $$i > $$i.html; done
+
+blocks:
+	./tools/colorforth_block_tool tocf data/OkadWork.txt data/OkadWork.cf
 
 testtool:
 	./tools/colorforth_block_tool totext data/OkadWork.cf build/OkadWork.1.txt
