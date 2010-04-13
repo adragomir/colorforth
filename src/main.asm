@@ -278,7 +278,7 @@ hexbit equ 20q  ; that's octal, bit 4 set to indicate hexadecimal display
 tagbits equ 17q ; octal again, low 4 bits (0-3) indicate type tag
 
 holder: 
-  times 40 dd 0
+  times 0x40 dd 0
 
 warm:
   DUP_
@@ -1448,6 +1448,7 @@ forth_words_names:
   dd _h<<25; h
   dd ((((_b<<7|_u)<<5|_f)<<5|_f)<<4|_e)<<4; buffe(r)
   dd (((((_o<<5|_f)<<5|_f)<<5|_s)<<4|_e)<<4|_t)<<5; offset
+  dd (((((_i<<4|_o)<<5|_f)<<5|_f)<<5|_s)<<4|_e)<<5 ; ioffse
   dd ((_t<<4|_i)<<5|_c)<<19 ; tic
   dd (((((_w<<4|_i)<<4|_n)<<7|_v)<<4|_e)<<4|_r)<<4; winver (- t | f)
   dd (((_a<<7|_p)<<4|_e)<<4|_r)<<13 ; aper
@@ -1566,6 +1567,7 @@ forth_words_addresses:
   dd h_ ; h
   dd host_notimpl ; buffe(r)
   dd offset_ ; offset
+  dd ioffset_ ; icons
   dd tic ; tic
   dd winver; winver (- t | f)
   dd aper_ ; aper
@@ -1578,8 +1580,8 @@ forth_words_addresses:
   dd host_notimpl ; qkey
   dd host_notimpl ; digin
   dd qwerty ; qwert(y)
-  dd host_notimpl ; no-ret
-  dd host_notimpl ; r?
+  dd noret ; no-ret
+  dd rque ; r?
   dd nul; nul
   dd cad_; cad
   dd pcad_; pcad
@@ -1588,7 +1590,7 @@ forth_words_addresses:
   dd plist ; +list
   dd itick ; itick
   dd lis ; lis
-  dd e ; +e
+  dd plus_e ; +e
   dd retain; retain()
   dd keych_; keych
   dd host_notimpl; utime
@@ -1813,7 +1815,13 @@ trash_:
 
 offset_:
   DUP_
-  mov eax, offset
+  mov eax, blocks_address
+  shr eax, 2
+  ret
+
+ioffset_:
+  DUP_
+  mov eax, [icons_address]
   shr eax, 2
   ret
 
@@ -1831,8 +1839,8 @@ cpoint_:
 
 endram_:
   DUP_
-  mov eax, endram
-  shr eax, 2
+  mov eax, [frame]
+  add eax, 4096 * 768
   ret
 
 words_:
@@ -2325,7 +2333,7 @@ keyboard:
     mov dword [lm], char_padding
     mov word [xy + 2], char_padding
     call stack
-    
+
     ; display input history just to the left of keyboard display
     mov word [xy + 2], screen_width - char_padding - (history_size + keyboard_hud_width) * char_width
     lea edi, [history]
@@ -3418,13 +3426,6 @@ greyw:
   .0:    
     jmp short nw2
 
-; Refresh
-lis:
-refresh:
-  call show
-  call blank
-  call plist
-
 plist:
   call text1
   DUP_                  ; counter
@@ -3459,6 +3460,13 @@ ref1:
   and edx, byte 0xf ; get typetag bits as index into display vector
   call [display + edx * 4] ; call the appropriate display routine
   jmp ref1
+
+; Refresh
+lis:
+refresh:
+  call show
+  call blank
+  call plist
 
 ; TODO: plist seems to be a refactoring of refresh
 
@@ -3552,8 +3560,8 @@ act7:
 
 actt: 
   mov [action], al ; number of action
-  mov eax, [actc - 4 + eax * 4] ; load color corresponding to action
   mov dword [aword], insert ; "insert" becomes the active word
+  mov eax, [actc - 4 + eax * 4] ; load color corresponding to action
 
 ; action for number
 actn: 
@@ -3605,7 +3613,7 @@ ppcur:
 ; plus one block (+2 since odd are shadows)
 pblk: 
   add dword [blk], byte 2
-  add dword [esi], byte 2
+  ;add dword [esi], byte 2 ; TODO: get rid of this, watermark
   ret
 
 ; minus block - move editor to previous source (or shadow) block
@@ -3613,23 +3621,24 @@ mblk:
   cmp dword [blk], byte 20 ; minus one block unless below 20
   js .9 ; (18 is first block available for editing)
   sub dword [blk], byte 2
-  sub dword [esi], byte 2
+  ;sub dword [esi], byte 2 ; TODO: get rid of this, watermark
   .9:
     ret
 
 ; Jump to previous block edited with 'edit'
 ; [blk], N <= [blk+4] <= N
 popblk: ; ??
-  mov ecx, [esi]
+  ;mov ecx, [esi]  ; TODO: get rid of this, watermark
+  mov ecx, [blk]
   xchg ecx, [blk + 4]
   mov [blk], ecx
-  mov [esi], ecx
+  ;mov [esi], ecx ; TODO: get rid of this, watermark
   ret
 
 ; shadow screens in Forth are documentation for corresponding source screens
 shadow:
   xor dword [blk], byte 1 ; switch between shadow and source
-  xor dword [esi], byte 1 ; change odd to even and vice versa
+  ;xor dword [esi], byte 1 ; change odd to even and vice versa  ; TODO: get rid of this, watermark
   ret
 
 align 4
@@ -3685,21 +3694,26 @@ e0:
   DROP
   jmp short e_1
 
-edit: 
 ; Start editor at block given in TOS.
-  ;mov ecx, [blk]
-  ;mov [blk + 4], ecx
+edit: 
+  mov ecx, [blk]
+  mov [blk + 4], ecx
   mov [blk], eax
   DROP
 
+; restart editor at current block.
 e:  
-; Restart editor at current block.
-  DUP_
-  mov eax, [blk]
+  ;DUP_  ; TODO: get rid of this, watermark
+  ;mov eax, [blk]  ; TODO: get rid of this, watermark
+  call lis
+
+plus_e:
+  call noret
   mov dword [anumber], format
   mov byte [thumb_layout_unknown + 16], Idot
   mov dword [thumb_layout_unknown + 4], e0
-  call refresh
+  ;call refresh  ; TODO: get rid of this, watermark
+
 e_1: 
   mov dword [shift], ekbd0
   mov dword [board], ekbd; QWERTY - 4
@@ -3713,7 +3727,7 @@ e_1:
 eout:
   pop eax    ; [RST]
   DROP
-  DROP
+  ;DROP
   mov dword [aword], exword
   mov dword [anumber], nul
   mov byte [thumb_layout_unknown + 4 * 4], 0
@@ -3903,7 +3917,6 @@ pad:
   mov [shift], edx ; this is only to point to the character codes
   .0:
     call pkey_default      ; pkey, QWERTY ; TODOKEY
-    ;debug_print "called pad !!!", 0xa, 0x0
     mov edx, [vector] ; load vector table into EDX
     ; the following 3 instructions point to the appropriate vector for the key
     ; it amounts to adding eax*5 to the start of the vector table
