@@ -1890,7 +1890,6 @@ white:
   mov eax, _white ; 8:8:8 rgb, full brightness
 
 color:
-  ;call rgb
   mov [fore], eax
   DROP
   ret
