@@ -65,7 +65,7 @@ section .text
 
 extern _printf, _open, _mmap, _read, _malloc, _write, _realloc
 
-global _main                ; make the main function externally visible
+global _initial                ; make the main function externally visible
 
 %define sdl_rgb32(r, g, b) dword (r << 16) | (g << 8) | b | -16777216
 %define sdl_rgbsingle32(rgb) (( ((rgb >> 16) & 0xff) << 16) | (((rgb >> 8) & 0xff) << 8) | (rgb & 0xff)  | -16777216)
