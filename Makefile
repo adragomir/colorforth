@@ -8,7 +8,7 @@ OBJS:=$(OUT)/obj
 #BASE_FLAGS:=-Wall -I/usr/local/include/SDL -O3 -ffast-math -ftree-vectorize
 BASE_FLAGS:=-I ./src/inc/ -f macho32 -g null
 BASE_LFLAGS:=-e _initial -arch i386 -lc -framework ApplicationServices
-BASE_LFLAGS:= -segprot __TEXT rwx rwx -e _initial -arch i386 -L/usr/local/lib -lSDL -lSDL_image -lSDL_ttf -lSDLMain -framework ApplicationServices -lc #-framework OpenGL -lm
+BASE_LFLAGS:= -segprot __TEXT rwx rwx -e _initial -arch i386 -L/usr/local/lib -lSDL -lSDLMain -framework ApplicationServices -lc #-framework OpenGL -lm
 DEBUG_FLAGS:=-g null
 DEBUG_LFLAGS:=
 
@@ -66,10 +66,10 @@ prebuild:
 	@for dir in $(OBJS_DIRS); do $(MKDIR) $${dir}; done
 
 sizes:
-	gcc -arch i386 -L/usr/local/lib -I/usr/local/include -lSDL -lSDL_image -lSDL_ttf -lSDLMain -o build/sizes src/sizes.c
+	gcc -arch i386 -L/usr/local/lib -I/usr/local/include -lSDL -lSDLMain -o build/sizes src/sizes.c
 
 sdl:
-	g++ -arch i386 -L/usr/local/lib -I/usr/local/include -lSDL -lSDL_image -lSDL_ttf -lSDLMain -o build/sdl src/sdl.c
+	g++ -arch i386 -L/usr/local/lib -I/usr/local/include -lSDL -lSDLMain -lc -framework ApplicationServices -framework Cocoa -o build/sdl src/sdl.c
 
 ctest:
 	g++ -arch i386 -o build/ctest src/ctest.c

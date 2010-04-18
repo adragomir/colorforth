@@ -6,8 +6,8 @@ extern _SDL_EnableKeyRepeat
 
 SDLK_ESCAPE		equ	27
 
-KMOD_LSHIFT equ 0x01
-KMOD_RSHIFT equ 0x02
+KMOD_LSHIFT equ 0x0001
+KMOD_RSHIFT equ 0x0002
 
 ;======================================================================================
 ; STRUCTURES

@@ -1,3 +1,5 @@
+extern _write
+
 [SECTION .data]
 	debug_str_myregs db "EDI      ESI      EBP      ESP      EBX      EDX      ECX      EAX", 0x10, 0x0
   debug_str_myregs_len equ $ - debug_str_myregs
@@ -13,13 +15,13 @@ __SECT__
 
 debug_newline:
   pushad
-  syscall SYS_write, 1, debug_nl_char, 1
+  ccall _write, 1, debug_nl_char, 1
   popad
   ret
 
 debug_space:
   pushad
-  syscall SYS_write, 1, debug_space_char, 1
+  ccall _write, 1, debug_space_char, 1
   popad
   ret
 
@@ -52,7 +54,7 @@ debug_printhex:
     cmp cl, 0         ; compare to 28
     jge .debug_hexloop1 ; if greater then or equal to then continue (signed)
 
-  syscall SYS_write, 1, debug_tmpbytes, 8
+  ccall _write, 1, debug_tmpbytes, 8
 
   popad ; restore copy of the registers
   ret
@@ -94,7 +96,7 @@ debug_dumpregs:
   pushfd ; save a copy of the cpu flags
   pushad ; second copy for us to pop off
 
-  syscall SYS_write, 1, debug_str_myregs, debug_str_myregs_len
+  ccall _write, 1, debug_str_myregs, debug_str_myregs_len
   call debug_newline
   mov ecx, 8
   mov edi, 0
@@ -106,7 +108,6 @@ debug_dumpregs:
 
     mov ecx, debug_str_myregs ; what register?
     add ecx, edi    ; pointer for debug_str_myregs
-    ;syscall SYS_write, 1, ecx, 4
     pop eax       ; ok now lets get the value to print
     call debug_printhex ; print out the contents of eax in hex 
     call debug_space    ; print a debug_space
@@ -144,7 +145,7 @@ debug_dumpregs:
   mov [debug_myflags+23], byte 0x31
   nosetpf:
 
-  syscall SYS_write, 1, debug_myflags, 25
+  ccall _write, 1, debug_myflags, 25
 
   ; restore original values
   popad ; restore original copy of the registers

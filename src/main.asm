@@ -48,10 +48,13 @@ bufsize equ 18 * 1024             ; size of floppy buffer.
 
 top_main_return_stack equ $; gods
 top_main_data_stack equ top_main_return_stack - return_stack_size ; godd
+
 top_draw_return_stack equ top_main_data_stack - data_stack_size
 top_draw_data_stack equ top_draw_return_stack - return_stack_size
+
 top_serve_return_stack equ top_draw_data_stack - data_stack_size
 top_serve_data_stack equ top_serve_return_stack - return_stack_size
+
 end_of_stacks equ top_serve_data_stack - data_stack_size  ; end of stacks
 buffer equ end_of_stacks - bufsize
 forth_dictionary_addresses equ buffer - forth_dict_size
@@ -63,7 +66,7 @@ dummy dd  0
 
 section .text
 
-extern _printf, _open, _mmap, _read, _malloc, _write, _realloc
+extern _printf, _open, _mmap, _read, _malloc, _write, _realloc, _exit, _close, _fstat
 
 global _initial                ; make the main function externally visible
 
@@ -94,12 +97,12 @@ host_alloc_display:
 bye:
 host_exit_ok:
   __SDL_Quit
-  syscall SYS_exit, 0
+  ccall _exit, 0
   ret
 
 host_exit_fail:
   __SDL_Quit
-  syscall SYS_exit, 1
+  ccall _exit, 1
   ret
 
 icons_fd: dd 0
@@ -111,28 +114,28 @@ backup_blocks_address: dd 0
 
 %macro host_read_file 1
   ; open
-  syscall SYS_open, str_ %+ %1 %+  _file, O_RDONLY
+  ccall _open, str_ %+ %1 %+  _file, O_RDONLY
   mov dword [%1 %+ _fd], dword eax
   ;file stat: find file size
-  syscall SYS_fstat, dword[%1 %+ _fd],  %1 %+ _file_stat ; pass the address, NOT the value
+  ccall _fstat, dword[%1 %+ _fd],  %1 %+ _file_stat ; pass the address, NOT the value
   mov ecx, dword [%1 %+ _file_stat.st_size]
   ; open memory that will contain the contents
-  syscall SYS_mmap, dword 0, ecx, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_ANON, dword 0, dword 0
+  ccall _mmap, dword 0, ecx, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_ANON, dword 0, dword 0
   mov dword [%1 %+ _address], eax
   ;read the contents
-  syscall SYS_read, dword [%1 %+ _fd], dword [%1 %+ _address], dword [%1 %+ _file_stat.st_size]
+  ccall _read, dword [%1 %+ _fd], dword [%1 %+ _address], dword [%1 %+ _file_stat.st_size]
   ; close the file
-  syscall SYS_close, dword [%1 %+ _fd]
+  ccall _close, dword [%1 %+ _fd]
 %endmacro
 
 %macro host_write_file 2
   ; open
-  syscall SYS_open, str_ %+ %1 %+  _file, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR
+  ccall _open, str_ %+ %1 %+  _file, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR
   mov dword [%1 %+ _fd], dword eax
   ;read the contents
-  syscall SYS_write, dword [%1 %+ _fd], dword [%2 %+ _address], dword [%2 %+ _file_stat.st_size]
+  ccall _write, dword [%1 %+ _fd], dword [%2 %+ _address], dword [%2 %+ _file_stat.st_size]
   ; close the file
-  syscall SYS_close, dword [%1 %+ _fd]
+  ccall _close, dword [%1 %+ _fd]
 %endmacro
 
 host_read_icons_file:
@@ -160,7 +163,7 @@ host_write_blocks_file:
 ; in:  ecx - size
 ; out: eax - address
 host_alloc_mem:
-  syscall SYS_mmap, dword 0, ecx, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_ANON, dword 0, dword 0
+  ccall _mmap, dword 0, ecx, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_ANON, dword 0, dword 0
   ret
 
 host_alloc_buffers:
@@ -170,14 +173,15 @@ host_alloc_buffers:
   ret
 
 _initial:
-  mov eax, 1
-  test eax, 2
 
   call host_read_icons_file
   call host_read_blocks_file
 
   call host_alloc_buffers
   call host_alloc_display
+
+  call host_flip_screen
+
   mov dword[board], key_layout_unknown
   mov edi, [board]
   jmp start1
@@ -295,6 +299,7 @@ start1:
   .0:
     call noshow
     call noserve
+
     mov dword [forths], num_of_forth_words
     mov dword [macros], num_of_macros
     mov dword [trash], buffer
@@ -373,7 +378,7 @@ dopause:
   DUP_            ; push TOS onto data stack..
   push esi        ; [RST] save NOS (data-stack pointer) onto return stack, which already has the task's return address
   mov eax, [me]   ; get current task
-  mov [eax], esp  ; save return stack pointer (to which task it needs)
+  mov [eax], esp  ; save return stack pointer to storage slot (to which task it needs)
   add eax, byte 4 ; get address AFTER the current task (skip storage slot, point to round-robin CALL or JMP)
   jmp eax         ; jump there (into round, which immediately calls resume below)
 
@@ -431,7 +436,7 @@ noshow:
 ; (Note "call [screen]" - if show is called from show0, this just returns to show
 ; - if show is called from refresh, this runs almost all of refresh)
 show:
-  pop dword [udraw] ; udraw = address of "ret" in nowhow
+  pop dword [udraw] ; udraw = address of "ret" in noshow
   call to_draw
   .0:
     ; the drawing loop.
@@ -1919,11 +1924,7 @@ switch_:
   ;pop esi
   pushad
   pushfd
-  ;push esi
-  ;push edi
   call host_flip_screen
-  ;pop edi
-  ;pop esi
   popfd
   popad
   ret
@@ -2532,9 +2533,9 @@ getkey:
   cmp eax, 0
   je getkey ; if there was no event, go forward
   ; here, we are sure to have an event
-  cmp byte [event.type], SDL_QUIT 
+  cmp dword [event.type], SDL_QUIT 
   je host_exit_ok
-  cmp byte [event.type], SDL_KEYDOWN ; was it a key event ? 
+  cmp dword [event.type], SDL_KEYDOWN ; was it a key event ? 
   jne getkey
   push ebx
   mov ebx, [event.key.keysym.scancode]

@@ -60,7 +60,7 @@ int main(int argc, char* argv[]){ //Our main program
           printf("scancode: %d\n\n", event.key.keysym.scancode);
           break; //Event handled, fetch next :)
       }
-      SDL_DrawPoint(screen, 600, 600, color);
+      //SDL_DrawPoint(screen, 600, 600, color);
       //SDL_FillRect(screen, &rect, color);
       int x = 600;
       int y = 600;

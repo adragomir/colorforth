@@ -88,6 +88,18 @@ int main(void)
   PRN_STRUCT_OFFSETS(SDL_ActiveEvent, type, gain, state);
   PRN_STRUCT_OFFSETS(SDL_keysym, scancode, sym, mod, unicode);
 
+  printf("-----------------------\n");
+  PRN_STRUCT_OFFSETS(SDL_WindowEvent, type, windowID, event, padding1, padding2, padding3, data1, data2);
+  printf("Size of SDL_WindowEvent is %d\n", sizeof(SDL_WindowEvent));
+
+  printf("-----------------------\n");
+  PRN_STRUCT_OFFSETS(SDL_KeyboardEvent, type, windowID, which, state, padding1, padding2, keysym);
+  printf("Size of SDL_KeyboardEvent is %d\n", sizeof(SDL_KeyboardEvent));
+  
+  printf("-----------------------\n");
+  PRN_STRUCT_OFFSETS(SDL_TextEditingEvent, type, windowID, which, text, start, length);
+  printf("Size of SDL_TextEditingEvent is %d\n", sizeof(SDL_TextEditingEvent));
+
   return 0;
 }
 

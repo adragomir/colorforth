@@ -68,7 +68,6 @@
   pop ebp
 %endmacro
 
-
 ;-High-Level Call
 ;   ccall  FuncName, param1, param2, param 3... ;Pascal: 1st-1st, no clean
 ;   pcall  FuncName, param1, param2, param 3... ;C: Last-1st, stack cleanup
@@ -110,8 +109,15 @@
   ; http://www.asmcommunity.net/board/index.php?topic=29506.0 - duntemann calling conventions, save registers
   push_all ebx, ecx, edx, esi, edi
 
+  ; save esp
+  ; mov ebx, esp
+
   ; Mac OS X requires a fucking stack alignment to 16 bytes
   and esp, 0xFFFFFFF0
+
+  ; first 16 bytes, only save ebx
+  ;sub esp, 12
+  ;push ebx
 
   ; then, we must substract something more, so that after substracting and adding x parameters, the stack is 16 byte aligned again
   sub esp, __stack_substraction * 4
@@ -125,11 +131,16 @@
   ; because we substracted, we need to remake the stack
   add esp, __params * 4 + __stack_substraction * 4
 
+  ; now we are where we saved ebx
+  ;pop ebx
+  ;mov esp, ebx
+
   pop_all ebx, ecx, edx, esi, edi
 
   ; comparable to a leave instruction
   mov esp, ebp
   pop ebp
+
 %endmacro
 
 ;-IF-THEN-ELSE Loops

@@ -17,18 +17,18 @@ extern _SDL_DrawLine
 ;======================================================================================
 
 struct SDL_Surface
-    mdword	  flags
-    mdword        format
-    mdword	  w
-    mdword	  h
-    mdword	  pitch
-    mdword        pixels
-    mdword        userdata
-    mdword        locked
-    mdword        lock_data
+    mdword flags
+    mdword format
+    mdword w
+    mdword h
+    mdword pitch
+    mdword pixels
+    mdword userdata
+    mdword locked
+    mdword lock_data
     struct SDL_Rect, clip_rect
-    mdword        map
-    mdword        format_version
-    mdword        refcount
+    mdword map
+    mdword format_version
+    mdword refcount
 ends
 
